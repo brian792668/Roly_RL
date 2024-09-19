@@ -397,7 +397,7 @@
         
         <body name="red_ball" > 
             <joint type="free" damping="0.001"/>
-            <geom type="sphere" mass="0.0000001" pos="0.7 0.0 1.05" size="0.02" rgba="1 0 0 1"/> 
+            <geom type="sphere" mass="0.0000001" pos="0.2 0.0 1.05" size="0.02" rgba="1 0 0 1"/> 
         </body>
         <!-- <body name="red_box" > 
             <joint type="free" damping="0.001"/>

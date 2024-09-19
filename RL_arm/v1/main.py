@@ -6,6 +6,7 @@ import stable_baselines3
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import random
 import os
 
 from Camera import *
@@ -40,6 +41,18 @@ class RL_arm(gym.Env):
         if self.viewer.is_running() == False:
             self.close()
         else:
+            self.inf.timestep += 1
+            print(self.inf.timestep)
+            
+            for i in range(20):
+                self.sys.pos = [self.data.qpos[i] for i in controlList]
+                self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+                self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+                mujoco.mj_step(self.robot, self.data)
+
+            self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=5.0 )
+            self.viewer.sync()
+
             self.inf.reward = self.get_reward()
             self.get_state()
             self.head_camera.show(rgb=True)
@@ -56,7 +69,6 @@ class RL_arm(gym.Env):
             self.inf.reset()
             self.sys.reset()
             self.obs.reset()
-            # self.data.qpos[:] = self.sys.pos[:]
 
             for i in range(100):
                 self.sys.ctrlpos[1] = 0.95*self.sys.ctrlpos[1] + 0.05*0
@@ -64,7 +76,6 @@ class RL_arm(gym.Env):
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
-                # self.data.ctrl[3:17] = [0]*14
                 mujoco.mj_step(self.robot, self.data)
                 if i%50==0:
                     self.viewer.sync()
@@ -83,10 +94,22 @@ class RL_arm(gym.Env):
         return self.inf.reward
  
     def get_state(self):
-        self.head_camera.get_img(self.data, rgb=True, depth=True)
-        self.head_camera.get_target()
+        if self.inf.timestep%150 == 0:
+            self.data.qpos[36] = random.uniform(-0.1, 0.3)
+            self.data.qpos[37] = random.uniform(-0.4, 0.0)
+            # while self.head_camera.track_done != True:
+            #     self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.10 )
+            #     self.sys.pos = [self.data.qpos[i] for i in controlList]
+            #     self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+            #     self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+            #     mujoco.mj_step(self.robot, self.data)
+            #     self.viewer.sync()
+
+        if self.inf.timestep%2 == 0:
+            self.head_camera.get_img(self.data, rgb=True, depth=True)
+            self.head_camera.get_target()
         self.obs.pos_camera = self.data.qpos[8:10].copy()
-        self.obs.dis_target = self.head_camera.target_depth.copy()
+        self.obs.dis_target = self.head_camera.target_depth
         self.obs.pos_arm = self.data.qpos[10:13].copy()
 
     def close(self):
