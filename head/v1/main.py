@@ -63,16 +63,28 @@ class BipedelWalkingEnv(gym.Env):
             return self.observation_space, self.reward, self.done, truncated, info
         else:
             self.timestep += 1
-            for i in range(50):
-                self.ctrlpos[1] = 0.95*self.ctrlpos[1] + 0.05*np.pi/180*action[0]
-                self.ctrlpos[2] = 0.95*self.ctrlpos[2] + 0.05*np.pi/180*(-45+action[1])
-                self.pos = [self.data.qpos[i] for i in controlList]
-                self.vel = [self.data.qvel[i-1] for i in controlList]
+            # for i in range(100):
+            #     self.ctrlpos[1] = 0.95*self.ctrlpos[1] + 0.05*np.pi/180*action[0]
+            #     self.ctrlpos[2] = 0.95*self.ctrlpos[2] + 0.05*np.pi/180*(-45+action[1])
+            #     self.pos = [self.data.qpos[i] for i in controlList]
+            #     self.vel = [self.data.qvel[i-1] for i in controlList]
+            #     self.data.ctrl[:] = self.PIDctrl.getSignal(self.pos, self.vel, self.ctrlpos)
+            #     self.data.ctrl[3:17] = [0]*14
+            #     self.data.qpos[38] = 0.0
+            #     mujoco.mj_step(self.robot, self.data)
+            #     if i%99 == 0:
+            #         self.viewer.sync()
+            #         self.head_camera.get_img(self.data, rgb=True, depth=True)
+            #         self.head_camera.get_target()
+            #         self.head_camera.show(rgb=True, depth=False)
+            for i in range(500):
+                self.get_state()
+                self.ctrlpos[1:3] = self.head_camera.track(self.ctrlpos[1:3], self.data, speed=1.0 )
                 self.data.ctrl[:] = self.PIDctrl.getSignal(self.pos, self.vel, self.ctrlpos)
                 self.data.ctrl[3:17] = [0]*14
                 self.data.qpos[38] = 0.0
                 mujoco.mj_step(self.robot, self.data)
-                if i%25 == 0:
+                if i%50 == 0:
                     self.viewer.sync()
                     self.head_camera.get_img(self.data, rgb=True, depth=True)
                     self.head_camera.get_target()

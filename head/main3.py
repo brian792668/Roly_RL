@@ -6,6 +6,7 @@ import mujoco
 import mujoco.viewer
 import numpy as np
 import os
+import random
 
 from imports.Settings import *
 from imports.Controller import *
@@ -47,6 +48,10 @@ if __name__ == '__main__':
         while viewer.is_running():
             step += 1
 
+            if step%1000 == 0:
+                data.qpos[36] = random.uniform(-0.6, 0.8)
+                data.qpos[37] = random.uniform(-0.6, 0.6)
+
             # Get robot simu data
             ## if base is free joint
             pos = [data.qpos[i] for i in controlList]
@@ -56,8 +61,8 @@ if __name__ == '__main__':
             # vel = [data.qvel[i-8] for i in controlList]
 
             target[0]=  0.20*(np.cos(step*2*np.pi/8000)-1) # trunk
-            target[1]= -0.20*(np.cos(step*2*np.pi/8000)-1) # neck
-            target[2]=  0.30*(np.cos(step*2*np.pi/8000)-1) # camera
+            # target[1]= -0.20*(np.cos(step*2*np.pi/8000)-1) # neck
+            # target[2]=  0.30*(np.cos(step*2*np.pi/8000)-1) # camera
 
             target[3]  = -0.20*(np.cos(step*2*np.pi/8000)-1) # R shoulder
             target[3+1]=  1.00*(np.cos(step*2*np.pi/8000)-1) # R arm1
@@ -74,6 +79,9 @@ if __name__ == '__main__':
             # target[10+4]= -0.50*(np.cos(step*2*np.pi/8000)-1) # L arm4
             # target[10+5]= -0.50*(np.cos(step*2*np.pi/8000)-1) # L palm
             target[10+6]= -0.01*(np.cos(step*2*np.pi/8000)-1) # L gripper
+
+            if step%20 == 0:
+                target[1:3] = head_camera.track(target[1:3], data, speed = 1.0)
 
             data.ctrl[:] = PIDctrl.getSignal(pos, vel, target)
             mujoco.mj_step(model, data)
