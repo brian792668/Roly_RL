@@ -31,16 +31,13 @@ if __name__ == '__main__':
     pos = initPos
     target = initTarget
     # sensor = initSensor
-
-    # set PID controller parameter
     PIDctrl = PIDcontroller(controlParameter, target)
+    head_camera = Camera(renderer=renderer, camID=0)
 
     # if base is free joint
     data.qpos[:] = pos[:]
     # # if base is fixed
     # data.qpos[:] = pos[7:]
-
-    head_camera = Camera(renderer=renderer, camID=0)
 
     mujoco.mj_resetData(model, data)  # Reset state and time.
     viewer = mujoco.viewer.launch_passive(model, data)
@@ -48,6 +45,7 @@ if __name__ == '__main__':
     viewer.cam.lookat = [0.0, 0.0, 0.8]
     viewer.cam.elevation = -30
     viewer.cam.azimuth = 160
+    
     step = 0
     while viewer.is_running():
         step += 1

@@ -1,44 +1,33 @@
 import mujoco
 import mujoco.viewer
 import cv2
-
-# import gym
-# from gym import spaces 
 import gymnasium as gym
 import stable_baselines3
 import numpy as np
 import matplotlib.pyplot as plt
-import state_action
 import time
-import random
 import os
 
-from Settings import *
-from Controller import *
-from Draw_joint_info import *
-from Show_camera_view import *
 from Camera import *
 from state_action import *
-# gym.logger.set_level(40)
+from RL_info import *
 
-class BipedelWalkingEnv(gym.Env):
+class RL_arm(gym.Env):
     def __init__(self):
         self.done = False
         self.robot = mujoco.MjModel.from_xml_path('RL/RolyURDF2/Roly.xml')
         self.data = mujoco.MjData(self.robot)
-        self.renderer = mujoco.Renderer(self.robot)
-        self.action_space = gym.spaces.box.Box( low  = act_low_flat,      # action (rad)
-                                                high = act_high_flat,
+        self.action_space = gym.spaces.box.Box( low  = act_low,      # action (rad)
+                                                high = act_high,
                                                 dtype = np.float32)
-        self.observation_space = gym.spaces.box.Box(low  = obs_low_flat,
-                                                    high = obs_high_flat,
+        self.observation_space = gym.spaces.box.Box(low  = obs_low,
+                                                    high = obs_high,
                                                     dtype = np.float32 )
         
-        self.pos = initPos
-        self.vel = initPos
-        self.ctrlpos = initTarget
-        self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)
-        self.data.qpos[:] = self.pos[:]
+        self.renderer = mujoco.Renderer(self.robot)
+        self.inf = RL_inf()
+        self.sys = RL_sys()
+        self.obs = RL_obs()
 
         self.head_camera = Camera(renderer=self.renderer, camID=0)
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data)
@@ -46,78 +35,36 @@ class BipedelWalkingEnv(gym.Env):
         self.viewer.cam.lookat = [0.0, 0.0, 0.8]
         self.viewer.cam.elevation = -30
         self.viewer.cam.azimuth = 160
-        self.timestep = 0
-        self.reward = 0.0
-        self.total_reward = 0.0
-
-        self.jointpos = [0.0, 0.0]
-        self.cameraxy = [0.0, 0.0]
         
     def step(self, action): 
         if self.viewer.is_running() == False:
             self.close()
-        elif self.timestep >= 20:
-            self.done = True
-            info = {}
-            truncated = True
-            return self.observation_space, self.reward, self.done, truncated, info
         else:
-            self.timestep += 1
-            # for i in range(100):
-            #     self.ctrlpos[1] = 0.95*self.ctrlpos[1] + 0.05*np.pi/180*action[0]
-            #     self.ctrlpos[2] = 0.95*self.ctrlpos[2] + 0.05*np.pi/180*(-45+action[1])
-            #     self.pos = [self.data.qpos[i] for i in controlList]
-            #     self.vel = [self.data.qvel[i-1] for i in controlList]
-            #     self.data.ctrl[:] = self.PIDctrl.getSignal(self.pos, self.vel, self.ctrlpos)
-            #     self.data.ctrl[3:17] = [0]*14
-            #     self.data.qpos[38] = 0.0
-            #     mujoco.mj_step(self.robot, self.data)
-            #     if i%99 == 0:
-            #         self.viewer.sync()
-            #         self.head_camera.get_img(self.data, rgb=True, depth=True)
-            #         self.head_camera.get_target()
-            #         self.head_camera.show(rgb=True, depth=False)
-            for i in range(500):
-                self.get_state()
-                self.ctrlpos[1:3] = self.head_camera.track(self.ctrlpos[1:3], self.data, speed=1.0 )
-                self.data.ctrl[:] = self.PIDctrl.getSignal(self.pos, self.vel, self.ctrlpos)
-                self.data.ctrl[3:17] = [0]*14
-                self.data.qpos[38] = 0.0
-                mujoco.mj_step(self.robot, self.data)
-                if i%50 == 0:
-                    self.viewer.sync()
-                    self.head_camera.get_img(self.data, rgb=True, depth=True)
-                    self.head_camera.get_target()
-                    self.head_camera.show(rgb=True, depth=False)
-
+            self.inf.reward = self.get_reward()
             self.get_state()
-            self.calculate_step_reward()
-            self.data.qpos[36] = random.uniform(-0.55, 0.55)
-            self.data.qpos[37] = random.uniform(-0.5, 0.5)
-            # print(self.jointpos, self.cameraxy)
-            self.observation_space = np.concatenate([self.jointpos, self.cameraxy]).astype(np.float32)
-
+            self.head_camera.show(rgb=True)
+            self.observation_space = np.concatenate([self.obs.pos_camera, [self.obs.dis_target], self.obs.pos_arm]).astype(np.float32)
             info = {}
             truncated = False
-            return self.observation_space, self.reward, self.done, truncated, info
+            return self.observation_space, self.inf.reward, self.done, truncated, info
     
     def reset(self, seed=None, **kwargs):
         if self.viewer.is_running() == False:
             self.close()
         else:
             mujoco.mj_resetData(self.robot, self.data)
-            self.timestep = 0
-            self.reward = 0.0
-            self.total_reward = 0.0
+            self.inf.reset()
+            self.sys.reset()
+            self.obs.reset()
+            # self.data.qpos[:] = self.sys.pos[:]
 
-            self.ctrlpos = initTarget
             for i in range(100):
-                self.ctrlpos[1] = 0.95*self.ctrlpos[1] + 0.05*0
-                self.ctrlpos[2] = 0.95*self.ctrlpos[2] + 0.05*np.pi/180*(-45)
-                self.pos = [self.data.qpos[i] for i in controlList]
-                self.vel = [self.data.qvel[i-1] for i in controlList]
-                self.data.ctrl[:] = self.PIDctrl.getSignal(self.pos, self.vel, self.ctrlpos)
-                self.data.ctrl[3:17] = [0]*14
+                self.sys.ctrlpos[1] = 0.95*self.sys.ctrlpos[1] + 0.05*0
+                self.sys.ctrlpos[2] = 0.95*self.sys.ctrlpos[2] + 0.05*np.pi/180*(-45)
+                self.sys.pos = [self.data.qpos[i] for i in controlList]
+                self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+                self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+                # self.data.ctrl[3:17] = [0]*14
                 mujoco.mj_step(self.robot, self.data)
                 if i%50==0:
                     self.viewer.sync()
@@ -126,24 +73,21 @@ class BipedelWalkingEnv(gym.Env):
                     self.head_camera.show(rgb=True, depth=False)
 
             self.get_state()
-            self.observation_space = np.concatenate([self.jointpos, self.cameraxy]).astype(np.float32)
+            self.observation_space = np.concatenate([self.obs.pos_camera, [self.obs.dis_target], self.obs.pos_arm]).astype(np.float32)
             self.done = False
             return self.observation_space, {}
 
-    def calculate_step_reward(self):
-        distance_to_target = (self.cameraxy[0]**2 + self.cameraxy[1]**2) ** 0.5
-        self.reward = np.exp(-5*distance_to_target)
-        self.total_reward += self.reward
-        # print(self.reward)
-        return self.reward
+    def get_reward(self):
+        self.inf.reward = 0.0
+        self.inf.total_reward += self.inf.reward
+        return self.inf.reward
  
     def get_state(self):
-        self.pos = [self.data.qpos[i] for i in controlList]
-        self.vel = [self.data.qvel[i-1] for i in controlList]
         self.head_camera.get_img(self.data, rgb=True, depth=True)
         self.head_camera.get_target()
-        self.jointpos = [180/np.pi*self.pos[1], 180/np.pi*self.pos[2]]
-        self.cameraxy = self.head_camera.target
+        self.obs.pos_camera = self.data.qpos[8:10].copy()
+        self.obs.dis_target = self.head_camera.target_depth.copy()
+        self.obs.pos_arm = self.data.qpos[10:13].copy()
 
     def close(self):
         self.renderer.close() 
@@ -156,19 +100,19 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
     best_avg_total_reward = np.array([0.0])
     best_avg_step_reward = np.array([0.0])
 
-    if os.path.exists("RL/head/v1/model/model_1/array/epoch_plot.npy"):
-        epoch_plot = np.load("RL/head/v1/model/model_1/array/epoch_plot.npy")
-        step_reward_plot = np.load("RL/head/v1/model/model_1/array/step_reward_plot.npy")
-        total_reward_plot = np.load("RL/head/v1/model/model_1/array/total_reward_plot.npy")
-        best_avg_total_reward = np.load("RL/head/v1/model/model_1/array/best_avg_total_reward.npy")
-        best_avg_step_reward = np.load("RL/head/v1/model/model_1/array/best_avg_step_reward.npy")
+    if os.path.exists("RL/RL_arm/v1/model/model_1/array/epoch_plot.npy"):
+        epoch_plot = np.load("RL/RL_arm/v1/model/model_1/array/epoch_plot.npy")
+        step_reward_plot = np.load("RL/RL_arm/v1/model/model_1/array/step_reward_plot.npy")
+        total_reward_plot = np.load("RL/RL_arm/v1/model/model_1/array/total_reward_plot.npy")
+        best_avg_total_reward = np.load("RL/RL_arm/v1/model/model_1/array/best_avg_total_reward.npy")
+        best_avg_step_reward = np.load("RL/RL_arm/v1/model/model_1/array/best_avg_step_reward.npy")
 
     else:
-        np.save("RL/head/v1/model/model_1/array/epoch_plot.npy", epoch_plot)
-        np.save("RL/head/v1/model/model_1/array/step_reward_plot.npy", step_reward_plot)
-        np.save("RL/head/v1/model/model_1/array/total_reward_plot.npy", total_reward_plot)
-        np.save("RL/head/v1/model/model_1/array/best_avg_total_reward.npy", best_avg_total_reward)
-        np.save("RL/head/v1/model/model_1/array/best_avg_step_reward.npy", best_avg_step_reward)
+        np.save("RL/RL_arm/v1/model/model_1/array/epoch_plot.npy", epoch_plot)
+        np.save("RL/RL_arm/v1/model/model_1/array/step_reward_plot.npy", step_reward_plot)
+        np.save("RL/RL_arm/v1/model/model_1/array/total_reward_plot.npy", total_reward_plot)
+        np.save("RL/RL_arm/v1/model/model_1/array/best_avg_total_reward.npy", best_avg_total_reward)
+        np.save("RL/RL_arm/v1/model/model_1/array/best_avg_step_reward.npy", best_avg_step_reward)
 
     epoch = epoch_plot[-1]
     timer0 = time.time()
@@ -207,11 +151,11 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
         epoch_plot = np.append(epoch_plot, epoch)
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         total_reward_plot = np.append(total_reward_plot, avg_total_reward)
-        np.save("RL/head/v1/model/model_1/array/epoch_plot.npy",epoch_plot)
-        np.save("RL/head/v1/model/model_1/array/step_reward_plot.npy",step_reward_plot)
-        np.save("RL/head/v1/model/model_1/array/total_reward_plot.npy",total_reward_plot)
-        np.save("RL/head/v1/model/model_1/array/best_avg_total_reward.npy",best_avg_total_reward)
-        np.save("RL/head/v1/model/model_1/array/best_avg_step_reward.npy",best_avg_step_reward)
+        np.save("RL/RL_arm/v1/model/model_1/array/epoch_plot.npy",epoch_plot)
+        np.save("RL/RL_arm/v1/model/model_1/array/step_reward_plot.npy",step_reward_plot)
+        np.save("RL/RL_arm/v1/model/model_1/array/total_reward_plot.npy",total_reward_plot)
+        np.save("RL/RL_arm/v1/model/model_1/array/best_avg_total_reward.npy",best_avg_total_reward)
+        np.save("RL/RL_arm/v1/model/model_1/array/best_avg_step_reward.npy",best_avg_step_reward)
 
         fig = plt.figure(figsize=(14, 14))
         plt.subplot(2,1,1)
@@ -228,7 +172,7 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
         plt.ylabel('Step reward (average)')
         plt.legend()
 
-        plt.savefig("RL/head/v1/model/model_1/epoch_vs_reward.png")
+        plt.savefig("RL/RL_arm/v1/model/model_1/epoch_vs_reward.png")
         plt.close()
        
 def test(model, env, model_path):
@@ -252,10 +196,10 @@ def test(model, env, model_path):
     env.close()
 
 if __name__ == '__main__':
-    my_env = BipedelWalkingEnv()
-    best_model_path = "RL/head/v1/model/model_1/best_model.zip"
-    best_step_model_path = "RL/head/v1/model/model_1/best_step_model.zip"
-    current_model_path = "RL/head/v1/model/current_model.zip"
+    my_env = RL_arm()
+    best_model_path = "RL/RL_arm/v1/model/model_1/best_model.zip"
+    best_step_model_path = "RL/RL_arm/v1/model/model_1/best_step_model.zip"
+    current_model_path = "RL/RL_arm/v1/model/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.PPO.load(current_model_path, my_env)
