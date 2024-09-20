@@ -88,9 +88,9 @@ class Camera():
         if np.isnan(self.target[0]) == False:
             new_pos[0] += -0.1*self.target[0]*speed
         else:
-            new_pos[0] *= 0.95
+            new_pos[0] *= 0.98
         if np.isnan(self.target[1]) == False:
             new_pos[1] += -0.1*self.target[1]*speed
         else:
-            new_pos[1] = new_pos[1]*0.95 + np.radians(-45)*0.05
+            new_pos[1] = new_pos[1]*0.98 + np.radians(-30)*0.02
         return new_pos

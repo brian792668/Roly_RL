@@ -223,12 +223,12 @@
                 <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="trunk" />
                 <body name="neck" pos="0.0236 0 0.525">
                     <inertial pos="-0.0115358 -2.74626e-05 0.0768672" quat="-0.0192889 0.706907 0.0190778 0.706786" mass="0.0914632" diaginertia="2.60474e-05 2.11843e-05 1.51217e-05" />
-                    <joint name="neck" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                    <joint name="neck" pos="0 0 0" axis="0 0 1" frictionloss="0.10" limited="true" range="-1.58 1.58"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="neck" />
                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="neck" />
                     <body name="camera" pos="0 0 0.0799" quat="0.707107 0.707107 0 0">
                         <inertial pos="0.00772983 0.0510549 -0.0011937" quat="0.999916 0.000338185 -0.00769827 0.0104513" mass="0.0742659" diaginertia="4.43899e-05 3.98497e-05 1.5325e-05" />
-                        <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                        <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10" limited="true" range="-1.58 1.58"/>
                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.2 0.2 0.2 1" mesh="camera" />
                         <geom type="mesh" rgba="0.2 0.2 0.2 1" mesh="camera" />
                         <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>

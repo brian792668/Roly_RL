@@ -52,9 +52,10 @@ class RL_arm(gym.Env):
             # print(self.data.time)
             
             while self.head_camera.track_done != True:
-            # for i in range(200):
-                print("tracking")
-                self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
+                # if self.head_camera.track_done != True:
+                # for i in range(200):
+                print("tracking", self.sys.pos[0])
+                self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
                 self.sys.ctrlpos[3] *= 0.98
                 self.sys.ctrlpos[4] *= 0.98
                 self.sys.ctrlpos[5] *= 0.98
@@ -62,7 +63,7 @@ class RL_arm(gym.Env):
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                 mujoco.mj_step(self.robot, self.data)
-                # self.head_camera.show(rgb=True)
+                self.head_camera.show(rgb=True)
 
             self.inf.action[0] = self.inf.action[0]*0.85 + action[0]*0.15
             self.inf.action[1] = self.inf.action[1]*0.85 + action[1]*0.15
@@ -127,8 +128,7 @@ class RL_arm(gym.Env):
             self.data.qpos[36:39] = [0.3, 0.0, 1.05]
             self.head_camera.track_done = False
             for i in range(200):
-                self.sys.ctrlpos[2] = self.sys.ctrlpos[2]*0.95 + np.radians(-45)*0.05
-                # self.sys.ctrlpos[3] += 0.004
+                self.sys.ctrlpos[2] = self.sys.ctrlpos[2]*0.95 + np.radians(-30)*0.05
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
@@ -167,7 +167,7 @@ class RL_arm(gym.Env):
         if self.inf.timestep%250 == 0:
             self.data.qpos[36] = random.uniform( 0.1, 0.2)
             self.data.qpos[37] = random.uniform(-0.4, 0.0)
-            self.data.qpos[38] = random.uniform( 1.0, 1.4)
+            self.data.qpos[38] = random.uniform( 1.0, 1.3)
             self.head_camera.track_done = False
 
         self.obs.joint_camera = self.data.qpos[8:10].copy()
