@@ -64,7 +64,7 @@ if __name__ == '__main__':
             # pos = [data.qpos[i-7] for i in controlList]
             # vel = [data.qvel[i-8] for i in controlList]
 
-            target[0]=  0.20*(np.cos(step*2*np.pi/8000)-1) # trunk
+            # target[0]=  0.20*(np.cos(step*2*np.pi/8000)-1) # trunk
             # target[1]= -0.20*(np.cos(step*2*np.pi/8000)-1) # neck
             # target[2]=  0.30*(np.cos(step*2*np.pi/8000)-1) # camera
 

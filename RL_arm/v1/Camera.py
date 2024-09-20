@@ -71,8 +71,8 @@ class Camera():
 
         else:
             # 若無紅色物體，返回None並設置target為無效值
-            self.target = [float('nan'), float('nan')]
-            self.target_depth = float('nan')
+            # self.target = [float('nan'), float('nan')]
+            # self.target_depth = float('nan')
             self.track_done = False
 
     def track(self, ctrlpos, data, speed=1.0):

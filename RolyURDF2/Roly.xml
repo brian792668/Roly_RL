@@ -1,6 +1,6 @@
 <mujoco model="Roly_with_arm">
     <compiler angle="radian" meshdir="meshes/" />
-    <option timestep="0.001" iterations="100"/>
+    <option timestep="0.0005" iterations="100"/>
     <size njmax="500" nconmax="100" />
     <asset>
         <mesh name="base_link" file="base_link.STL" />
@@ -307,6 +307,7 @@
                                             <!-- <geom type="mesh" rgba="1 1 1 1" mesh="R gripper" /> -->
                                         </body>
                                         <camera name="R hand camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
+                                        <site name="hand_marker" type="sphere" size="0.01" pos="0 0 0.21" rgba="1 0 1 1"/>
                                     </body>
                                 </body>
                             </body>
@@ -397,7 +398,7 @@
         
         <body name="red_ball" > 
             <joint type="free" damping="0.001"/>
-            <geom type="sphere" mass="0.0000001" pos="0.2 0.0 1.05" size="0.02" rgba="1 0 0 1"/> 
+            <geom type="sphere" mass="0.0000001" pos="0.0 0.0 0.0" size="0.01" rgba="1 0 0 1"/> 
         </body>
         <!-- <body name="red_box" > 
             <joint type="free" damping="0.001"/>

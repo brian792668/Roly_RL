@@ -16,6 +16,7 @@ from RL_info import *
 class RL_arm(gym.Env):
     def __init__(self):
         self.done = False
+        self.truncated = False
         self.robot = mujoco.MjModel.from_xml_path('RL/RolyURDF2/Roly.xml')
         self.data = mujoco.MjData(self.robot)
         self.action_space = gym.spaces.box.Box( low  = act_low,      # action (rad)
@@ -42,23 +43,62 @@ class RL_arm(gym.Env):
             self.close()
         elif self.inf.timestep == 2048:
             self.done = False
-            truncated = True
+            self.truncated = True
             info = {}
-            return self.observation_space, self.inf.reward, self.done, truncated, info
+            return self.observation_space, self.inf.reward, self.done, self.truncated, info
         else:
             self.inf.timestep += 1
+            # print(self.inf.timestep)
             # print(self.data.time)
             
             while self.head_camera.track_done != True:
-                self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
+            # for i in range(200):
+                print("tracking")
+                self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
+                self.sys.ctrlpos[3] *= 0.98
+                self.sys.ctrlpos[4] *= 0.98
+                self.sys.ctrlpos[5] *= 0.98
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                 mujoco.mj_step(self.robot, self.data)
                 # self.head_camera.show(rgb=True)
+
+            self.inf.action[0] = self.inf.action[0]*0.85 + action[0]*0.15
+            self.inf.action[1] = self.inf.action[1]*0.85 + action[1]*0.15
+            self.inf.action[2] = self.inf.action[2]*0.85 + action[2]*0.15
+
+            # if action[0] <= 0:
+            #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.98 + 0.0
+            # else:
+            #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.98 + action[0]*0.02
+
+            # if action[1] >= 0.0:
+            #     self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.95 + 0.0
+            # else:
+            #     self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.95 + action[1]*0.05
+
+            # if action[2] <= 0.0:
+            #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.98 + 0.0
+            # else:
+            #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.98 + action[2]*0.02
+
+            if action[0]>=0: 
+                self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.85 + (self.sys.ctrlpos[3]+action[0]*0.1*(self.sys.limit_high[0] - self.sys.ctrlpos[3]))*0.15
+            else: 
+                self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.85 + (self.sys.ctrlpos[3]+action[0]*0.1*(self.sys.ctrlpos[3] - self.sys.limit_low[0] ))*0.15
+            if action[1]>=0: 
+                self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.85 + (self.sys.ctrlpos[4]+action[1]*0.1*(self.sys.limit_high[1] - self.sys.ctrlpos[4]))*0.15
+            else: 
+                self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.85 + (self.sys.ctrlpos[4]+action[1]*0.1*(self.sys.ctrlpos[4] - self.sys.limit_low[1] ))*0.15
+            if action[2]>=0: 
+                self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.85 + (self.sys.ctrlpos[5]+action[2]*0.1*(self.sys.limit_high[2] - self.sys.ctrlpos[5]))*0.15
+            else: 
+                self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.85 + (self.sys.ctrlpos[5]+action[2]*0.1*(self.sys.ctrlpos[5] - self.sys.limit_low[2] ))*0.15
+            
             
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
-            for i in range(20):
+            for i in range(40):
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
@@ -67,13 +107,13 @@ class RL_arm(gym.Env):
             self.inf.reward = self.get_reward()
             self.get_state()
 
-            # self.viewer.sync()
+            self.viewer.sync()
             if self.inf.timestep%5 == 0:
                 self.head_camera.show(rgb=True)
-            self.observation_space = np.concatenate([self.obs.pos_camera, [self.obs.dis_target], self.obs.pos_arm]).astype(np.float32)
+            self.observation_space = np.concatenate([self.obs.joint_camera, [self.obs.cam2target], self.obs.joint_arm]).astype(np.float32)
             info = {}
-            truncated = False
-            return self.observation_space, self.inf.reward, self.done, truncated, info
+            self.truncated = False
+            return self.observation_space, self.inf.reward, self.done, self.truncated, info
     
     def reset(self, seed=None, **kwargs):
         if self.viewer.is_running() == False:
@@ -83,9 +123,20 @@ class RL_arm(gym.Env):
             self.inf.reset()
             self.sys.reset()
             self.obs.reset()
+
+            self.data.qpos[36:39] = [0.3, 0.0, 1.05]
             self.head_camera.track_done = False
+            for i in range(200):
+                self.sys.ctrlpos[2] = self.sys.ctrlpos[2]*0.95 + np.radians(-45)*0.05
+                # self.sys.ctrlpos[3] += 0.004
+                self.sys.pos = [self.data.qpos[i] for i in controlList]
+                self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+                self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+                mujoco.mj_step(self.robot, self.data)
+                self.head_camera.show(rgb=True)
 
             while self.head_camera.track_done != True:
+            # for i in range(200):
                 self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
@@ -94,24 +145,34 @@ class RL_arm(gym.Env):
                 self.head_camera.show(rgb=True)
 
             self.get_state()
-            self.observation_space = np.concatenate([self.obs.pos_camera, [self.obs.dis_target], self.obs.pos_arm]).astype(np.float32)
+            self.observation_space = np.concatenate([self.obs.joint_camera, [self.obs.cam2target], self.obs.joint_arm]).astype(np.float32)
             self.done = False
+            self.truncated = False
             return self.observation_space, {}
 
     def get_reward(self):
-        self.inf.reward = random.uniform(-0.1, 0.3)
+        self.sys.pos_target = self.data.qpos[36:39].copy()
+        self.sys.pos_hand = self.data.site_xpos[42].copy()
+
+        self.sys.hand2target  = (self.sys.pos_target[0]-self.sys.pos_hand[0])**2
+        self.sys.hand2target += (self.sys.pos_target[1]-self.sys.pos_hand[1])**2
+        self.sys.hand2target += (self.sys.pos_target[2]-self.sys.pos_hand[2])**2
+        self.sys.hand2target = self.sys.hand2target ** 0.5
+
+        self.inf.reward = np.exp(-5*self.sys.hand2target)
         self.inf.total_reward += self.inf.reward
         return self.inf.reward
  
     def get_state(self):
-        if self.inf.timestep%150 == 0:
-            self.data.qpos[36] = random.uniform(-0.1, 0.3)
+        if self.inf.timestep%250 == 0:
+            self.data.qpos[36] = random.uniform( 0.1, 0.2)
             self.data.qpos[37] = random.uniform(-0.4, 0.0)
+            self.data.qpos[38] = random.uniform( 1.0, 1.4)
             self.head_camera.track_done = False
 
-        self.obs.pos_camera = self.data.qpos[8:10].copy()
-        self.obs.dis_target = self.head_camera.target_depth
-        self.obs.pos_arm = self.data.qpos[10:13].copy()
+        self.obs.joint_camera = self.data.qpos[8:10].copy()
+        self.obs.joint_arm    = self.data.qpos[10:13].copy()
+        self.obs.cam2target   = self.head_camera.target_depth
 
     def close(self):
         self.renderer.close() 
@@ -153,7 +214,7 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
         reward_of_case = np.array([0.0])
         for i in range(len(reward_of_case)):
             obs, _ = env.reset()
-            while env.done == False:
+            while env.truncated == False:
                 action, _ = model.predict(obs)
                 obs, _, _, _, _ = env.step(action)
             sum_of_total_reward += env.inf.total_reward
@@ -207,7 +268,7 @@ def test(model, env, model_path):
     reward_of_case = np.array([0.0])
     for i in range(len(reward_of_case)):
         obs, _ = env.reset()
-        while env.done == False:
+        while env.truncated == False:
             action, _ = model.predict(obs)
             obs, _, _, _, _ = env.step(action)
         sum_of_total_reward += env.inf.total_reward
@@ -223,7 +284,7 @@ if __name__ == '__main__':
     my_env = RL_arm()
     best_model_path = "RL/RL_arm/v1/model/model_1/best_model.zip"
     best_step_model_path = "RL/RL_arm/v1/model/model_1/best_step_model.zip"
-    current_model_path = "RL/RL_arm/v1/model/current_model.zip"
+    current_model_path = "RL/RL_arm/v1/model/model_1/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.PPO.load(current_model_path, my_env)
