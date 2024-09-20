@@ -69,7 +69,6 @@ class Camera():
             norm_y = (center_y / self.rgbimg.shape[0]) * 2 - 1
             self.target = [norm_x, norm_y]
 
-
         else:
             # 若無紅色物體，返回None並設置target為無效值
             self.target = [float('nan'), float('nan')]
@@ -93,5 +92,5 @@ class Camera():
         if np.isnan(self.target[1]) == False:
             new_pos[1] += -0.1*self.target[1]*speed
         else:
-            new_pos[1] = new_pos[1]*0.95 + -45*np.pi/180*0.05
+            new_pos[1] = new_pos[1]*0.95 + np.radians(-45)*0.05
         return new_pos

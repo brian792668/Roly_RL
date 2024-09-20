@@ -38,7 +38,7 @@ initPos = [         # radious
     0,  # 35 R finger2-2
     0,  # 36 R finger3-1
     0,  # 37 R finger3-2
-    0.02,  # 38 R gripper
+    0,  # 38 R gripper
 
     0,  # 39 L_shoulder
     0,  # 40 L_arm1
@@ -52,7 +52,7 @@ initPos = [         # radious
     0,  # 48 L finger2-2
     0,  # 49 L finger3-1
     0,  # 50 L finger3-2
-    0.02,  # 51 L gripper
+    0,  # 51 L gripper
 
     0, 0, 0, 1, 0, 0, 0,  # red ball pos & orientation
     # 0, 0, 0, 1, 0, 0, 0,  # red box pos & orientation
@@ -65,7 +65,7 @@ initPos[7:] = list(np.pi/180*(np.array(initPos[7:])))
 #                 26, 27, 28, 29, 30, 31, 38,
 #                 39, 40, 41, 42, 43, 44, 51 ]
 controlList = [  7,  8,  9, 
-                10, 11, 12, 13, 13, 15, 22,
+                10, 11, 12, 13, 14, 15, 22,
                 23, 24, 25, 26, 27, 28, 35 ]
 
 

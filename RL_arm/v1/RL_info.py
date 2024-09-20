@@ -16,22 +16,26 @@ class RL_inf():
 class RL_obs():
     def __init__(self):
         self.pos_camera = [0.0, np.radians(-45)]
+        self.pos_camera = [0.0, 0.0]
         self.pos_arm = [0.0, 0.0, 0.0]
         self.dis_target = 0.0
 
     def reset(self):
         self.pos_camera = [0.0, np.radians(-45)]
+        self.pos_camera = [0.0, 0.0]
         self.pos_arm = [0.0, 0.0, 0.0]
         self.dis_target = 0.0
 
 class RL_sys():
     def __init__(self):
-        self.pos = initPos
-        self.vel = initPos
-        self.ctrlpos = initTarget
+        # self.pos = initPos
+        self.pos = [0] * len(controlList)
+        self.vel = [0] * len(controlList)
+        self.ctrlpos = initTarget.copy()
         self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)
 
     def reset(self):
-        self.pos = initPos
-        self.vel = initPos
-        self.ctrlpos = initTarget
+        self.pos = [0] * len(controlList)
+        self.vel = [0] * len(controlList)
+        self.ctrlpos = initTarget.copy()
+        # self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)

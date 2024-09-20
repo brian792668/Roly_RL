@@ -40,22 +40,36 @@ class RL_arm(gym.Env):
     def step(self, action): 
         if self.viewer.is_running() == False:
             self.close()
+        elif self.inf.timestep == 2048:
+            self.done = False
+            truncated = True
+            info = {}
+            return self.observation_space, self.inf.reward, self.done, truncated, info
         else:
             self.inf.timestep += 1
-            print(self.inf.timestep)
+            # print(self.data.time)
             
+            while self.head_camera.track_done != True:
+                self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
+                self.sys.pos = [self.data.qpos[i] for i in controlList]
+                self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+                self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+                mujoco.mj_step(self.robot, self.data)
+                # self.head_camera.show(rgb=True)
+            
+            self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
             for i in range(20):
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                 mujoco.mj_step(self.robot, self.data)
 
-            self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=5.0 )
-            self.viewer.sync()
-
             self.inf.reward = self.get_reward()
             self.get_state()
-            self.head_camera.show(rgb=True)
+
+            # self.viewer.sync()
+            if self.inf.timestep%5 == 0:
+                self.head_camera.show(rgb=True)
             self.observation_space = np.concatenate([self.obs.pos_camera, [self.obs.dis_target], self.obs.pos_arm]).astype(np.float32)
             info = {}
             truncated = False
@@ -69,19 +83,15 @@ class RL_arm(gym.Env):
             self.inf.reset()
             self.sys.reset()
             self.obs.reset()
+            self.head_camera.track_done = False
 
-            for i in range(100):
-                self.sys.ctrlpos[1] = 0.95*self.sys.ctrlpos[1] + 0.05*0
-                self.sys.ctrlpos[2] = 0.95*self.sys.ctrlpos[2] + 0.05*np.pi/180*(-45)
+            while self.head_camera.track_done != True:
+                self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.5 )
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                 mujoco.mj_step(self.robot, self.data)
-                if i%50==0:
-                    self.viewer.sync()
-                    self.head_camera.get_img(self.data, rgb=True, depth=True)
-                    self.head_camera.get_target()
-                    self.head_camera.show(rgb=True, depth=False)
+                self.head_camera.show(rgb=True)
 
             self.get_state()
             self.observation_space = np.concatenate([self.obs.pos_camera, [self.obs.dis_target], self.obs.pos_arm]).astype(np.float32)
@@ -89,7 +99,7 @@ class RL_arm(gym.Env):
             return self.observation_space, {}
 
     def get_reward(self):
-        self.inf.reward = 0.0
+        self.inf.reward = random.uniform(-0.1, 0.3)
         self.inf.total_reward += self.inf.reward
         return self.inf.reward
  
@@ -97,17 +107,8 @@ class RL_arm(gym.Env):
         if self.inf.timestep%150 == 0:
             self.data.qpos[36] = random.uniform(-0.1, 0.3)
             self.data.qpos[37] = random.uniform(-0.4, 0.0)
-            # while self.head_camera.track_done != True:
-            #     self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.10 )
-            #     self.sys.pos = [self.data.qpos[i] for i in controlList]
-            #     self.sys.vel = [self.data.qvel[i-1] for i in controlList]
-            #     self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
-            #     mujoco.mj_step(self.robot, self.data)
-            #     self.viewer.sync()
+            self.head_camera.track_done = False
 
-        if self.inf.timestep%2 == 0:
-            self.head_camera.get_img(self.data, rgb=True, depth=True)
-            self.head_camera.get_target()
         self.obs.pos_camera = self.data.qpos[8:10].copy()
         self.obs.dis_target = self.head_camera.target_depth
         self.obs.pos_arm = self.data.qpos[10:13].copy()
@@ -143,7 +144,7 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
     while True:
         epoch += 1
         print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr")
-        model.learn(total_timesteps = 1000)
+        model.learn(total_timesteps = 2048)
         model.save(current_model_path)
         
         sum_of_total_reward = 0.0
@@ -155,9 +156,9 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
             while env.done == False:
                 action, _ = model.predict(obs)
                 obs, _, _, _, _ = env.step(action)
-            sum_of_total_reward += env.total_reward
-            sum_of_total_step += env.timestep
-            reward_of_case[i] = env.total_reward/env.timestep
+            sum_of_total_reward += env.inf.total_reward
+            sum_of_total_step += env.inf.timestep
+            reward_of_case[i] = env.inf.total_reward/env.inf.timestep
 
         avg_step_reward = sum_of_total_reward / sum_of_total_step
         avg_total_reward = sum_of_total_reward / len(reward_of_case)
@@ -209,9 +210,9 @@ def test(model, env, model_path):
         while env.done == False:
             action, _ = model.predict(obs)
             obs, _, _, _, _ = env.step(action)
-        sum_of_total_reward += env.total_reward
-        sum_of_total_step += env.timestep
-        reward_of_case[i] = env.total_reward/env.timestep
+        sum_of_total_reward += env.inf.total_reward
+        sum_of_total_step += env.inf.timestep
+        reward_of_case[i] = env.inf.total_reward/env.inf.timestep
     avg_step_reward = sum_of_total_reward / sum_of_total_step
     avg_total_reward = sum_of_total_reward / len(reward_of_case)
     print(f"\navg total reward = {round(avg_total_reward,2)}  avg step reward = {round(avg_step_reward,3)}")
