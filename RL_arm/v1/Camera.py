@@ -7,7 +7,7 @@ class Camera():
         self.camID = camID
         self.rgbimg = np.zeros((240, 320, 3), dtype=np.uint8)
         self.depthimg = np.zeros((240, 320), dtype=np.uint8)
-        self.target = [0.0, 0.0]
+        self.target = ['nan', 'nan']
         self.target_depth = float('nan')
         self.track_done = False
 
@@ -71,26 +71,17 @@ class Camera():
 
         else:
             # 若無紅色物體，返回None並設置target為無效值
-            # self.target = [float('nan'), float('nan')]
-            # self.target_depth = float('nan')
+            self.target = [float('nan'), float('nan')]
+            self.target_depth = float('nan')
             self.track_done = False
 
     def track(self, ctrlpos, data, speed=1.0):
-        self.get_img(data, rgb=True, depth=True)
-        self.get_target()
-
+        new_pos = ctrlpos.copy()
         if np.abs(self.target[0]) <= 0.05 and np.abs(self.target[1]) <= 0.05:
             self.track_done = True
         else:
             self.track_done = False
-
-        new_pos = ctrlpos.copy()
-        if np.isnan(self.target[0]) == False:
-            new_pos[0] += -0.1*self.target[0]*speed
-        else:
-            new_pos[0] *= 0.98
-        if np.isnan(self.target[1]) == False:
-            new_pos[1] += -0.1*self.target[1]*speed
-        else:
-            new_pos[1] = new_pos[1]*0.98 + np.radians(-30)*0.02
+            if np.isnan(self.target[0]) == False:
+                new_pos[0] += -0.1*self.target[0]*speed
+                new_pos[1] += -0.1*self.target[1]*speed
         return new_pos

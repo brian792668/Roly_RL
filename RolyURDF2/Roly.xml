@@ -1,6 +1,6 @@
 <mujoco model="Roly_with_arm">
     <compiler angle="radian" meshdir="meshes/" />
-    <option timestep="0.0005" iterations="100"/>
+    <option timestep="0.001" iterations="100"/>
     <size njmax="500" nconmax="100" />
     <asset>
         <mesh name="base_link" file="base_link.STL" />
