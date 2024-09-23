@@ -307,7 +307,7 @@
                                             <!-- <geom type="mesh" rgba="1 1 1 1" mesh="R gripper" /> -->
                                         </body>
                                         <camera name="R hand camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
-                                        <site name="hand_marker" type="sphere" size="0.01" pos="0 0 0.21" rgba="1 0 1 1"/>
+                                        <site name="hand_marker" type="sphere" size="0.005" pos="0 0 0.21" rgba="1 0 1 1"/>
                                     </body>
                                 </body>
                             </body>
