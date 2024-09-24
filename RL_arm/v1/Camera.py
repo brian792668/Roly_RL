@@ -31,7 +31,7 @@ class Camera():
             cv2.imshow("Depth", cv2.cvtColor(self.depthimg, cv2.COLOR_RGB2BGR))
         cv2.waitKey(1)
 
-    def get_target(self):
+    def get_target(self, depth=False):
         # 定義紅色的RGB範圍
         lower_red = np.array([100, 0, 0], dtype=np.uint8)
         upper_red = np.array([255, 50, 50], dtype=np.uint8)
@@ -58,11 +58,12 @@ class Camera():
             cv2.line(self.rgbimg, (int(center_x), int(center_y) - size), 
                      (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
 
-            # 從深度圖像中獲取對應的深度值
-            self.target_depth = 100*self.depthimg[int(center_y), int(center_x)]
+            if depth == True:
+                # 從深度圖像中獲取對應的深度值
+                self.target_depth = 100*self.depthimg[int(center_y), int(center_x)]
 
-            cv2.putText(self.rgbimg, f"{self.target_depth:.1f}", (int(center_x) + 10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
-                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                cv2.putText(self.rgbimg, f"{self.target_depth:.1f}", (int(center_x) + 10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
+                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
             # 將像素座標轉換至[-1, 1]區間
             norm_x = (center_x / self.rgbimg.shape[1]) * 2 - 1
@@ -71,10 +72,11 @@ class Camera():
 
         else:
             # 若無紅色物體，返回None並設置target為無效值
-            self.target = [float('nan'), float('nan')]
-            self.target_depth = float('nan')
             self.track_done = False
-
+            self.target = [float('nan'), float('nan')]
+            if depth == True:
+                self.target_depth = float('nan')
+            
     def track(self, ctrlpos, data, speed=1.0):
         new_pos = ctrlpos.copy()
         if np.abs(self.target[0]) <= 0.05 and np.abs(self.target[1]) <= 0.05:
