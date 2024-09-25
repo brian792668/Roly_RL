@@ -41,14 +41,16 @@ class RL_arm(gym.Env):
     def step(self, action): 
         if self.viewer.is_running() == False:
             self.close()
-        elif self.inf.timestep >= 2048:
-            self.done = False
-            self.truncated = True
-            info = {}
-            return self.observation_space, self.inf.reward, self.done, self.truncated, info
+        # elif self.inf.totaltimestep >= 2048:
+        #     self.inf.totaltimestep = 0
+        #     self.done = False
+        #     self.truncated = True
+        #     info = {}
+        #     return self.observation_space, self.inf.reward, self.done, self.truncated, info
         else:
             self.inf.timestep += 1
-            # print(self.inf.timestep)
+            self.inf.totaltimestep += 1
+            # print(self.inf.totaltimestep)
             # print(self.data.time)
 
             for i in range(5):
@@ -116,10 +118,13 @@ class RL_arm(gym.Env):
             self.get_state()
             self.head_camera.get_img(self.data, rgb=True, depth=True)
             self.head_camera.get_target(depth = False)
-            self.head_camera.show(rgb=True)
+            if random.uniform( 0, 1) >= 0.95:
+                self.head_camera.show(rgb=True)
+                # self.viewer.sync()
+                # print(f"{self.data.time:.1f}")
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
 
-            self.viewer.sync()
+            # self.viewer.sync()
             self.observation_space = np.concatenate([self.obs.joint_camera,
                                                      [self.obs.cam2target]*3, 
                                                      self.obs.joint_arm,
@@ -178,13 +183,14 @@ class RL_arm(gym.Env):
             self.inf.reward = np.exp(-5*self.sys.hand2target) - 500*reward_of_getting_close
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
-        print(self.inf.reward)
+        # print(self.inf.reward)
         return self.inf.reward
  
     def get_state(self):
         if self.inf.timestep%500 == 0:
             if self.inf.timestep > 0 and self.sys.hand2target >= 0.1:
                 self.reset()
+                # self.inf.timestep += 1
             else:
                 self.inf.reward += 10
                 self.head_camera.track_done = False
@@ -250,21 +256,34 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
         model.learn(total_timesteps = 2048)
         model.save(current_model_path)
         
-        sum_of_total_reward = 0.0
-        sum_of_total_step = 0
+        # sum_of_total_reward = 0.0
+        # sum_of_total_step = 0
 
-        reward_of_case = np.array([0.0])
-        for i in range(len(reward_of_case)):
-            obs, _ = env.reset()
-            while env.truncated == False:
-                action, _ = model.predict(obs)
-                obs, _, _, _, _ = env.step(action)
-            sum_of_total_reward += env.inf.total_reward
-            sum_of_total_step += env.inf.timestep
-            reward_of_case[i] = env.inf.total_reward/env.inf.timestep
+        # reward_of_case = np.array([0.0])
+        # for i in range(len(reward_of_case)):
+        #     obs, _ = env.reset()
+        #     env.inf.totaltimestep = 0
+        #     env.inf.total_reward = 0
+        #     while env.inf.totaltimestep <= 2500:
+        #         action, _ = model.predict(obs)
+        #         obs, _, _, _, _ = env.step(action)
+        #     sum_of_total_reward += env.inf.total_reward
+        #     sum_of_total_step += env.inf.totaltimestep
+        #     reward_of_case[i] = env.inf.total_reward/env.inf.totaltimestep
+        #     env.inf.totaltimestep = 0
+        #     env.inf.total_reward = 0
 
-        avg_step_reward = sum_of_total_reward / sum_of_total_step
-        avg_total_reward = sum_of_total_reward / len(reward_of_case)
+        # avg_step_reward = sum_of_total_reward / sum_of_total_step
+        # avg_total_reward = sum_of_total_reward / len(reward_of_case)
+
+        avg_step_reward = env.inf.total_reward / env.inf.totaltimestep
+        avg_total_reward = env.inf.total_reward
+        env.reset()
+        env.inf.totaltimestep = 0
+        env.inf.total_reward = 0
+
+
+
         if avg_step_reward >= best_avg_step_reward[0]:
             best_avg_step_reward[0] = avg_step_reward
             model.save(best_step_model_path)

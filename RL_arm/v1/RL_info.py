@@ -6,6 +6,7 @@ from Camera import *
 class RL_inf():
     def __init__(self):
         self.timestep = 0
+        self.totaltimestep = 0
         self.action = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.reward = 0.0
         self.total_reward = 0.0
@@ -13,7 +14,7 @@ class RL_inf():
         self.timestep = 0
         self.action = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.reward = 0.0
-        self.total_reward = 0.0
+        # self.total_reward = 0.0
 
 class RL_obs():
     def __init__(self):
