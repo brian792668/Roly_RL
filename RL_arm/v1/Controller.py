@@ -11,8 +11,8 @@ class PIDcontroller:
         for i in range(len(target)):
             self.accErr[i] += qpos[i] - target[i]
             signal.append((-self.gain*self.kp[i]*(qpos[i] - target[i]) - self.gain*self.ki[i]*self.accErr[i] - self.gain*self.kv[i]*qvel[i])*1.0)
-            if signal[i] >= 10:
-                signal[i] = 10
-            elif signal[i] <= -10:
-                signal[i] = -10
+            # if signal[i] >= 10:
+            #     signal[i] = 10
+            # elif signal[i] <= -10:
+            #     signal[i] = -10
         return signal

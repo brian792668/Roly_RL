@@ -41,7 +41,7 @@ class RL_arm(gym.Env):
     def step(self, action): 
         if self.viewer.is_running() == False:
             self.close()
-        elif self.inf.timestep == 2048:
+        elif self.inf.timestep >= 2048:
             self.done = False
             self.truncated = True
             info = {}
@@ -89,10 +89,11 @@ class RL_arm(gym.Env):
 
                 for i in range(5):
                     if self.inf.action[i]>=0: 
-                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.003*(self.sys.limit_high[i] - self.sys.pos[i+3])
+                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])
                     else: 
-                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.003*(self.sys.pos[i+3] - self.sys.limit_low[i] )
+                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )
                 self.sys.ctrlpos[5] = 0
+                
 
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
@@ -115,10 +116,10 @@ class RL_arm(gym.Env):
             self.get_state()
             self.head_camera.get_img(self.data, rgb=True, depth=True)
             self.head_camera.get_target(depth = False)
-            # self.head_camera.show(rgb=True)
+            self.head_camera.show(rgb=True)
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
 
-            # self.viewer.sync()
+            self.viewer.sync()
             self.observation_space = np.concatenate([self.obs.joint_camera,
                                                      [self.obs.cam2target]*3, 
                                                      self.obs.joint_arm,
@@ -174,17 +175,18 @@ class RL_arm(gym.Env):
         if reward_of_getting_close <= 0:
             self.inf.reward = np.exp(-5*self.sys.hand2target)
         else:
-            self.inf.reward = np.exp(-5*self.sys.hand2target) - 100*reward_of_getting_close
+            self.inf.reward = np.exp(-5*self.sys.hand2target) - 500*reward_of_getting_close
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
-        # print(self.inf.reward)
+        print(self.inf.reward)
         return self.inf.reward
  
     def get_state(self):
         if self.inf.timestep%500 == 0:
-            if self.inf.timestep > 0 and self.sys.hand2target >= 0.2:
+            if self.inf.timestep > 0 and self.sys.hand2target >= 0.1:
                 self.reset()
             else:
+                self.inf.reward += 10
                 self.head_camera.track_done = False
                 while self.head_camera.track_done != True:
                     distoshoulder = 0.5
@@ -199,7 +201,7 @@ class RL_arm(gym.Env):
                         distoshoulder += (self.sys.pos_target[2]-1.35)**2
                         distoshoulder = distoshoulder ** 0.5
                     mujoco.mj_step(self.robot, self.data)
-                    for i in range(150):
+                    for i in range(100):
                         # print("tracking", f"{self.data.time:2f}")
                         self.head_camera.get_img(self.data, rgb=True, depth=True)
                         self.head_camera.get_target(depth = True)
