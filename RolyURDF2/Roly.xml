@@ -65,11 +65,11 @@
     <worldbody>
         <light directional="false" diffuse=".8 .8 .8" specular="0.9 0.9 0.9" pos="0.5 0 4" dir="0 0 -1" castshadow="true" />
     	<geom name="floor" pos="0 0 0" size="1.5 1.5 0.5" type="plane" material="matplane" margin="0.001" condim="3" friction="1 0.5 0.01" />
-        <!-- <site name="marker1" type="sphere" size="0.025" pos="-0.1 0.8 0.85" rgba="1 0 0 1"/>
-        <site name="marker2" type="sphere" size="0.025" pos="   0 0.8 0.85" rgba="0 1 0 1"/>
-        <site name="marker3" type="sphere" size="0.025" pos=" 0.1 0.8 0.85" rgba="0 0 1 1"/> -->
-        <!-- <geom name="table"  type="box" pos="0.7 0 0.995" size="0.6 0.7 0.005" rgba="0.8 0.6 0.4 1" material="table_material" friction="1 0.5 0.01"/>
-        <geom name="table2" type="box" pos="0.7 0 0.95" size="0.6 0.7 0.04" rgba="1 1 1 0.1"/> -->
+        <!-- <site name="marker1" type="sphere" size="0.025" pos="-0.1 0.8 0.85" rgba="1 0 0 1"/> -->
+        <!-- <site name="marker2" type="sphere" size="0.025" pos="0 0.25 1.35" rgba="0 1 0 1"/> -->
+        <!-- <site name="marker3" type="sphere" size="0.025" pos=" 0 0.25 0.92" rgba="0 0 1 1"/> -->
+        <!-- <geom name="table"  type="box" pos="0.7 0 0.995" size="0.6 0.7 0.005" rgba="0.8 0.6 0.4 1" material="table_material" friction="1 0.5 0.01"/> -->
+        <!-- <geom name="table2" type="box" pos="0.7 0 0.95" size="0.6 0.7 0.04" rgba="1 1 1 0.1"/> -->
         <!-- <geom name="table3" type="box" pos="0.7 0 0.49" size="0.02 0.02 0.49" rgba="1 1 1 1"/> -->
         <body name="base" pos="0 0 0.83" euler="0 0 0">
             <freejoint name="base" />
@@ -239,6 +239,7 @@
                     <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_shoulder" />
                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_shoulder" />
+                    <!-- <site name="shoulder_marker" type="sphere" size="0.025" pos="0 0 0.22" rgba="0 1 0 1"/> -->
                     <body name="R_arm1" pos="0 0 0.2488" quat="0.5 0.5 0.5 0.5">
                         <inertial pos="-0.0833488 1.97169e-05 -7.82531e-06" quat="0.483195 0.516442 0.516157 0.483106" mass="0.185808" diaginertia="8.80008e-05 6.51814e-05 5.49517e-05" />
                         <joint name="R_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
@@ -266,43 +267,43 @@
                                         <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_palm" /> -->
                                         <body name="R finger1-1" pos="-0.035 0 0.14" quat="-0.0145583 -0.0145583 -0.706957 0.706957">
                                             <inertial pos="0 -0.0065 0" quat="0.5 0.5 -0.5 0.5" mass="0.000797876" diaginertia="5.66933e-08 4.49656e-08 1.38553e-08" />
-                                            <joint name="R finger1-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                            <!-- <joint name="R finger1-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger1-1" />
                                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger1-1" />
                                             <body name="R finger1-2" pos="-0.000535187 -0.012989 0" quat="0.270269 0 0 0.962785">
                                                 <inertial pos="0.00521421 0.0205032 0" quat="0.410503 0.57575 -0.410503 0.57575" mass="0.00437888" diaginertia="7.69938e-07 6.11522e-07 2.37342e-07" />
-                                                <joint name="R finger1-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                                <!-- <joint name="R finger1-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 1 0.1 1" mesh="R finger1-2" />
                                                 <geom type="mesh" rgba="0.1 1 0.1 1" mesh="R finger1-2" />
                                             </body>
                                         </body>
                                         <body name="R finger2-1" pos="0.0303109 0.0175 0.14" quat="0.168912 -0.197036 0.6791 -0.686636">
                                             <inertial pos="0 -0.0065 0.0005" quat="0.5 0.5 -0.5 0.5" mass="0.000797876" diaginertia="5.66933e-08 4.49656e-08 1.38553e-08" />
-                                            <joint name="R finger2-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                            <!-- <joint name="R finger2-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger2-1" />
                                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger2-1" />
                                             <body name="R finger2-2" pos="0 -0.013 0" quat="0 0.962785 0.270269 0">
                                                 <inertial pos="0.00567694 0.0207723 0" quat="0.410503 0.57575 -0.410503 0.57575" mass="0.00437888" diaginertia="7.69938e-07 6.11522e-07 2.37342e-07" />
-                                                <joint name="R finger2-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                                <!-- <joint name="R finger2-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 1 0.1 1" mesh="R finger2-2" />
                                                 <geom type="mesh" rgba="0.1 1 0.1 1" mesh="R finger2-2" />
                                             </body>
                                         </body>
                                         <body name="R finger3-1" pos="0.0303109 -0.0175 0.14" quat="0.604964 -0.340871 0.619522 0.366086">
                                             <inertial pos="-0.0065 0 0.0005" quat="0 0.707107 0 0.707107" mass="0.000797876" diaginertia="5.66933e-08 4.49656e-08 1.38553e-08" />
-                                            <joint name="R finger3-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                            <!-- <joint name="R finger3-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger3-1" />
                                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger3-1" />
                                             <body name="R finger3-2" pos="-0.013 0 0" quat="0.871901 0 0 0.489683">
                                                 <inertial pos="0.00567694 0.0207723 0" quat="0.410503 0.57575 -0.410503 0.57575" mass="0.00437888" diaginertia="7.69938e-07 6.11522e-07 2.37342e-07" />
-                                                <joint name="R finger3-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                                <!-- <joint name="R finger3-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 1 0.1 1" mesh="R finger3-2" />
                                                 <geom type="mesh" rgba="0.1 1 0.1 1" mesh="R finger3-2" />
                                             </body>
                                         </body>
                                         <body name="R gripper" pos="0 0 0.14031" quat="0.707105 0 0 -0.707108">
                                             <inertial pos="0 0.00210479 0.00493272" quat="0.499717 0.500283 -0.500283 0.499717" mass="0.00333908" diaginertia="5.61431e-07 4.77968e-07 1.44311e-07" />
-                                            <joint name="R gripper" pos="0 0 0" axis="0 0 1" frictionloss="0.10" type="slide" limited="true" range="0 0.03" />
+                                            <!-- <joint name="R gripper" pos="0 0 0" axis="0 0 1" frictionloss="0.10" type="slide" limited="true" range="0 0.03" /> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="R gripper" />
                                             <!-- <geom type="mesh" rgba="1 1 1 1" mesh="R gripper" /> -->
                                         </body>
@@ -316,73 +317,73 @@
                 </body>
                 <body name="L_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
                     <inertial pos="-4.78828e-05 0.015654 -0.248205" quat="0.490899 0.50908 -0.490563 0.509121" mass="0.159234" diaginertia="7.36582e-05 5.90884e-05 4.06637e-05" />
-                    <joint name="L_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                    <!-- <joint name="L_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_shoulder" />
                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_shoulder" />
                     <body name="L_arm1" pos="0 0 -0.2488" quat="0.5 0.5 0.5 0.5">
                         <inertial pos="-0.0833488 -1.35333e-05 -7.8252e-06" quat="0.483064 0.516293 0.516306 0.483237" mass="0.185808" diaginertia="8.80008e-05 6.51814e-05 5.49517e-05" />
-                        <joint name="L_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                        <!-- <joint name="L_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm1" />
                         <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm1" />
                         <body name="L_arm2" pos="-0.1105 0 0">
                             <inertial pos="-0.0563 1.74829e-07 -0.00680843" quat="0.707087 -0.00578054 -0.00578188 0.707079" mass="0.0726996" diaginertia="2.69669e-05 2.47831e-05 1.38386e-05" />
-                            <joint name="L_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                            <!-- <joint name="L_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm2" />
                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm2" />
                             <body name="L_arm3" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
                                 <inertial pos="3.22976e-05 -0.0109602 -0.118522" quat="0.48297 0.516448 -0.483237 0.516239" mass="0.0455132" diaginertia="1.25282e-05 1.04562e-05 7.71609e-06" />
-                                <joint name="L_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                                <!-- <joint name="L_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm3" />
                                 <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm3" />
                                 <body name="L_arm4" pos="0 0 -0.1195" quat="0.5 0.5 0.5 0.5">
                                     <inertial pos="-0.0101577 -0.0474946 -9.22779e-05" quat="0.022287 0.706759 -0.0222426 0.706754" mass="0.0493363" diaginertia="1.28686e-05 1.1877e-05 9.02863e-06" />
-                                    <joint name="L_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                                    <!-- <joint name="L_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm4" />
                                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm4" />
                                     <body name="L_palm" pos="0 0 0" quat="0.707107 0.707107 0 0">
                                         <inertial pos="-0.0114431 -0.0235778 0.122371" quat="0.338272 0.613752 0.336817 0.628836" mass="0.113422" diaginertia="4.23125e-05 4.17736e-05 1.37573e-05" />
-                                        <joint name="L_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+                                        <!-- <joint name="L_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
                                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_palm" />
                                         <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_palm" /> -->
                                         <body name="L finger1-1" pos="-0.035 0 0.14" quat="0.0145583 0.0145583 0.706957 -0.706957">
                                             <inertial pos="0 -0.0065 0" quat="0.5 0.5 -0.5 0.5" mass="0.000797876" diaginertia="5.66933e-08 4.49656e-08 1.38553e-08" />
-                                            <joint name="L finger1-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                            <!-- <joint name="L finger1-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger1-1" />
                                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger1-1" />
                                             <body name="L finger1-2" pos="-0.000535187 -0.012989 0" quat="0.270269 0 0 0.962785">
                                                 <inertial pos="0.00521421 0.0205032 0" quat="0.410503 0.57575 -0.410503 0.57575" mass="0.00437888" diaginertia="7.69938e-07 6.11522e-07 2.37342e-07" />
-                                                <joint name="L finger1-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                                <!-- <joint name="L finger1-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 1 0.1 1" mesh="L finger1-2" />
                                                 <geom type="mesh" rgba="0.1 1 0.1 1" mesh="L finger1-2" />
                                             </body>
                                         </body>
                                         <body name="L finger2-1" pos="0.0303109 -0.0175 0.14" quat="0.168912 0.197036 0.6791 0.686636">
                                             <inertial pos="0 0.0065 0.0005" quat="0.5 0.5 -0.5 0.5" mass="0.000797876" diaginertia="5.66933e-08 4.49656e-08 1.38553e-08" />
-                                            <joint name="L finger2-1" pos="0 0 0" axis="0 0 -1" frictionloss="0.01"/>
+                                            <!-- <joint name="L finger2-1" pos="0 0 0" axis="0 0 -1" frictionloss="0.01"/> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger2-1" />
                                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger2-1" />
                                             <body name="L finger2-2" pos="0 0.013 -0.00225" quat="0.962785 0 0 -0.270269">
                                                 <inertial pos="0.00567694 0.0207723 0.00225" quat="0.410503 0.57575 -0.410503 0.57575" mass="0.00437888" diaginertia="7.69938e-07 6.11522e-07 2.37342e-07" />
-                                                <joint name="L finger2-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                                <!-- <joint name="L finger2-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 1 0.1 1" mesh="L finger2-2" />
                                                 <geom type="mesh" rgba="0.1 1 0.1 1" mesh="L finger2-2" />
                                             </body>
                                         </body>
                                         <body name="L finger3-1" pos="0.0303109 0.0175 0.14" quat="0.168912 -0.197036 0.6791 -0.686636">
                                             <inertial pos="0 -0.0065 0.0005" quat="0.5 0.5 -0.5 0.5" mass="0.000797876" diaginertia="5.66933e-08 4.49656e-08 1.38553e-08" />
-                                            <joint name="L finger3-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                            <!-- <joint name="L finger3-1" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger3-1" />
                                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger3-1" />
                                             <body name="L finger3-2" pos="0 -0.013 0" quat="0 0.962785 0.270269 0">
                                                 <inertial pos="0.00567694 0.0207723 0" quat="0.410503 0.57575 -0.410503 0.57575" mass="0.00437888" diaginertia="7.69938e-07 6.11522e-07 2.37342e-07" />
-                                                <joint name="L finger3-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/>
+                                                <!-- <joint name="L finger3-2" pos="0 0 0" axis="0 0 1" frictionloss="0.01"/> -->
                                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.1 1 0.1 1" mesh="L finger3-2" />
                                                 <geom type="mesh" rgba="0.1 1 0.1 1" mesh="L finger3-2" />
                                             </body>
                                         </body>
                                         <body name="L gripper" pos="0 0 0.140307" quat="0.707107 0 0 -0.707107">
                                             <inertial pos="0 0.00210479 0.00493272" quat="0.499717 0.500283 -0.500283 0.499717" mass="0.00333908" diaginertia="5.61431e-07 4.77968e-07 1.44311e-07" />
-                                            <joint name="L gripper" pos="0 0 0" axis="0 0 1" frictionloss="0.10" type="slide" limited="true" range="0 0.03" />
+                                            <!-- <joint name="L gripper" pos="0 0 0" axis="0 0 1" frictionloss="0.10" type="slide" limited="true" range="0 0.03" /> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="L gripper" />
                                             <!-- <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="L gripper" /> -->
                                         </body>
@@ -426,14 +427,14 @@
         <motor joint="R_arm3"       name="R_arm3"       gear="1" />
         <motor joint="R_arm4"       name="R_arm4"       gear="1" />
         <motor joint="R_palm"       name="R_palm"       gear="1" />
-        <motor joint="R gripper"    name="R gripper"    gear="1" />
+        <!-- <motor joint="R gripper"    name="R gripper"    gear="1" /> -->
 
-        <motor joint="L_shoulder"   name="L_shoulder"   gear="1" />
+        <!-- <motor joint="L_shoulder"   name="L_shoulder"   gear="1" />
         <motor joint="L_arm1"       name="L_arm1"       gear="1" />
         <motor joint="L_arm2"       name="L_arm2"       gear="1" />
         <motor joint="L_arm3"       name="L_arm3"       gear="1" />
         <motor joint="L_arm4"       name="L_arm4"       gear="1" />
         <motor joint="L_palm"       name="L_palm"       gear="1" />
-        <motor joint="L gripper"    name="L gripper"    gear="1" />
+        <motor joint="L gripper"    name="L gripper"    gear="1" /> -->
 	</actuator>
 </mujoco>

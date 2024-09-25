@@ -71,27 +71,27 @@ initPos = [
     0,  # 13 R_arm3
     0,  # 14 R_arm4
     0,  # 15 R_palm
-    0,  # 16 R finger1-1
-    0,  # 17 R finger1-2
-    0,  # 18 R finger2-1
-    0,  # 19 R finger2-2
-    0,  # 20 R finger3-1
-    0,  # 21 R finger3-2
-    0,  # 22 R gripper
+    # 0,  # 16 R finger1-1
+    # 0,  # 17 R finger1-2
+    # 0,  # 18 R finger2-1
+    # 0,  # 19 R finger2-2
+    # 0,  # 20 R finger3-1
+    # 0,  # 21 R finger3-2
+    # 0,  # 22 R gripper
 
-    0,  # 23 L_shoulder
-    0,  # 24 L_arm1
-    0,  # 25 L_arm2
-    0,  # 26 L_arm3
-    0,  # 27 L_arm4
-    0,  # 28 L_palm
-    0,  # 29 L finger1-1
-    0,  # 30 L finger1-2
-    0,  # 31 L finger2-1
-    0,  # 32 L finger2-2
-    0,  # 33 L finger3-1
-    0,  # 34 L finger3-2
-    0,  # 35 L gripper
+    # 0,  # 23 L_shoulder
+    # 0,  # 24 L_arm1
+    # 0,  # 25 L_arm2
+    # 0,  # 26 L_arm3
+    # 0,  # 27 L_arm4
+    # 0,  # 28 L_palm
+    # 0,  # 29 L finger1-1
+    # 0,  # 30 L finger1-2
+    # 0,  # 31 L finger2-1
+    # 0,  # 32 L finger2-2
+    # 0,  # 33 L finger3-1
+    # 0,  # 34 L finger3-2
+    # 0,  # 35 L gripper
 
     0, 0, 0, 1, 0, 0, 0,  # red ball pos & orientation
     # 0, 0, 0, 1, 0, 0, 0,  # red box pos & orientation
@@ -103,9 +103,13 @@ initPos[7:] = list(np.pi/180*(np.array(initPos[7:])))
 #                 23, 24, 25,
 #                 26, 27, 28, 29, 30, 31, 38,
 #                 39, 40, 41, 42, 43, 44, 51 ]
+# controlList = [  7,  8,  9, 
+#                 10, 11, 12, 13, 14, 15, 22,
+#                 23, 24, 25, 26, 27, 28, 35 ]
+# controlList = [  7,  8,  9, 
+#                 10, 11, 12, 13, 14, 15, 22]
 controlList = [  7,  8,  9, 
-                10, 11, 12, 13, 14, 15, 22,
-                23, 24, 25, 26, 27, 28, 35 ]
+                10, 11, 12, 13, 14, 15]
 
 
 initTarget = [
@@ -133,15 +137,15 @@ initTarget = [
     0,  # R_arm3
     0,  # R_arm4
     0,  # R_palm
-    0,  # R_gripper
+    # 0,  # R_gripper
 
-    0,  # L_shoulder
-    0,  # L_arm1
-    0,  # L_arm2
-    0,  # L_arm3
-    0,  # L_arm4
-    0,  # L_palm
-    0,  # L_gripper
+    # 0,  # L_shoulder
+    # 0,  # L_arm1
+    # 0,  # L_arm2
+    # 0,  # L_arm3
+    # 0,  # L_arm4
+    # 0,  # L_palm
+    # 0,  # L_gripper
 ]
 
 controlParameter = [
@@ -166,18 +170,18 @@ controlParameter = [
     [500.0, 0.0, 0.5],
     [500.0, 0.0, 0.5],
     [500.0, 0.0, 0.5],
-    [500.0, 0.0, 0.5],
-    [500.0, 0.0, 0.5],
-    [500.0, 0.0, 0.5],
-    [5000.0, 0.0, 0.1],  # R_gripper
+    [300.0, 0.0, 0.1],
+    [200.0, 0.0, 0.1],
+    [100.0, 0.0, 0.1],
+    # [5000.0, 0.0, 0.1],  # R_gripper
 
-    [500.0, 0.0, 0.01],
-    [500.0, 0.0, 0.01],
-    [500.0, 0.0, 0.01],
-    [100.0, 0.0, 0.01],
-    [100.0, 0.0, 0.01],
-    [100.0, 0.0, 0.01],
-    [5000.0, 0.0, 0.1]   # L_gripper
+    # [500.0, 0.0, 0.5],
+    # [500.0, 0.0, 0.5],
+    # [500.0, 0.0, 0.5],
+    # [300.0, 0.0, 0.1],
+    # [200.0, 0.0, 0.1],
+    # [100.0, 0.0, 0.1],
+    # [5000.0, 0.0, 0.1]   # L_gripper
 ]
 
 

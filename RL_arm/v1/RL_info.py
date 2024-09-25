@@ -36,8 +36,8 @@ class RL_sys():
         self.pos_target = [0.0, 0.0, 0.0]
         self.pos_hand   = [0.0, 0.0, 0.0]
         self.hand2target = 1.0
-        self.limit_high = [ 1.58, 0.00, 3.00, 1.58, 1.58]
-        self.limit_low  = [ 0.00,-1.58, 0.00,-1.58, 0.00]
+        self.limit_high = [ 0.79, 0.17, 0.79, 1.10, 2.10]
+        self.limit_low  = [-0.79,-0.79,-0.79,-0.17, 0.00]
 
     def reset(self):
         self.pos = [0] * len(controlList)
@@ -46,5 +46,3 @@ class RL_sys():
         self.pos_target = [0.0, 0.0, 0.0]
         self.pos_hand   = [0.0, 0.0, 0.0]
         self.hand2target = 1.0
-        self.limit_high = [ 1.58, 0.00, 3.00, 1.58, 1.58]
-        self.limit_low  = [ 0.00,-1.58, 0.00,-1.58, 0.00]

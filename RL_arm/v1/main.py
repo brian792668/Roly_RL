@@ -51,13 +51,21 @@ class RL_arm(gym.Env):
             # print(self.inf.timestep)
             # print(self.data.time)
 
-            self.inf.action[0] = self.inf.action[0]*0.95 + action[0]*0.05
-            self.inf.action[1] = self.inf.action[1]*0.95 + action[1]*0.05
-            self.inf.action[2] = self.inf.action[2]*0.95 + action[2]*0.05
-            # self.inf.action[3] = self.inf.action[3]*0.95 + action[3]*0.05
-            self.inf.action[4] = self.inf.action[4]*0.95 + action[4]*0.05
+            for i in range(5):
+                self.inf.action[i] = self.inf.action[i]*0.85 + action[i]*0.15
+            self.sys.ctrlpos[5] = 0
+            # self.inf.action[0] = self.inf.action[0]*0.85 + action[0]*0.15
+            # self.inf.action[1] = self.inf.action[1]*0.85 + action[1]*0.15
+            # self.inf.action[2] = self.inf.action[2]*0.85 + action[2]*0.15
+            # self.inf.action[3] = self.inf.action[3]*0.85 + action[3]*0.15
+            # self.inf.action[4] = self.inf.action[4]*0.85 + action[4]*0.15
 
-            for i in range(20):
+            # for i in range(5):
+            #     self.inf.action[i] += action[i]*0.5
+            #     if self.inf.action[i] >=  1: self.inf.action[i] = 1
+            #     if self.inf.action[i] <= -1: self.inf.action[i] = -1
+
+            for i in range(10):
                 # if self.inf.action[0] <= 0:
                 #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.98 + 0.0
                 # else:
@@ -71,39 +79,20 @@ class RL_arm(gym.Env):
                 # else:
                 #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.98 + self.inf.action[2]*0.02
 
-                if self.inf.action[0]>=0: 
-                    self.sys.ctrlpos[3] += self.inf.action[0]*0.005*(self.sys.limit_high[0] - self.sys.ctrlpos[3])
-                else: 
-                    self.sys.ctrlpos[3] += self.inf.action[0]*0.005*(self.sys.ctrlpos[3] - self.sys.limit_low[0] )
-                if self.inf.action[1]>=0: 
-                    self.sys.ctrlpos[4] += self.inf.action[1]*0.005*(self.sys.limit_high[1] - self.sys.ctrlpos[4])
-                else: 
-                    self.sys.ctrlpos[4] += self.inf.action[1]*0.005*(self.sys.ctrlpos[4] - self.sys.limit_low[1] )
-                if self.inf.action[2]>=0: 
-                    self.sys.ctrlpos[5] += self.inf.action[2]*0.003*(self.sys.limit_high[2] - self.sys.ctrlpos[5])
-                else: 
-                    self.sys.ctrlpos[5] += self.inf.action[2]*0.003*(self.sys.ctrlpos[5] - self.sys.limit_low[2] )
-                # if self.inf.action[3]>=0: 
-                #     self.sys.ctrlpos[6] += self.inf.action[3]*0.005*(self.sys.limit_high[3] - self.sys.ctrlpos[6])
-                # else: 
-                #     self.sys.ctrlpos[6] += self.inf.action[3]*0.005*(self.sys.ctrlpos[6] - self.sys.limit_low[3] )
-                if self.inf.action[4]>=0: 
-                    self.sys.ctrlpos[7] += self.inf.action[4]*0.005*(self.sys.limit_high[4] - self.sys.ctrlpos[7])
-                else: 
-                    self.sys.ctrlpos[7] += self.inf.action[4]*0.005*(self.sys.ctrlpos[7] - self.sys.limit_low[4] )
 
-                # if self.inf.action[0]>=0: 
-                #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.95 + (self.sys.ctrlpos[3]+self.inf.action[0]*0.05*(self.sys.limit_high[0] - self.sys.ctrlpos[3]))*0.05
-                # else: 
-                #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.95 + (self.sys.ctrlpos[3]+self.inf.action[0]*0.05*(self.sys.ctrlpos[3] - self.sys.limit_low[0] ))*0.05
-                # if self.inf.action[1]>=0: 
-                #     self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.95 + (self.sys.ctrlpos[4]+self.inf.action[1]*0.05*(self.sys.limit_high[1] - self.sys.ctrlpos[4]))*0.05
-                # else: 
-                #     self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.95 + (self.sys.ctrlpos[4]+self.inf.action[1]*0.05*(self.sys.ctrlpos[4] - self.sys.limit_low[1] ))*0.05
-                # if self.inf.action[2]>=0: 
-                #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.95 + (self.sys.ctrlpos[5]+self.inf.action[2]*0.05*(self.sys.limit_high[2] - self.sys.ctrlpos[5]))*0.05
-                # else:
-                #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.95 + (self.sys.ctrlpos[5]+self.inf.action[2]*0.05*(self.sys.ctrlpos[5] - self.sys.limit_low[2] ))*0.05
+                # for i in range(5):
+                #     if self.inf.action[i]>=0: 
+                #         self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.001*(self.sys.limit_high[i] - self.sys.pos[i+3])
+                #     else: 
+                #         self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.001*(self.sys.pos[i+3] - self.sys.limit_low[i] )
+                # self.sys.ctrlpos[5] = 0
+
+                for i in range(5):
+                    if self.inf.action[i]>=0: 
+                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.003*(self.sys.limit_high[i] - self.sys.pos[i+3])
+                    else: 
+                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.003*(self.sys.pos[i+3] - self.sys.limit_low[i] )
+                self.sys.ctrlpos[5] = 0
 
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
@@ -126,13 +115,14 @@ class RL_arm(gym.Env):
             self.get_state()
             self.head_camera.get_img(self.data, rgb=True, depth=True)
             self.head_camera.get_target(depth = False)
-            self.head_camera.show(rgb=True)
+            # self.head_camera.show(rgb=True)
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
 
-            self.viewer.sync()
-            self.observation_space = np.concatenate([self.obs.joint_camera, self.obs.joint_camera, self.obs.joint_camera, 
+            # self.viewer.sync()
+            self.observation_space = np.concatenate([self.obs.joint_camera,
                                                      [self.obs.cam2target]*3, 
-                                                     self.obs.joint_arm, self.obs.joint_arm, self.obs.joint_arm]).astype(np.float32)
+                                                     self.obs.joint_arm,
+                                                     self.inf.action]).astype(np.float32)
             info = {}
             self.truncated = False
             return self.observation_space, self.inf.reward, self.done, self.truncated, info
@@ -153,20 +143,27 @@ class RL_arm(gym.Env):
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                 mujoco.mj_step(self.robot, self.data)
-                self.head_camera.get_img(self.data, rgb=True, depth=True)
-                self.head_camera.show(rgb=True)
+                # self.head_camera.get_img(self.data, rgb=True, depth=True)
+                # self.head_camera.show(rgb=True)
 
             self.viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = 1
 
             self.get_state()
-            self.observation_space = np.concatenate([self.obs.joint_camera, self.obs.joint_camera, self.obs.joint_camera, [self.obs.cam2target]*3, self.obs.joint_arm, self.obs.joint_arm, self.obs.joint_arm]).astype(np.float32)
+            self.observation_space = np.concatenate([ self.obs.joint_camera, 
+                                                     [self.obs.cam2target]*3,
+                                                      self.obs.joint_arm,
+                                                      self.inf.action]).astype(np.float32)
             self.done = False
             self.truncated = False
             return self.observation_space, {}
 
     def get_reward(self):
-        self.sys.pos_target = self.data.qpos[36:39].copy()
-        self.sys.pos_hand = self.data.site_xpos[42].copy()
+        # self.sys.pos_target = self.data.qpos[36:39].copy()
+        # self.sys.pos_hand = self.data.site_xpos[42].copy()
+
+        self.sys.pos_target = self.data.qpos[16:19].copy()
+        self.sys.pos_hand = self.data.site_xpos[-1].copy()
+        # print(self.data.site_xpos[-1])
 
         new_dis  = (self.sys.pos_target[0]-self.sys.pos_hand[0])**2
         new_dis += (self.sys.pos_target[1]-self.sys.pos_hand[1])**2
@@ -177,22 +174,30 @@ class RL_arm(gym.Env):
         if reward_of_getting_close <= 0:
             self.inf.reward = np.exp(-5*self.sys.hand2target)
         else:
-            self.inf.reward = - 100*reward_of_getting_close
+            self.inf.reward = np.exp(-5*self.sys.hand2target) - 100*reward_of_getting_close
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
         # print(self.inf.reward)
         return self.inf.reward
  
     def get_state(self):
-        if self.inf.timestep%250 == 0:
-            if self.inf.timestep > 0 and self.sys.hand2target >= 0.05:
+        if self.inf.timestep%500 == 0:
+            if self.inf.timestep > 0 and self.sys.hand2target >= 0.2:
                 self.reset()
             else:
                 self.head_camera.track_done = False
                 while self.head_camera.track_done != True:
-                    self.data.qpos[36] = random.uniform( 0.15, 0.4)
-                    self.data.qpos[37] = random.uniform(-0.4, 0.0)
-                    self.data.qpos[38] = random.uniform( 0.9, 1.3)
+                    distoshoulder = 0.5
+                    while distoshoulder >= 0.4:
+                        self.data.qpos[16] = random.uniform( 0.10, 0.50)
+                        self.data.qpos[17] = random.uniform(-0.50, 0.00)
+                        self.data.qpos[18] = random.uniform( 0.92, 1.35)
+
+                        self.sys.pos_target = self.data.qpos[16:19].copy()
+                        distoshoulder  = (self.sys.pos_target[0]-0.00)**2
+                        distoshoulder += (self.sys.pos_target[1]+0.25)**2
+                        distoshoulder += (self.sys.pos_target[2]-1.35)**2
+                        distoshoulder = distoshoulder ** 0.5
                     mujoco.mj_step(self.robot, self.data)
                     for i in range(150):
                         # print("tracking", f"{self.data.time:2f}")
@@ -203,8 +208,7 @@ class RL_arm(gym.Env):
                         self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                         self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                         mujoco.mj_step(self.robot, self.data)
-                        self.head_camera.show(rgb=True)
-                # self.inf.timestep = 1
+                        # self.head_camera.show(rgb=True)
 
         self.obs.joint_camera = self.data.qpos[8:10].copy()
         self.obs.joint_arm    = self.data.qpos[10:15].copy()
