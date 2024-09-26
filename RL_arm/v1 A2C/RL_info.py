@@ -20,11 +20,13 @@ class RL_obs():
     def __init__(self):
         self.joint_camera = [0.0, 0.0]
         self.joint_arm = [0.0, 0.0, 0.0, 0.0, 0.0]
+        self.vel_arm = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.cam2target = 0.0
 
     def reset(self):
         self.joint_camera = [0.0, 0.0]
         self.joint_arm = [0.0, 0.0, 0.0, 0.0, 0.0]
+        self.vel_arm = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.cam2target = 0.0
 
 class RL_sys():
@@ -37,8 +39,8 @@ class RL_sys():
         self.pos_target = [0.0, 0.0, 0.0]
         self.pos_hand   = [0.0, 0.0, 0.0]
         self.hand2target = 1.0
-        self.limit_high = [ 0.79, 0.00, 0.79, 1.57, 1.90]
-        self.limit_low  = [-0.79,-0.79,-0.79,-0.17, 0.00]
+        self.limit_high = [ 0.79, 0.17, 0.79, 1.57, 2.00]
+        self.limit_low  = [-0.79,-1.05,-0.79,-0.79, 0.00]
 
     def reset(self):
         self.pos = [0] * len(controlList)
