@@ -33,10 +33,10 @@ class RL_arm(gym.Env):
 
         self.head_camera = Camera(renderer=self.renderer, camID=0)
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data)
-        self.viewer.cam.distance = 2.5
-        self.viewer.cam.lookat = [0.0, 0.0, 0.8]
+        self.viewer.cam.distance = 1.5
+        self.viewer.cam.lookat = [0.0, -0.22, 1.0]
         self.viewer.cam.elevation = -30
-        self.viewer.cam.azimuth = 160
+        self.viewer.cam.azimuth = 200
         
     def step(self, action): 
         if self.viewer.is_running() == False:
@@ -54,29 +54,23 @@ class RL_arm(gym.Env):
             # print(self.inf.totaltimestep)
             # print(self.inf.timestep)
             # print(self.data.time)
+            # # print(self.inf.action)
 
             for i in range(5):
-                self.inf.action[i] = self.inf.action[i]*0.85 + action[i]*0.15
-            self.sys.ctrlpos[5] = 0
-
+                # self.inf.action[i] = self.inf.action[i]*0.85 + action[i]*0.15
+                self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
+                # self.inf.action[i] = action[i]
+            
             # for i in range(5):
             #     self.inf.action[i] += action[i]*0.5
             #     if self.inf.action[i] >=  1: self.inf.action[i] = 1
             #     if self.inf.action[i] <= -1: self.inf.action[i] = -1
 
             for i in range(10):
-                # if self.inf.action[0] <= 0:
-                #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.98 + 0.0
-                # else:
-                #     self.sys.ctrlpos[3] = self.sys.ctrlpos[3]*0.98 + self.inf.action[0]*0.02
-                # if self.inf.action[1] >= 0:
-                #     self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.98 + 0.0
-                # else:
-                #     self.sys.ctrlpos[4] = self.sys.ctrlpos[4]*0.98 + self.inf.action[1]*0.02
-                # if self.inf.action[2] <= 0:
-                #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.98 + 0.0
-                # else:
-                #     self.sys.ctrlpos[5] = self.sys.ctrlpos[5]*0.98 + self.inf.action[2]*0.02
+
+                # for i in range(5):
+                #     self.sys.ctrlpos[i+3] = self.sys.pos[i+3]*0.95 + 0.05*((self.sys.limit_high[i]+self.sys.limit_low[i])/2 + self.inf.action[i]*(self.sys.limit_high[i]-self.sys.limit_low[i])/2)
+                # self.sys.ctrlpos[5] = 0
 
                 for i in range(5):
                     if self.inf.action[i]>=0: 
@@ -119,14 +113,15 @@ class RL_arm(gym.Env):
             self.head_camera.get_target(depth = False)
             if random.uniform( 0, 1) >= 0.95:
                 self.head_camera.show(rgb=True)
-                # self.viewer.sync()
+                self.viewer.sync()
 
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
 
             self.observation_space = np.concatenate([self.obs.joint_camera,
-                                                     [self.obs.cam2target]*3, 
+                                                     [self.obs.cam2target]*5, 
+                                                     [self.sys.hand2target]*5, 
                                                      self.obs.joint_arm,
-                                                     self.inf.action]).astype(np.float32)
+                                                     self.obs.vel_arm]).astype(np.float32)
             info = {}
             self.truncated = False
             return self.observation_space, self.inf.reward, self.done, self.truncated, info
@@ -141,12 +136,27 @@ class RL_arm(gym.Env):
             self.obs.reset()
             self.head_camera.track_done = False
 
+            type = random.uniform( 0, 3)
+
             for i in range(100):
-                self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + np.radians(-60)*0.05
-                self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + np.radians(-10)*0.05
-                self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + np.radians(-10)*0.05
-                self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + np.radians( 30)*0.05
-                self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + np.radians( 70)*0.05
+                if type < 1:
+                    self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + np.radians(-60)*0.05
+                    self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + np.radians( 0 )*0.05
+                    self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + np.radians(random.uniform( -30, 10))*0.05
+                    self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + np.radians( 10)*0.05
+                    self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + np.radians( 00)*0.05
+                elif type > 1:
+                    self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + np.radians(-60)*0.05
+                    self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + np.radians( 45)*0.05
+                    self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + np.radians(random.uniform( -30, 10))*0.05
+                    self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + np.radians(random.uniform(  0 , 45))*0.05
+                    self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + np.radians(110)*0.05
+                else:
+                    self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + np.radians(-60)*0.05
+                    self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + np.radians(-10)*0.05
+                    self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + np.radians(random.uniform( -30, 10))*0.05
+                    self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + np.radians(random.uniform(  0 , 20))*0.05
+                    self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + np.radians( 70)*0.05
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
@@ -159,9 +169,10 @@ class RL_arm(gym.Env):
 
             self.get_state()
             self.observation_space = np.concatenate([ self.obs.joint_camera, 
-                                                     [self.obs.cam2target]*3,
+                                                     [self.obs.cam2target]*5, 
+                                                     [self.sys.hand2target]*5, 
                                                       self.obs.joint_arm,
-                                                      self.inf.action]).astype(np.float32)
+                                                      self.obs.vel_arm]).astype(np.float32)
             self.done = False
             self.truncated = False
             return self.observation_space, {}
@@ -221,6 +232,7 @@ class RL_arm(gym.Env):
 
         self.obs.joint_camera = self.data.qpos[8:10].copy()
         self.obs.joint_arm    = self.data.qpos[10:15].copy()
+        self.obs.vel_arm = self.data.qpos[9:14].copy()
         self.obs.cam2target   = self.head_camera.target_depth
 
     def close(self):
@@ -234,19 +246,19 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
     best_avg_total_reward = np.array([0.0])
     best_avg_step_reward = np.array([0.0])
 
-    if os.path.exists("RL/RL_arm/v1/model/array/epoch_plot.npy"):
-        epoch_plot = np.load("RL/RL_arm/v1/model/array/epoch_plot.npy")
-        step_reward_plot = np.load("RL/RL_arm/v1/model/array/step_reward_plot.npy")
-        total_reward_plot = np.load("RL/RL_arm/v1/model/array/total_reward_plot.npy")
-        best_avg_total_reward = np.load("RL/RL_arm/v1/model/array/best_avg_total_reward.npy")
-        best_avg_step_reward = np.load("RL/RL_arm/v1/model/array/best_avg_step_reward.npy")
+    if os.path.exists("RL/RL_arm/v2/model/array/epoch_plot.npy"):
+        epoch_plot = np.load("RL/RL_arm/v2/model/array/epoch_plot.npy")
+        step_reward_plot = np.load("RL/RL_arm/v2/model/array/step_reward_plot.npy")
+        total_reward_plot = np.load("RL/RL_arm/v2/model/array/total_reward_plot.npy")
+        best_avg_total_reward = np.load("RL/RL_arm/v2/model/array/best_avg_total_reward.npy")
+        best_avg_step_reward = np.load("RL/RL_arm/v2/model/array/best_avg_step_reward.npy")
 
     else:
-        np.save("RL/RL_arm/v1/model/array/epoch_plot.npy", epoch_plot)
-        np.save("RL/RL_arm/v1/model/array/step_reward_plot.npy", step_reward_plot)
-        np.save("RL/RL_arm/v1/model/array/total_reward_plot.npy", total_reward_plot)
-        np.save("RL/RL_arm/v1/model/array/best_avg_total_reward.npy", best_avg_total_reward)
-        np.save("RL/RL_arm/v1/model/array/best_avg_step_reward.npy", best_avg_step_reward)
+        np.save("RL/RL_arm/v2/model/array/epoch_plot.npy", epoch_plot)
+        np.save("RL/RL_arm/v2/model/array/step_reward_plot.npy", step_reward_plot)
+        np.save("RL/RL_arm/v2/model/array/total_reward_plot.npy", total_reward_plot)
+        np.save("RL/RL_arm/v2/model/array/best_avg_total_reward.npy", best_avg_total_reward)
+        np.save("RL/RL_arm/v2/model/array/best_avg_step_reward.npy", best_avg_step_reward)
 
     epoch = epoch_plot[-1]
     timer0 = time.time()
@@ -296,11 +308,11 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
         epoch_plot = np.append(epoch_plot, epoch)
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         total_reward_plot = np.append(total_reward_plot, avg_total_reward)
-        np.save("RL/RL_arm/v1/model/array/epoch_plot.npy",epoch_plot)
-        np.save("RL/RL_arm/v1/model/array/step_reward_plot.npy",step_reward_plot)
-        np.save("RL/RL_arm/v1/model/array/total_reward_plot.npy",total_reward_plot)
-        np.save("RL/RL_arm/v1/model/array/best_avg_total_reward.npy",best_avg_total_reward)
-        np.save("RL/RL_arm/v1/model/array/best_avg_step_reward.npy",best_avg_step_reward)
+        np.save("RL/RL_arm/v2/model/array/epoch_plot.npy",epoch_plot)
+        np.save("RL/RL_arm/v2/model/array/step_reward_plot.npy",step_reward_plot)
+        np.save("RL/RL_arm/v2/model/array/total_reward_plot.npy",total_reward_plot)
+        np.save("RL/RL_arm/v2/model/array/best_avg_total_reward.npy",best_avg_total_reward)
+        np.save("RL/RL_arm/v2/model/array/best_avg_step_reward.npy",best_avg_step_reward)
 
         fig = plt.figure(figsize=(14, 14))
         plt.subplot(2,1,1)
@@ -317,7 +329,7 @@ def train(model, env, current_model_path, best_model_path, best_step_model_path)
         plt.ylabel('Step reward (average)')
         plt.legend()
 
-        plt.savefig("RL/RL_arm/v1/model/epoch_vs_reward.png")
+        plt.savefig("RL/RL_arm/v2/model/epoch_vs_reward.png")
         plt.close()
        
 def test(model, env, model_path):
@@ -346,9 +358,9 @@ def test(model, env, model_path):
 
 if __name__ == '__main__':
     my_env = RL_arm()
-    best_model_path = "RL/RL_arm/v1/model/best_model.zip"
-    best_step_model_path = "RL/RL_arm/v1/model/best_step_model.zip"
-    current_model_path = "RL/RL_arm/v1/model/current_model.zip"
+    best_model_path = "RL/RL_arm/v2/model/best_model.zip"
+    best_step_model_path = "RL/RL_arm/v2/model/best_step_model.zip"
+    current_model_path = "RL/RL_arm/v2/model/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.PPO.load(current_model_path, my_env)
