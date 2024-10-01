@@ -38,7 +38,8 @@ class RL_sys():
         self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)
         self.pos_target = [0.0, 0.0, 0.0]
         self.pos_hand   = [0.0, 0.0, 0.0]
-        self.hand2target = 1.0
+        self.hand2target  = 1.0
+        self.hand2target0 = 1.0
         self.limit_high = [ 0.79, 0.17, 0.79, 1.57, 2.10]
         self.limit_low  = [-0.79,-0.79,-0.79,-1.10, 0.00]
 
@@ -48,4 +49,5 @@ class RL_sys():
         self.ctrlpos = initTarget.copy()
         self.pos_target = [0.0, 0.0, 0.0]
         self.pos_hand   = [0.0, 0.0, 0.0]
-        self.hand2target = 1.0
+        self.hand2target  = 1.0
+        self.hand2target0 = 1.0
