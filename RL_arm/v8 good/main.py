@@ -44,9 +44,9 @@ class RL_arm(gym.Env):
         elif self.inf.timestep > 2000:
             self.inf.timestep = 0
             # self.inf.reward += 100
-            self.done = False
-            self.truncated = True
-            info = {}
+            self.inf.done = False
+            self.inf.truncated = True
+            self.inf.info = {}
             return self.observation_space, self.inf.reward, self.done, self.truncated, info
         else:
             self.inf.timestep += 1
@@ -116,9 +116,9 @@ class RL_arm(gym.Env):
                                                      [self.obs.cam2target]*5, 
                                                      [self.sys.hand2target]*5, 
                                                      self.obs.joint_arm]).astype(np.float32)
-            info = {}
-            self.truncated = False
-            return self.observation_space, self.inf.reward, self.done, self.truncated, info
+            self.inf.info = {}
+            self.inf.truncated = False
+            return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
     
     def reset(self, seed=None, **kwargs):
         if self.viewer.is_running() == False:
@@ -144,9 +144,10 @@ class RL_arm(gym.Env):
                                                      [self.obs.cam2target]*5, 
                                                      [self.sys.hand2target]*5, 
                                                       self.obs.joint_arm]).astype(np.float32)
-            self.done = False
-            self.truncated = False
-            return self.observation_space, {}
+            self.inf.done = False
+            self.inf.truncated = False
+            self.inf.info = {}
+            return self.observation_space, self.inf.info
 
     def get_reward(self):
         # self.sys.pos_target = self.data.qpos[36:39].copy()
@@ -214,10 +215,10 @@ class RL_arm(gym.Env):
                     self.sys.hand2target  = new_dis
                     self.sys.hand2target0 = new_dis
 
-        self.obs.joint_camera = self.data.qpos[8:10].copy()
-        self.obs.joint_arm    = self.data.qpos[10:15].copy()
-        self.obs.vel_arm = self.data.qpos[9:14].copy()
-        self.obs.cam2target   = self.head_camera.target_depth
+        self.obs.joint_camera   = self.data.qpos[8:10].copy()
+        self.obs.joint_arm      = self.data.qpos[10:15].copy()
+        self.obs.vel_arm        = self.data.qpos[9:14].copy()
+        self.obs.cam2target     = self.head_camera.target_depth
 
     def close(self):
         self.renderer.close() 
@@ -315,7 +316,7 @@ def test(model, env, model_path):
     reward_of_case = np.array([0.0])
     for i in range(len(reward_of_case)):
         obs, _ = env.reset()
-        while env.truncated == False:
+        while env.inf.truncated == False:
             action, _ = model.predict(obs)
             obs, _, _, _, _ = env.step(action)
         sum_of_total_reward += env.inf.total_reward

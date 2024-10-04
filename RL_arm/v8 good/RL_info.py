@@ -9,11 +9,17 @@ class RL_inf():
         self.totaltimestep = 0
         self.action = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.reward = 0.0
+        self.done = False
+        self.truncated = False
+        self.info = {}
         self.total_reward = 0.0
     def reset(self):
         self.timestep = 0
         self.action = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.reward = 0.0
+        self.done = False
+        self.truncated = False
+        self.info = {}
         # self.total_reward = 0.0
 
 class RL_obs():
