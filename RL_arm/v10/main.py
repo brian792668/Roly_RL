@@ -56,12 +56,10 @@ class RL_arm(gym.Env):
             # print(self.data.time)
             # # print(self.inf.action)
 
-            for i in range(5):
+            for i in range(len(action)):
                 # self.inf.action[i] = self.inf.action[i]*0.95 + action[i]*0.05
                 self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
                 # self.inf.action[i] = action[i]
-            # self.inf.action[0] -= 0.5*self.inf.action[4]
-            # self.inf.action[1] -= 0.5*self.inf.action[3]
 
             for i in range(100):
 
@@ -69,23 +67,25 @@ class RL_arm(gym.Env):
                 #     self.sys.ctrlpos[i+3] = self.sys.pos[i+3]*0.95 + 0.05*((self.sys.limit_high[i]+self.sys.limit_low[i])/2 + self.inf.action[i]*(self.sys.limit_high[i]-self.sys.limit_low[i])/2)
                 # self.sys.ctrlpos[5] = 0
 
-                for i in range(5):
-                    if self.inf.action[i]>=0: 
-                        # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])
-                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])/(self.sys.limit_high[i] - self.sys.limit_low[i])
-                    else: 
-                        # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )
-                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )/(self.sys.limit_high[i] - self.sys.limit_low[i])
-                self.sys.ctrlpos[5] = 0
-
                 # for i in range(5):
-                #     self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.001
-                #     if self.sys.ctrlpos[i+3] > self.sys.limit_high[i]: 
-                #         self.sys.ctrlpos[i+3] = self.sys.limit_high[i]
-                #     elif self.sys.ctrlpos[i+3] < self.sys.limit_low[i]: 
-                #         self.sys.ctrlpos[i+3] = self.sys.limit_low[i]
+                #     if self.inf.action[i]>=0: 
+                #         # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])
+                #         self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])/(self.sys.limit_high[i] - self.sys.limit_low[i])
+                #     else: 
+                #         # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )
+                #         self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )/(self.sys.limit_high[i] - self.sys.limit_low[i])
                 # self.sys.ctrlpos[5] = 0
-                
+
+                self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
+                self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002
+                self.sys.ctrlpos[5] = 0
+                self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[2]*0.002
+                self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[3]*0.002
+                for i in range(5):
+                    if self.sys.ctrlpos[i+3] > self.sys.limit_high[i]: 
+                        self.sys.ctrlpos[i+3] = self.sys.limit_high[i]
+                    elif self.sys.ctrlpos[i+3] < self.sys.limit_low[i]: 
+                        self.sys.ctrlpos[i+3] = self.sys.limit_low[i]
 
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
@@ -108,13 +108,12 @@ class RL_arm(gym.Env):
             self.get_state()
             self.head_camera.get_img(self.data, rgb=True, depth=True)
             self.head_camera.get_target(depth = True)
-            self.render(speed=0.1)
+            self.render(speed=0.8)
 
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
 
             self.observation_space = np.concatenate([self.obs.joint_camera, self.obs.joint_camera,
                                                      [self.obs.cam2target]*5, 
-                                                     [self.sys.hand2target]*5, 
                                                      self.obs.joint_arm]).astype(np.float32)
             self.inf.info = {}
             self.inf.truncated = False
@@ -142,7 +141,6 @@ class RL_arm(gym.Env):
             self.get_state()
             self.observation_space = np.concatenate([ self.obs.joint_camera, self.obs.joint_camera,
                                                      [self.obs.cam2target]*5, 
-                                                     [self.sys.hand2target]*5, 
                                                       self.obs.joint_arm]).astype(np.float32)
             self.inf.done = False
             self.inf.truncated = False
@@ -162,12 +160,13 @@ class RL_arm(gym.Env):
         new_dis += (self.sys.pos_target[2]-self.sys.pos_hand[2])**2
         new_dis = new_dis ** 0.5
 
-        reward_of_getting_close = new_dis - self.sys.hand2target
-        if reward_of_getting_close <= 0: reward_of_getting_close = 0
-        self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) - 20*reward_of_getting_close
+        reward_of_getting_close = 20*(self.sys.hand2target - new_dis)
+        if reward_of_getting_close >= 0: reward_of_getting_close = 0
+        # self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
+        self.inf.reward = np.exp(-3*(self.sys.hand2target/self.sys.hand2target0 - reward_of_getting_close))
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
-        # print(self.inf.reward)
+        print(self.inf.reward)
         return self.inf.reward
  
     def get_state(self):
@@ -216,7 +215,8 @@ class RL_arm(gym.Env):
                     self.sys.hand2target0 = new_dis
 
         self.obs.joint_camera   = self.data.qpos[8:10].copy()
-        self.obs.joint_arm      = self.data.qpos[10:15].copy()
+        self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
+        self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
         self.obs.vel_arm        = self.data.qpos[9:14].copy()
         # self.obs.cam2target     = self.head_camera.target_depth
         if np.isnan(self.head_camera.target_depth) == False:
@@ -241,19 +241,19 @@ def train(model, env, current_model_path):
     best_avg_total_reward = np.array([0.0])
     best_avg_step_reward = np.array([0.0])
 
-    if os.path.exists("RL/RL_arm/v8 good/model/array/epoch_plot.npy"):
-        epoch_plot = np.load("RL/RL_arm/v8 good/model/array/epoch_plot.npy")
-        step_reward_plot = np.load("RL/RL_arm/v8 good/model/array/step_reward_plot.npy")
-        total_reward_plot = np.load("RL/RL_arm/v8 good/model/array/total_reward_plot.npy")
-        best_avg_total_reward = np.load("RL/RL_arm/v8 good/model/array/best_avg_total_reward.npy")
-        best_avg_step_reward = np.load("RL/RL_arm/v8 good/model/array/best_avg_step_reward.npy")
+    if os.path.exists("RL/RL_arm/v10/model/array/epoch_plot.npy"):
+        epoch_plot = np.load("RL/RL_arm/v10/model/array/epoch_plot.npy")
+        step_reward_plot = np.load("RL/RL_arm/v10/model/array/step_reward_plot.npy")
+        total_reward_plot = np.load("RL/RL_arm/v10/model/array/total_reward_plot.npy")
+        best_avg_total_reward = np.load("RL/RL_arm/v10/model/array/best_avg_total_reward.npy")
+        best_avg_step_reward = np.load("RL/RL_arm/v10/model/array/best_avg_step_reward.npy")
 
     else:
-        np.save("RL/RL_arm/v8 good/model/array/epoch_plot.npy", epoch_plot)
-        np.save("RL/RL_arm/v8 good/model/array/step_reward_plot.npy", step_reward_plot)
-        np.save("RL/RL_arm/v8 good/model/array/total_reward_plot.npy", total_reward_plot)
-        np.save("RL/RL_arm/v8 good/model/array/best_avg_total_reward.npy", best_avg_total_reward)
-        np.save("RL/RL_arm/v8 good/model/array/best_avg_step_reward.npy", best_avg_step_reward)
+        np.save("RL/RL_arm/v10/model/array/epoch_plot.npy", epoch_plot)
+        np.save("RL/RL_arm/v10/model/array/step_reward_plot.npy", step_reward_plot)
+        np.save("RL/RL_arm/v10/model/array/total_reward_plot.npy", total_reward_plot)
+        np.save("RL/RL_arm/v10/model/array/best_avg_total_reward.npy", best_avg_total_reward)
+        np.save("RL/RL_arm/v10/model/array/best_avg_step_reward.npy", best_avg_step_reward)
 
     epoch = epoch_plot[-1]
     timer0 = time.time()
@@ -272,22 +272,22 @@ def train(model, env, current_model_path):
 
         if avg_step_reward >= best_avg_step_reward[0]:
             best_avg_step_reward[0] = avg_step_reward
-            model.save(f"RL/RL_arm/v8 good/model/best_step/best_step_model_epoch{epoch}.zip")
+            model.save(f"RL/RL_arm/v10/model/best_step/best_step_model_epoch{epoch}.zip")
             print(f"best avg step reward = {round(avg_step_reward,3)}")
             # print(f"reward of case = {round(reward_of_case[0],2)} {round(reward_of_case[1],2)} {round(reward_of_case[2],2)} {round(reward_of_case[3],2)} {round(reward_of_case[4],2)} {round(reward_of_case[5],2)}")
         if avg_total_reward >= best_avg_total_reward[0]:
             best_avg_total_reward[0] = avg_total_reward
-            model.save(f"RL/RL_arm/v8 good/model/best_total/best_total_model_epoch{epoch}.zip")
+            model.save(f"RL/RL_arm/v10/model/best_total/best_total_model_epoch{epoch}.zip")
             print(f"best avg total reward = {round(best_avg_total_reward[0],2)}  avg step reward = {round(avg_step_reward,3)}")
             # print(f"reward of case = {round(reward_of_case[0],2)} {round(reward_of_case[1],2)} {round(reward_of_case[2],2)} {round(reward_of_case[3],2)} {round(reward_of_case[4],2)} {round(reward_of_case[5],2)}")
         epoch_plot = np.append(epoch_plot, epoch)
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         total_reward_plot = np.append(total_reward_plot, avg_total_reward)
-        np.save("RL/RL_arm/v8 good/model/array/epoch_plot.npy",epoch_plot)
-        np.save("RL/RL_arm/v8 good/model/array/step_reward_plot.npy",step_reward_plot)
-        np.save("RL/RL_arm/v8 good/model/array/total_reward_plot.npy",total_reward_plot)
-        np.save("RL/RL_arm/v8 good/model/array/best_avg_total_reward.npy",best_avg_total_reward)
-        np.save("RL/RL_arm/v8 good/model/array/best_avg_step_reward.npy",best_avg_step_reward)
+        np.save("RL/RL_arm/v10/model/array/epoch_plot.npy",epoch_plot)
+        np.save("RL/RL_arm/v10/model/array/step_reward_plot.npy",step_reward_plot)
+        np.save("RL/RL_arm/v10/model/array/total_reward_plot.npy",total_reward_plot)
+        np.save("RL/RL_arm/v10/model/array/best_avg_total_reward.npy",best_avg_total_reward)
+        np.save("RL/RL_arm/v10/model/array/best_avg_step_reward.npy",best_avg_step_reward)
 
         fig = plt.figure(figsize=(14, 14))
         plt.subplot(2,1,1)
@@ -304,7 +304,7 @@ def train(model, env, current_model_path):
         plt.ylabel('Step reward (average)')
         plt.legend()
 
-        plt.savefig("RL/RL_arm/v8 good/model/epoch_vs_reward.png")
+        plt.savefig("RL/RL_arm/v10/model/epoch_vs_reward.png")
         plt.close()
        
 def test(model, env, model_path):
@@ -333,9 +333,8 @@ def test(model, env, model_path):
 
 if __name__ == '__main__':
     my_env = RL_arm()
-    # best_model_path = "RL/RL_arm/v8 good/model/best_model.zip"
-    # best_step_model_path = "RL/RL_arm/v8 good/model/best_step_model.zip"
-    current_model_path = "RL/RL_arm/v8 good/model/current_model.zip"
+    best_model_path = "RL/RL_arm/v10/model/best_model.zip"
+    current_model_path = "RL/RL_arm/v10/model/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.SAC.load(current_model_path, my_env)
@@ -346,6 +345,6 @@ if __name__ == '__main__':
     # my_model.learn(total_timesteps = 20)
     # my_model.save(current_model_path)
 
-    # train(my_model, my_env, current_model_path)
+    train(my_model, my_env, current_model_path)
     # test(my_model, my_env, current_model_path)
-    test(my_model, my_env, "RL/RL_arm/v8 good/model/best_total/best_total_model_epoch1105.zip")
+    # test(my_model, my_env, best_model_path)
