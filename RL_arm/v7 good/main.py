@@ -227,6 +227,7 @@ class RL_arm(gym.Env):
         if random.uniform( 0, 1) >= speed:
             self.head_camera.show(rgb=True)
             self.viewer.sync()
+            self.viewer.cam.azimuth += 0.2
 
 
 def train(model, env, current_model_path):
@@ -330,7 +331,7 @@ if __name__ == '__main__':
     my_env = RL_arm()
     # best_model_path = "RL/RL_arm/v7/model/best_model.zip"
     # best_step_model_path = "RL/RL_arm/v7/model/best_step_model.zip"
-    current_model_path = "RL/RL_arm/v7/model/current_model.zip"
+    current_model_path = "RL/RL_arm/v7 good/model/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.SAC.load(current_model_path, my_env)
@@ -343,4 +344,4 @@ if __name__ == '__main__':
 
     # train(my_model, my_env, current_model_path)
     # test(my_model, my_env, current_model_path)
-    test(my_model, my_env, "RL/RL_arm/v7/model/best_total/best_total_model_epoch147.zip")
+    test(my_model, my_env, "RL/RL_arm/v7 good/model/best_total/best_total_model_epoch97.zip")

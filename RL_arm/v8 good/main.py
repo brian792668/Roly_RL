@@ -33,9 +33,9 @@ class RL_arm(gym.Env):
 
         self.head_camera = Camera(renderer=self.renderer, camID=0)
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data)
-        self.viewer.cam.distance = 2.5
-        self.viewer.cam.lookat = [0.0, 0.0, 1.0]
-        self.viewer.cam.elevation = -30
+        self.viewer.cam.distance = 2.0
+        self.viewer.cam.lookat = [0.3, 0.0, 1.0]
+        self.viewer.cam.elevation = -60
         self.viewer.cam.azimuth = 200
         
     def step(self, action): 
@@ -57,7 +57,7 @@ class RL_arm(gym.Env):
             # # print(self.inf.action)
 
             for i in range(5):
-                # self.inf.action[i] = self.inf.action[i]*0.85 + action[i]*0.15
+                # self.inf.action[i] = self.inf.action[i]*0.95 + action[i]*0.05
                 self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
                 # self.inf.action[i] = action[i]
             # self.inf.action[0] -= 0.5*self.inf.action[4]
@@ -227,6 +227,7 @@ class RL_arm(gym.Env):
         if random.uniform( 0, 1) >= speed:
             self.head_camera.show(rgb=True)
             self.viewer.sync()
+            self.viewer.cam.azimuth += 0.2
 
 
 def train(model, env, current_model_path):
@@ -236,19 +237,19 @@ def train(model, env, current_model_path):
     best_avg_total_reward = np.array([0.0])
     best_avg_step_reward = np.array([0.0])
 
-    if os.path.exists("RL/RL_arm/v8/model/array/epoch_plot.npy"):
-        epoch_plot = np.load("RL/RL_arm/v8/model/array/epoch_plot.npy")
-        step_reward_plot = np.load("RL/RL_arm/v8/model/array/step_reward_plot.npy")
-        total_reward_plot = np.load("RL/RL_arm/v8/model/array/total_reward_plot.npy")
-        best_avg_total_reward = np.load("RL/RL_arm/v8/model/array/best_avg_total_reward.npy")
-        best_avg_step_reward = np.load("RL/RL_arm/v8/model/array/best_avg_step_reward.npy")
+    if os.path.exists("RL/RL_arm/v8 good/model/array/epoch_plot.npy"):
+        epoch_plot = np.load("RL/RL_arm/v8 good/model/array/epoch_plot.npy")
+        step_reward_plot = np.load("RL/RL_arm/v8 good/model/array/step_reward_plot.npy")
+        total_reward_plot = np.load("RL/RL_arm/v8 good/model/array/total_reward_plot.npy")
+        best_avg_total_reward = np.load("RL/RL_arm/v8 good/model/array/best_avg_total_reward.npy")
+        best_avg_step_reward = np.load("RL/RL_arm/v8 good/model/array/best_avg_step_reward.npy")
 
     else:
-        np.save("RL/RL_arm/v8/model/array/epoch_plot.npy", epoch_plot)
-        np.save("RL/RL_arm/v8/model/array/step_reward_plot.npy", step_reward_plot)
-        np.save("RL/RL_arm/v8/model/array/total_reward_plot.npy", total_reward_plot)
-        np.save("RL/RL_arm/v8/model/array/best_avg_total_reward.npy", best_avg_total_reward)
-        np.save("RL/RL_arm/v8/model/array/best_avg_step_reward.npy", best_avg_step_reward)
+        np.save("RL/RL_arm/v8 good/model/array/epoch_plot.npy", epoch_plot)
+        np.save("RL/RL_arm/v8 good/model/array/step_reward_plot.npy", step_reward_plot)
+        np.save("RL/RL_arm/v8 good/model/array/total_reward_plot.npy", total_reward_plot)
+        np.save("RL/RL_arm/v8 good/model/array/best_avg_total_reward.npy", best_avg_total_reward)
+        np.save("RL/RL_arm/v8 good/model/array/best_avg_step_reward.npy", best_avg_step_reward)
 
     epoch = epoch_plot[-1]
     timer0 = time.time()
@@ -267,22 +268,22 @@ def train(model, env, current_model_path):
 
         if avg_step_reward >= best_avg_step_reward[0]:
             best_avg_step_reward[0] = avg_step_reward
-            model.save(f"RL/RL_arm/v8/model/best_step/best_step_model_epoch{epoch}.zip")
+            model.save(f"RL/RL_arm/v8 good/model/best_step/best_step_model_epoch{epoch}.zip")
             print(f"best avg step reward = {round(avg_step_reward,3)}")
             # print(f"reward of case = {round(reward_of_case[0],2)} {round(reward_of_case[1],2)} {round(reward_of_case[2],2)} {round(reward_of_case[3],2)} {round(reward_of_case[4],2)} {round(reward_of_case[5],2)}")
         if avg_total_reward >= best_avg_total_reward[0]:
             best_avg_total_reward[0] = avg_total_reward
-            model.save(f"RL/RL_arm/v8/model/best_total/best_total_model_epoch{epoch}.zip")
+            model.save(f"RL/RL_arm/v8 good/model/best_total/best_total_model_epoch{epoch}.zip")
             print(f"best avg total reward = {round(best_avg_total_reward[0],2)}  avg step reward = {round(avg_step_reward,3)}")
             # print(f"reward of case = {round(reward_of_case[0],2)} {round(reward_of_case[1],2)} {round(reward_of_case[2],2)} {round(reward_of_case[3],2)} {round(reward_of_case[4],2)} {round(reward_of_case[5],2)}")
         epoch_plot = np.append(epoch_plot, epoch)
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         total_reward_plot = np.append(total_reward_plot, avg_total_reward)
-        np.save("RL/RL_arm/v8/model/array/epoch_plot.npy",epoch_plot)
-        np.save("RL/RL_arm/v8/model/array/step_reward_plot.npy",step_reward_plot)
-        np.save("RL/RL_arm/v8/model/array/total_reward_plot.npy",total_reward_plot)
-        np.save("RL/RL_arm/v8/model/array/best_avg_total_reward.npy",best_avg_total_reward)
-        np.save("RL/RL_arm/v8/model/array/best_avg_step_reward.npy",best_avg_step_reward)
+        np.save("RL/RL_arm/v8 good/model/array/epoch_plot.npy",epoch_plot)
+        np.save("RL/RL_arm/v8 good/model/array/step_reward_plot.npy",step_reward_plot)
+        np.save("RL/RL_arm/v8 good/model/array/total_reward_plot.npy",total_reward_plot)
+        np.save("RL/RL_arm/v8 good/model/array/best_avg_total_reward.npy",best_avg_total_reward)
+        np.save("RL/RL_arm/v8 good/model/array/best_avg_step_reward.npy",best_avg_step_reward)
 
         fig = plt.figure(figsize=(14, 14))
         plt.subplot(2,1,1)
@@ -299,7 +300,7 @@ def train(model, env, current_model_path):
         plt.ylabel('Step reward (average)')
         plt.legend()
 
-        plt.savefig("RL/RL_arm/v8/model/epoch_vs_reward.png")
+        plt.savefig("RL/RL_arm/v8 good/model/epoch_vs_reward.png")
         plt.close()
        
 def test(model, env, model_path):
@@ -328,9 +329,9 @@ def test(model, env, model_path):
 
 if __name__ == '__main__':
     my_env = RL_arm()
-    # best_model_path = "RL/RL_arm/v8/model/best_model.zip"
-    # best_step_model_path = "RL/RL_arm/v8/model/best_step_model.zip"
-    current_model_path = "RL/RL_arm/v8/model/current_model.zip"
+    # best_model_path = "RL/RL_arm/v8 good/model/best_model.zip"
+    # best_step_model_path = "RL/RL_arm/v8 good/model/best_step_model.zip"
+    current_model_path = "RL/RL_arm/v8 good/model/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.SAC.load(current_model_path, my_env)
@@ -341,6 +342,6 @@ if __name__ == '__main__':
     # my_model.learn(total_timesteps = 20)
     # my_model.save(current_model_path)
 
-    train(my_model, my_env, current_model_path)
+    # train(my_model, my_env, current_model_path)
     # test(my_model, my_env, current_model_path)
-    # test(my_model, my_env, "RL/RL_arm/v8/model/best_total/best_total_model_epoch147.zip")
+    test(my_model, my_env, "RL/RL_arm/v8 good/model/best_total/best_total_model_epoch1105.zip")
