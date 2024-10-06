@@ -78,7 +78,7 @@ class RL_arm(gym.Env):
 
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
                 self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002
-                self.sys.ctrlpos[5] = 0
+                self.sys.ctrlpos[5] = -self.sys.ctrlpos[4]
                 self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[2]*0.002
                 self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[3]*0.002
                 for i in range(5):
@@ -98,10 +98,10 @@ class RL_arm(gym.Env):
                     geom1_id = con.geom1
                     geom2_id = con.geom2
                     if geom1_id == 32 or geom2_id == 32:
-                        self.done = False
-                        self.truncated = True
-                        info = {}
-                        return self.observation_space, self.inf.reward, self.done, self.truncated, info
+                        self.inf.done = False
+                        self.inf.truncated = True
+                        self.inf.info = {}
+                        return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
 
             
             self.inf.reward = self.get_reward()
@@ -162,11 +162,11 @@ class RL_arm(gym.Env):
 
         reward_of_getting_close = 20*(self.sys.hand2target - new_dis)
         if reward_of_getting_close >= 0: reward_of_getting_close = 0
-        # self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
-        self.inf.reward = np.exp(-3*(self.sys.hand2target/self.sys.hand2target0 - reward_of_getting_close))
+        self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
+        # self.inf.reward = np.exp(-3*(self.sys.hand2target/self.sys.hand2target0 - reward_of_getting_close))
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
-        print(self.inf.reward)
+        # print(self.inf.reward)
         return self.inf.reward
  
     def get_state(self):
