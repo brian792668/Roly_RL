@@ -1,0 +1,5 @@
+4 DOF
+action為直接角度
+上臂直
+有hand2target在obs中
+action有5個但其中一個強至為0

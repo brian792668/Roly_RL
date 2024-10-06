@@ -345,6 +345,6 @@ if __name__ == '__main__':
     # my_model.learn(total_timesteps = 20)
     # my_model.save(current_model_path)
 
-    train(my_model, my_env, current_model_path)
-    # test(my_model, my_env, current_model_path)
+    # train(my_model, my_env, current_model_path)
+    test(my_model, my_env, current_model_path)
     # test(my_model, my_env, best_model_path)

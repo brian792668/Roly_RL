@@ -1,0 +1,4 @@
+4 DOF
+action為角度變化
+上臂平行機構
+無hand2target在obs中
