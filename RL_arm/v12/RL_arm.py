@@ -225,6 +225,6 @@ class RL_arm(gym.Env):
 
     def render(self, speed=0.5):
         if random.uniform( 0, 1) >= speed:
-            self.head_camera.show(rgb=True)
+            # self.head_camera.show(rgb=True)
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.5

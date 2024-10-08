@@ -1,7 +1,5 @@
-4 DOF
-action為角度變化
-上臂直
-調整關節範圍
-擴大手臂初始pos範圍
-無hand2target在obs中
-with hand camera
+## PPO & SAC
+* 4 DOF, 上臂直
+* action: 角度變化
+* obs: 無hand2target
+* reward: consider hand camera
