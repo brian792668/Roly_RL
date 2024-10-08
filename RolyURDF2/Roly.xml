@@ -189,14 +189,14 @@
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_ankle_roll" />
                                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_ankle_roll" />
                                 
-                                    <site name="L_toe_1"  pos="-0.099 -0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="1.0 0.0 0.0 1"/>
-                                    <site name="L_toe_2"  pos="-0.099 -0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="1.0 0.0 0.0 1"/>
-                                    <site name="L_toe_3"  pos="-0.099  0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="1.0 0.0 0.0 1"/>
-                                    <site name="L_toe_4"  pos="-0.099  0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="1.0 0.0 0.0 1"/>
-                                    <site name="L_heel_1" pos="-0.099 -0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="1.0 0.5 0.7 1"/>
-                                    <site name="L_heel_2" pos="-0.099 -0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="1.0 0.5 0.7 1"/>
-                                    <site name="L_heel_3" pos="-0.099  0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="1.0 0.5 0.7 1"/>
-                                    <site name="L_heel_4" pos="-0.099  0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="1.0 0.5 0.7 1"/>
+                                    <site name="L_toe_1"  pos="-0.099 -0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                                    <site name="L_toe_2"  pos="-0.099 -0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                                    <site name="L_toe_3"  pos="-0.099  0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                                    <site name="L_toe_4"  pos="-0.099  0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                                    <site name="L_heel_1" pos="-0.099 -0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                                    <site name="L_heel_2" pos="-0.099 -0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                                    <site name="L_heel_3" pos="-0.099  0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                                    <site name="L_heel_4" pos="-0.099  0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
                                 </body>
                             </body>
                         </body>
@@ -307,7 +307,7 @@
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1" mesh="R gripper" />
                                             <!-- <geom type="mesh" rgba="1 1 1 1" mesh="R gripper" /> -->
                                         </body>
-                                        <camera name="R hand camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
+                                        <camera name="R hand camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-120"/>
                                         <site name="hand_marker" type="sphere" size="0.005" pos="0 0 0.19" rgba="1 0 1 1"/>
                                     </body>
                                 </body>

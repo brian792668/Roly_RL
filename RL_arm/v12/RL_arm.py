@@ -22,13 +22,15 @@ class RL_arm(gym.Env):
                                                     high = obs_high,
                                                     dtype = np.float32 )
         
-        self.renderer = mujoco.Renderer(self.robot)
+        self.renderer = mujoco.Renderer(self.robot, )
         self.inf = RL_inf()
         self.sys = RL_sys()
         self.obs = RL_obs()
 
         self.head_camera = Camera(renderer=self.renderer, camID=0)
-        self.viewer = mujoco.viewer.launch_passive(self.robot, self.data)
+        self.hand_camera = Camera(renderer=self.renderer, camID=1)
+
+        self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
         self.viewer.cam.distance = 2.0
         self.viewer.cam.lookat = [0.3, 0.0, 1.0]
         self.viewer.cam.elevation = -60
@@ -102,9 +104,9 @@ class RL_arm(gym.Env):
             
             self.inf.reward = self.get_reward()
             self.get_state()
-            self.head_camera.get_img(self.data, rgb=True, depth=True)
-            self.head_camera.get_target(depth = True)
-            self.render(speed=0.9)
+            # self.head_camera.get_img(self.data, rgb=True, depth=True)
+            # self.head_camera.get_target(depth = True)
+            self.render()
 
             self.sys.ctrlpos[1:3] = self.head_camera.track(self.sys.ctrlpos[1:3], self.data, speed=0.2 )
 
@@ -115,7 +117,7 @@ class RL_arm(gym.Env):
             self.inf.truncated = False
             return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
     
-    def reset(self, seed=None, **kwargs):
+    def reset(self, seed=None, **kwargs): 
         if self.viewer.is_running() == False:
             self.close()
         else:
@@ -158,8 +160,15 @@ class RL_arm(gym.Env):
 
         reward_of_getting_close = 20*(self.sys.hand2target - new_dis)
         if reward_of_getting_close >= 0: reward_of_getting_close = 0
-        self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
-        # self.inf.reward = np.exp(-3*(self.sys.hand2target/self.sys.hand2target0 - reward_of_getting_close))
+
+        reward_of_handCAM = 0.0
+        if np.isnan(self.hand_camera.target[0]) == False:
+            reward_of_handCAM = self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2
+            reward_of_handCAM = np.exp(-2*reward_of_handCAM)
+
+        # self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
+        self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + 0.3*reward_of_handCAM
+
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
         # print(self.inf.reward)
@@ -209,12 +218,17 @@ class RL_arm(gym.Env):
                     new_dis = new_dis ** 0.5
                     self.sys.hand2target  = new_dis
                     self.sys.hand2target0 = new_dis
+        
+        self.head_camera.get_img(self.data, rgb=True, depth=True)
+        self.head_camera.get_target(depth = True)
+        self.hand_camera.get_img(self.data, rgb=True, depth=False)
+        self.hand_camera.get_target(depth = False)
 
         self.obs.joint_camera   = self.data.qpos[8:10].copy()
         self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
         self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
         self.obs.vel_arm        = self.data.qpos[9:14].copy()
-        # self.obs.cam2target     = self.head_camera.target_depth
+        
         if np.isnan(self.head_camera.target_depth) == False:
             self.obs.cam2target     = self.head_camera.target_depth
         # print(self.obs.cam2target)
@@ -223,7 +237,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.5):
+    def render(self, speed=0.95):
         if random.uniform( 0, 1) >= speed:
             # self.head_camera.show(rgb=True)
             self.viewer.sync()

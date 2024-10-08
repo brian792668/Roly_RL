@@ -35,10 +35,8 @@ class Camera():
         # 定義紅色的RGB範圍
         lower_red = np.array([100, 0, 0], dtype=np.uint8)
         upper_red = np.array([255, 50, 50], dtype=np.uint8)
-        # 創建紅色遮罩
         mask = cv2.inRange(self.rgbimg, lower_red, upper_red)
 
-        # 確保在圖像中有紅色物體
         if np.any(mask):
             # 獲取紅色物體的像素坐標
             coords = np.column_stack(np.where(mask > 0))
@@ -47,25 +45,21 @@ class Camera():
             center = np.mean(coords, axis=0)
             center_y, center_x = center
 
-            # 在RGB圖像上畫十字標
-            size = 3  # 十字標的大小
-            thickness = 1  # 線條的粗細
+            size = 3
+            thickness = 1
 
-            # 畫橫線
+            # 畫橫縱線
             cv2.line(self.rgbimg, (int(center_x) - size, int(center_y)), 
                      (int(center_x) + size, int(center_y)), (255, 255, 255), thickness)
-            # 畫縱線
             cv2.line(self.rgbimg, (int(center_x), int(center_y) - size), 
                      (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
 
             if depth == True:
-                # 從深度圖像中獲取對應的深度值
                 self.target_depth = 100*self.depthimg[int(center_y), int(center_x)]
-
                 cv2.putText(self.rgbimg, f"{self.target_depth:.1f}", (int(center_x) + 10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
                         0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
-            # 將像素座標轉換至[-1, 1]區間
+            # nomalize x,y to [-1, 1]
             norm_x = (center_x / self.rgbimg.shape[1]) * 2 - 1
             norm_y = (center_y / self.rgbimg.shape[0]) * 2 - 1
             self.target = [norm_x, norm_y]
