@@ -47,7 +47,7 @@ class RL_arm(gym.Env):
             self.inf.done = False
             self.inf.truncated = True
             self.inf.info = {}
-            return self.observation_space, self.inf.reward, self.done, self.truncated, info
+            return self.observation_space, self.inf.reward, self.done, self.truncated, self.inf.info
         else:
             self.inf.timestep += 1
             self.inf.totaltimestep += 1
@@ -231,7 +231,7 @@ class RL_arm(gym.Env):
         if random.uniform( 0, 1) >= speed:
             self.head_camera.show(rgb=True)
             self.viewer.sync()
-            self.viewer.cam.azimuth += 0.2
+            self.viewer.cam.azimuth += 0.5
 
 
 def train(model, env, current_model_path):
@@ -319,9 +319,12 @@ def test(model, env, model_path):
     reward_of_case = np.array([0.0])
     for i in range(len(reward_of_case)):
         obs, _ = env.reset()
-        while env.inf.truncated == False:
+        while env.viewer.is_running() == True:
             action, _ = model.predict(obs)
             obs, _, _, _, _ = env.step(action)
+        # while env.inf.truncated == False:
+        #     action, _ = model.predict(obs)
+        #     obs, _, _, _, _ = env.step(action)
         sum_of_total_reward += env.inf.total_reward
         sum_of_total_step += env.inf.timestep
         reward_of_case[i] = env.inf.total_reward/env.inf.timestep

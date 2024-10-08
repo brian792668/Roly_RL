@@ -47,7 +47,7 @@ class RL_arm(gym.Env):
             self.inf.done = False
             self.inf.truncated = True
             self.inf.info = {}
-            return self.observation_space, self.inf.reward, self.done, self.truncated, info
+            return self.observation_space, self.inf.reward, self.done, self.truncated, self.inf.info
         else:
             self.inf.timestep += 1
             self.inf.totaltimestep += 1
@@ -72,10 +72,10 @@ class RL_arm(gym.Env):
                 for i in range(5):
                     if self.inf.action[i]>=0: 
                         # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])
-                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])/(self.sys.limit_high[i] - self.sys.limit_low[i])
+                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.005*(self.sys.limit_high[i] - self.sys.pos[i+3])/(self.sys.limit_high[i] - self.sys.limit_low[i])
                     else: 
                         # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )
-                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )/(self.sys.limit_high[i] - self.sys.limit_low[i])
+                        self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.005*(self.sys.pos[i+3] - self.sys.limit_low[i] )/(self.sys.limit_high[i] - self.sys.limit_low[i])
                 self.sys.ctrlpos[5] = 0
 
                 # for i in range(5):
@@ -319,9 +319,12 @@ def test(model, env, model_path):
     reward_of_case = np.array([0.0])
     for i in range(len(reward_of_case)):
         obs, _ = env.reset()
-        while env.inf.truncated == False:
+        while env.viewer.is_running() == True:
             action, _ = model.predict(obs)
             obs, _, _, _, _ = env.step(action)
+        # while env.inf.truncated == False:
+        #     action, _ = model.predict(obs)
+        #     obs, _, _, _, _ = env.step(action)
         sum_of_total_reward += env.inf.total_reward
         sum_of_total_step += env.inf.timestep
         reward_of_case[i] = env.inf.total_reward/env.inf.timestep
@@ -333,8 +336,7 @@ def test(model, env, model_path):
 
 if __name__ == '__main__':
     my_env = RL_arm()
-    # best_model_path = "RL/RL_arm/v8 good/model/best_model.zip"
-    # best_step_model_path = "RL/RL_arm/v8 good/model/best_step_model.zip"
+    best_model_path = "RL/RL_arm/v8 good/model/best_total/best_total_model_epoch1105.zip"
     current_model_path = "RL/RL_arm/v8 good/model/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
@@ -343,9 +345,6 @@ if __name__ == '__main__':
         my_model = stable_baselines3.SAC('MlpPolicy', my_env, verbose=0)
         my_model.save(current_model_path)
 
-    # my_model.learn(total_timesteps = 20)
-    # my_model.save(current_model_path)
-
     # train(my_model, my_env, current_model_path)
     # test(my_model, my_env, current_model_path)
-    test(my_model, my_env, "RL/RL_arm/v8 good/model/best_total/best_total_model_epoch1105.zip")
+    test(my_model, my_env, best_model_path)
