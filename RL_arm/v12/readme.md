@@ -2,4 +2,4 @@
 * 4 DOF, 上臂直
 * action: 角度變化
 * obs: 無hand2target
-* reward: consider hand camera
+* reward: consider hand camera, caculated by sum (+0.3*reward_of_handCAM)

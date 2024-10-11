@@ -32,7 +32,7 @@ class RL_arm(gym.Env):
         self.obs = RL_obs()
 
         self.head_camera = Camera(renderer=self.renderer, camID=0)
-        self.viewer = mujoco.viewer.launch_passive(self.robot, self.data)
+        self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
         self.viewer.cam.distance = 2.0
         self.viewer.cam.lookat = [0.3, 0.0, 1.0]
         self.viewer.cam.elevation = -60
@@ -170,6 +170,9 @@ class RL_arm(gym.Env):
         return self.inf.reward
  
     def get_state(self):
+        # self.data.qpos[16] = random.uniform( 0.10, 0.50)
+        # self.data.qpos[17] = random.uniform(-0.50, 0.00)
+        # self.data.qpos[18] = random.uniform( 0.92, 1.35)
         if self.inf.timestep%50 == 0:
             if self.inf.timestep > 0 and self.sys.hand2target >= 0.1:
                 self.reset()
@@ -229,7 +232,7 @@ class RL_arm(gym.Env):
 
     def render(self, speed=0.5):
         if random.uniform( 0, 1) >= speed:
-            self.head_camera.show(rgb=True)
+            # self.head_camera.show(rgb=True)
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.5
 
