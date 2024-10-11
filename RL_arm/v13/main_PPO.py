@@ -13,19 +13,19 @@ def train(model, env, current_model_path):
     best_avg_total_reward = np.array([0.0])
     best_avg_step_reward = np.array([0.0])
 
-    if os.path.exists("RL/RL_arm/v13/model/PPO/array/epoch_plot.npy"):
-        epoch_plot = np.load("RL/RL_arm/v13/model/PPO/array/epoch_plot.npy")
-        step_reward_plot = np.load("RL/RL_arm/v13/model/PPO/array/step_reward_plot.npy")
-        total_reward_plot = np.load("RL/RL_arm/v13/model/PPO/array/total_reward_plot.npy")
-        best_avg_total_reward = np.load("RL/RL_arm/v13/model/PPO/array/best_avg_total_reward.npy")
-        best_avg_step_reward = np.load("RL/RL_arm/v13/model/PPO/array/best_avg_step_reward.npy")
+    if os.path.exists("Roly/RL_arm/v13/model/PPO/array/epoch_plot.npy"):
+        epoch_plot = np.load("Roly/RL_arm/v13/model/PPO/array/epoch_plot.npy")
+        step_reward_plot = np.load("Roly/RL_arm/v13/model/PPO/array/step_reward_plot.npy")
+        total_reward_plot = np.load("Roly/RL_arm/v13/model/PPO/array/total_reward_plot.npy")
+        best_avg_total_reward = np.load("Roly/RL_arm/v13/model/PPO/array/best_avg_total_reward.npy")
+        best_avg_step_reward = np.load("Roly/RL_arm/v13/model/PPO/array/best_avg_step_reward.npy")
 
     else:
-        np.save("RL/RL_arm/v13/model/PPO/array/epoch_plot.npy", epoch_plot)
-        np.save("RL/RL_arm/v13/model/PPO/array/step_reward_plot.npy", step_reward_plot)
-        np.save("RL/RL_arm/v13/model/PPO/array/total_reward_plot.npy", total_reward_plot)
-        np.save("RL/RL_arm/v13/model/PPO/array/best_avg_total_reward.npy", best_avg_total_reward)
-        np.save("RL/RL_arm/v13/model/PPO/array/best_avg_step_reward.npy", best_avg_step_reward)
+        np.save("Roly/RL_arm/v13/model/PPO/array/epoch_plot.npy", epoch_plot)
+        np.save("Roly/RL_arm/v13/model/PPO/array/step_reward_plot.npy", step_reward_plot)
+        np.save("Roly/RL_arm/v13/model/PPO/array/total_reward_plot.npy", total_reward_plot)
+        np.save("Roly/RL_arm/v13/model/PPO/array/best_avg_total_reward.npy", best_avg_total_reward)
+        np.save("Roly/RL_arm/v13/model/PPO/array/best_avg_step_reward.npy", best_avg_step_reward)
 
     epoch = epoch_plot[-1]
     timer0 = time.time()
@@ -44,22 +44,22 @@ def train(model, env, current_model_path):
 
         if avg_step_reward >= best_avg_step_reward[0]:
             best_avg_step_reward[0] = avg_step_reward
-            model.save(f"RL/RL_arm/v13/model/PPO/best_step/best_step_model_epoch{epoch}.zip")
+            model.save(f"Roly/RL_arm/v13/model/PPO/best_step/best_step_model_epoch{epoch}.zip")
             print(f"best avg step reward = {round(avg_step_reward,3)}")
             # print(f"reward of case = {round(reward_of_case[0],2)} {round(reward_of_case[1],2)} {round(reward_of_case[2],2)} {round(reward_of_case[3],2)} {round(reward_of_case[4],2)} {round(reward_of_case[5],2)}")
         if avg_total_reward >= best_avg_total_reward[0]:
             best_avg_total_reward[0] = avg_total_reward
-            model.save(f"RL/RL_arm/v13/model/PPO/best_total/best_total_model_epoch{epoch}.zip")
+            model.save(f"Roly/RL_arm/v13/model/PPO/best_total/best_total_model_epoch{epoch}.zip")
             print(f"best avg total reward = {round(best_avg_total_reward[0],2)}  avg step reward = {round(avg_step_reward,3)}")
             # print(f"reward of case = {round(reward_of_case[0],2)} {round(reward_of_case[1],2)} {round(reward_of_case[2],2)} {round(reward_of_case[3],2)} {round(reward_of_case[4],2)} {round(reward_of_case[5],2)}")
         epoch_plot = np.append(epoch_plot, epoch)
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         total_reward_plot = np.append(total_reward_plot, avg_total_reward)
-        np.save("RL/RL_arm/v13/model/PPO/array/epoch_plot.npy",epoch_plot)
-        np.save("RL/RL_arm/v13/model/PPO/array/step_reward_plot.npy",step_reward_plot)
-        np.save("RL/RL_arm/v13/model/PPO/array/total_reward_plot.npy",total_reward_plot)
-        np.save("RL/RL_arm/v13/model/PPO/array/best_avg_total_reward.npy",best_avg_total_reward)
-        np.save("RL/RL_arm/v13/model/PPO/array/best_avg_step_reward.npy",best_avg_step_reward)
+        np.save("Roly/RL_arm/v13/model/PPO/array/epoch_plot.npy",epoch_plot)
+        np.save("Roly/RL_arm/v13/model/PPO/array/step_reward_plot.npy",step_reward_plot)
+        np.save("Roly/RL_arm/v13/model/PPO/array/total_reward_plot.npy",total_reward_plot)
+        np.save("Roly/RL_arm/v13/model/PPO/array/best_avg_total_reward.npy",best_avg_total_reward)
+        np.save("Roly/RL_arm/v13/model/PPO/array/best_avg_step_reward.npy",best_avg_step_reward)
 
         fig = plt.figure(figsize=(14, 14))
         plt.subplot(2,1,1)
@@ -76,7 +76,7 @@ def train(model, env, current_model_path):
         plt.ylabel('Step reward (average)')
         plt.legend()
 
-        plt.savefig("RL/RL_arm/v13/model/PPO/epoch_vs_reward.png")
+        plt.savefig("Roly/RL_arm/v13/model/PPO/epoch_vs_reward.png")
         plt.close()
        
 def test(model, env, model_path):
@@ -108,8 +108,8 @@ def test(model, env, model_path):
 
 if __name__ == '__main__':
     my_env = RL_arm()
-    best_model_path = "RL/RL_arm/v13/model/PPO/best_model.zip"
-    current_model_path = "RL/RL_arm/v13/model/PPO/current_model.zip"
+    best_model_path = "Roly/RL_arm/v13/model/PPO/best_model.zip"
+    current_model_path = "Roly/RL_arm/v13/model/PPO/current_model.zip"
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.PPO.load(current_model_path, my_env)

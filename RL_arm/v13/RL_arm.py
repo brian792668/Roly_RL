@@ -13,7 +13,7 @@ class RL_arm(gym.Env):
     def __init__(self):
         self.done = False
         self.truncated = False
-        self.robot = mujoco.MjModel.from_xml_path('RL/RolyURDF2/Roly.xml')
+        self.robot = mujoco.MjModel.from_xml_path('Roly/RolyURDF2/Roly.xml')
         self.data = mujoco.MjData(self.robot)
         self.action_space = gym.spaces.box.Box( low  = act_low,      # action (rad)
                                                 high = act_high,
