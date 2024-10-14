@@ -237,7 +237,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.95):
+    def render(self, speed=0.1):
         if random.uniform( 0, 1) >= speed:
             # self.head_camera.show(rgb=True)
             self.viewer.sync()
