@@ -28,7 +28,7 @@ class RL_arm(gym.Env):
         self.obs = RL_obs()
 
         self.head_camera = Camera(renderer=self.renderer, camID=0)
-        self.hand_camera = Camera(renderer=self.renderer, camID=1)
+        self.hand_camera = Camera(renderer=self.renderer, camID=2)
 
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
         self.viewer.cam.distance = 2.0
@@ -59,7 +59,7 @@ class RL_arm(gym.Env):
                 self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
                 # self.inf.action[i] = action[i]
 
-            for i in range(100):
+            for i in range(20):
 
                 # for i in range(5):
                 #     self.sys.ctrlpos[i+3] = self.sys.pos[i+3]*0.95 + 0.05*((self.sys.limit_high[i]+self.sys.limit_low[i])/2 + self.inf.action[i]*(self.sys.limit_high[i]-self.sys.limit_low[i])/2)
@@ -163,8 +163,9 @@ class RL_arm(gym.Env):
 
         reward_of_handCAM = 0.0
         if np.isnan(self.hand_camera.target[0]) == False:
-            reward_of_handCAM = self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2
-            reward_of_handCAM = np.exp(-2*reward_of_handCAM)
+            reward_of_handCAM = (self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2)**0.5
+            # reward_of_handCAM = np.exp(-2*reward_of_handCAM)
+            reward_of_handCAM = 1-reward_of_handCAM
 
         # self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
         self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) * (1+0.5*reward_of_handCAM) + reward_of_getting_close
@@ -175,7 +176,7 @@ class RL_arm(gym.Env):
         return self.inf.reward
  
     def get_state(self):
-        if self.inf.timestep%50 == 0:
+        if self.inf.timestep%int(5/0.02) == 0:
             if self.inf.timestep > 0 and self.sys.hand2target >= 0.1:
                 self.reset()
                 # self.inf.timestep += 1
@@ -208,7 +209,7 @@ class RL_arm(gym.Env):
                         self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                         self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                         mujoco.mj_step(self.robot, self.data)
-                        self.render(speed=0.95)
+                        self.render(speed=0.98)
 
                     self.sys.pos_target = self.data.qpos[16:19].copy()
                     self.sys.pos_hand = self.data.site_xpos[-1].copy()
@@ -240,5 +241,6 @@ class RL_arm(gym.Env):
     def render(self, speed=0.05):
         if random.uniform( 0, 1) >= speed:
             # self.head_camera.show(rgb=True)
+            # self.hand_camera.show(rgb=True)
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.5
