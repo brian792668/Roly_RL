@@ -234,6 +234,7 @@
                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.2 0.2 0.2 1" mesh="camera" />
                         <geom type="mesh" rgba="0.2 0.2 0.2 1" mesh="camera" />
                         <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
+                        <site name="neck_marker" type="sphere" size="0.002" pos="0 0 0" rgba="1 1 1 1" material="glowing_material"/>
                     </body>
                 </body>
                 <body name="R_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
@@ -310,7 +311,7 @@
                                             <!-- <geom type="mesh" rgba="1 1 1 1" mesh="R gripper" /> -->
                                         </body>
                                         <camera name="R hand camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
-                                        <site name="hand_marker" type="sphere" size="0.015" pos="0 0 0.19" rgba="0 1 0 1" material="glowing_material"/>
+                                        <site name="hand_marker" type="sphere" size="0.01" pos="0 0 0.19" rgba="0 1 1 1" material="glowing_material"/>
                                     </body>
                                 </body>
                             </body>
@@ -403,120 +404,233 @@
             <joint type="free" damping="0.001"/>
             <geom type="sphere" mass="0.0000001" contype="0" conaffinity="0" group="1" pos="0.0 0.0 0.0" size="0.01" rgba="1 0 0 1"/> 
         </body>
-        <!-- <body name="red_box" > 
-            <joint type="free" damping="0.001"/>
-            <geom type="box" mass="2.1" pos="0.4 0.1 1.2" size="0.01 0.01 0.02" rgba="1 0 0 1"/> 
-        </body> -->
+        <body name="fix_box" > 
+            <!-- <joint type="free" damping="0.001"/> -->
+            <geom type="box" mass="20000" pos="0 0.427 0" size="0.2 0.2 0.0199"  rgba="0.2 0.2 0.2 1"/> 
+            <geom type="box" mass="20000" pos="0 -0.427 0" size="0.2 0.2 0.0199" rgba="0.2 0.2 0.2 1"/> 
+            <geom type="box" mass="20000" pos="0.38 0 0" size="0.2 0.625 0.02"  rgba="0.2 0.2 0.2 1"/> 
+            <geom type="box" mass="20000" pos="-0.31 0 0" size="0.2 0.625 0.02"   rgba="0.2 0.2 0.2 1"/> 
+        </body>
 
-        <site name="marker0" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker1" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker2" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker3" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker4" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker5" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker6" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker7" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker8" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker9" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker0" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker1" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker2" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker3" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker4" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker5" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker6" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker7" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker8" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker9" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker10" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker11" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker12" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker13" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker14" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker15" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker16" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker17" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker18" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker19" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker10" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker11" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker12" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker13" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker14" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker15" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker16" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker17" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker18" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker19" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker20" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker21" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker22" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker23" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker24" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker25" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker26" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker27" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker28" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker29" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker20" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker21" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker22" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker23" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker24" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker25" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker26" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker27" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker28" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker29" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker30" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker31" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker32" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker33" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker34" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker35" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker36" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker37" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker38" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker39" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker30" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker31" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker32" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker33" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker34" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker35" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker36" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker37" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker38" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker39" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker40" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker41" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker42" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker43" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker44" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker45" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker46" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker47" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker48" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker49" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker40" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker41" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker42" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker43" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker44" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker45" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker46" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker47" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker48" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker49" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker50" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker51" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker52" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker53" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker54" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker55" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker56" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker57" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker58" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker59" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker50" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker51" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker52" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker53" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker54" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker55" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker56" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker57" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker58" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker59" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker60" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker61" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker62" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker63" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker64" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker65" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker66" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker67" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker68" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker69" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker60" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker61" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker62" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker63" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker64" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker65" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker66" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker67" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker68" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker69" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker70" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker71" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker72" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker73" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker74" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker75" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker76" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker77" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker78" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker79" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker70" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker71" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker72" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker73" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker74" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker75" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker76" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker77" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker78" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker79" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker80" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker81" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker82" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker83" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker84" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker85" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker86" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker87" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker88" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker89" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker80" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker81" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker82" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker83" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker84" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker85" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker86" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker87" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker88" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker89" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
 
-        <site name="marker90" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker91" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker92" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker93" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker94" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker95" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker96" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker97" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker98" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
-        <site name="marker99" type="sphere" size="0.005" pos="0.1 -0.30 1.35" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker90" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker91" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker92" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker93" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker94" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker95" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker96" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker97" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker98" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker99" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker100" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker101" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker102" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker103" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker104" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker105" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker106" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker107" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker108" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker109" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker110" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker111" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker112" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker113" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker114" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker115" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker116" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker117" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker118" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker119" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker120" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker121" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker122" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker123" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker124" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker125" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker126" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker127" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker128" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker129" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker130" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker131" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker132" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker133" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker134" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker135" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker136" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker137" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker138" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker139" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker140" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker141" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker142" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker143" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker144" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker145" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker146" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker147" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker148" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker149" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker150" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker151" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker152" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker153" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker154" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker155" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker156" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker157" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker158" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker159" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker160" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker161" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker162" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker163" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker164" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker165" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker166" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker167" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker168" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker169" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker170" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker171" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker172" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker173" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker174" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker175" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker176" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker177" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker178" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker179" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker180" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker181" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker182" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker183" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker184" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker185" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker186" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker187" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker188" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker189" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+
+        <site name="marker190" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker191" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker192" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker193" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker194" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker195" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker196" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker197" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker198" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
+        <site name="marker199" type="sphere" size="0.005" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
         
     </worldbody>
     <equality>

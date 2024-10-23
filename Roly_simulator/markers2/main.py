@@ -41,45 +41,43 @@ if __name__ == '__main__':
     # -----------------------------------------------------------------------------
 
 
-    # ======================================================== 50 points
-    target100point = [[0, 0, 0] for _ in range(100)]
-    for i in range(len(target100point)):
+    # ======================================================== 200 points
+    target200point = [[0, 0, 0] for _ in range(200)]
+    label200point = [[0, 0, 0] for _ in range(200)]
+    joint200point = [[0, 0, 0, 0] for _ in range(200)]
+    for i in range(len(target200point)):
         distoshoulder = 0.5
         while distoshoulder >= 0.42:
-            target100point[i][0] = random.uniform(0.1, 0.5)
-            target100point[i][1] = random.uniform(-0.6, 0.0)
-            target100point[i][2] = random.uniform(1.35, 0.9)
-            distoshoulder  = (target100point[i][0]-0.00)**2
-            distoshoulder += (target100point[i][1]+0.25)**2
-            distoshoulder += (target100point[i][2]-1.35)**2
+            target200point[i][0] = random.uniform(0.1, 0.5)
+            target200point[i][1] = random.uniform(-0.6, 0.0)
+            target200point[i][2] = random.uniform(1.35, 0.9)
+            distoshoulder  = (target200point[i][0]-0.00)**2
+            distoshoulder += (target200point[i][1]+0.25)**2
+            distoshoulder += (target200point[i][2]-1.35)**2
             distoshoulder = distoshoulder ** 0.5
-    sorted_target100point = sorted(target100point, key=lambda x: x[0])
-    sorted_target100point = sorted(sorted_target100point, key=lambda x: x[1])
-    sorted_target100point = sorted(sorted_target100point, key=lambda x: x[2])
+    sorted_target200point = sorted(target200point, key=lambda x: x[2])
     point_index = 0
     stabletime = 0
     model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker0")] = [0, 1, 0, 1]
     model.site_size[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker0")] = 0.01
+    neckpos = [0.0, 0.0, 0.0]
     # --------------------------------------------------------
 
-    ######
     # initialize
     pos = initPos
     target = initTarget
-    # sensor = initSensor
     PIDctrl = PIDcontroller(controlParameter, target)
     head_camera = Camera(renderer=renderer, camID=0)
-
     # if base is free joint
     data.qpos[:] = pos[:]
     # # if base is fixed
     # data.qpos[:] = pos[7:]
-    ######
+
 
     mujoco.mj_resetData(model, data)  # Reset state and time.
     viewer = mujoco.viewer.launch_passive(model, data)
-    viewer.cam.distance = 2.5
-    viewer.cam.lookat = [0.0, 0.0, 0.8]
+    viewer.cam.distance = 1.5
+    viewer.cam.lookat = [0.0, -0.25, 1.0]
     viewer.cam.elevation = -30
     viewer.cam.azimuth = 180
     
@@ -96,27 +94,36 @@ if __name__ == '__main__':
     vel2[2] = vel2[2]*0.6+0.4*(data.site_xpos[site_id][2].copy() - pos2[2] )/ 0.001
     targetpoint = pos2.copy()
 
+    neckpos = data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "neck_marker")].copy()
+    for i in range(len(target200point)):
+        label200point[i][0] = sorted_target200point[i][0]-neckpos[0]
+        label200point[i][1] = sorted_target200point[i][1]-neckpos[1]
+        label200point[i][2] = sorted_target200point[i][2]-neckpos[2]
+    
+
     while viewer.is_running():
         step += 1
-        if stabletime == 1000:
-            print(f"index = {point_index}: {np.degrees(pos[3]):.2f}, {np.degrees(pos[4]):.2f}, {np.degrees(pos[6]):.2f}, {np.degrees(pos[7]):.2f}")
+        if stabletime == 2000:
+            joint200point[point_index] = [np.degrees(pos[3]), np.degrees(pos[4]), np.degrees(pos[6]), np.degrees(pos[7])]
+            print(f"index = {point_index}: {np.degrees(pos[3]):.2f}, {np.degrees(pos[4]):.2f}, {np.degrees(pos[6]):.2f}, {np.degrees(pos[7]):.2f} --- label: [{label200point[point_index][0]:.2f} {label200point[point_index][1]:.2f} {label200point[point_index][2]:.2f}]")
             point_index += 1
             stabletime = 0
-            if point_index == len(sorted_target100point):
+            # if point_index == len(sorted_target200point):
+            if point_index == 10:
                 renderer.close()
-                print("done\n")
+                break
             model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index}")] = [0, 1, 0, 1]
             model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index-1}")] = [1, 0, 1, 0.5]
             model.site_size[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index}")] = 0.01
             model.site_size[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index-1}")] = 0.005
-        if (np.abs(targetpoint[0] - sorted_target100point[point_index][0]) < 0.002) and (np.abs(targetpoint[1] - sorted_target100point[point_index][1]) < 0.002) and (np.abs(targetpoint[2] - sorted_target100point[point_index][2]) < 0.002):
+        if (np.abs(targetpoint[0] - sorted_target200point[point_index][0]) < 0.002) and (np.abs(targetpoint[1] - sorted_target200point[point_index][1]) < 0.002) and (np.abs(targetpoint[2] - sorted_target200point[point_index][2]) < 0.002):
             stabletime +=1
         else:
             stabletime = 0
             
-        targetpoint[0] += 0.0001*np.tanh(100*(sorted_target100point[point_index][0]-targetpoint[0]))
-        targetpoint[1] += 0.0001*np.tanh(100*(sorted_target100point[point_index][1]-targetpoint[1]))
-        targetpoint[2] += 0.0001*np.tanh(100*(sorted_target100point[point_index][2]-targetpoint[2]))
+        targetpoint[0] += 0.0001*np.tanh(100*(sorted_target200point[point_index][0]-targetpoint[0]))
+        targetpoint[1] += 0.0001*np.tanh(100*(sorted_target200point[point_index][1]-targetpoint[1]))
+        targetpoint[2] += 0.0001*np.tanh(100*(sorted_target200point[point_index][2]-targetpoint[2]))
 
         # if base is free joint
         pos = [data.qpos[i] for i in controlList]
@@ -135,13 +142,19 @@ if __name__ == '__main__':
         data.ctrl[6:8] = [0]*2
         mujoco.mj_step(model, data)
 
-        if step%500 == 0:
-            for i in range(len(sorted_target100point)):
-                data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_target100point[i]
+        if step%1000 == 0:
+            for i in range(len(sorted_target200point)):
+                data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_target200point[i]
             viewer.sync()
-
-            viewer.cam.azimuth += 0.1
+            # viewer.cam.azimuth += 0.1
 
 
     renderer.close() 
     cv2.destroyAllWindows() 
+
+    save_dir = 'Roly/Inverse_kinematics/'
+    label200point_np = np.array(label200point)
+    joint200point_np = np.array(joint200point)
+    np.save(os.path.join(save_dir, 'label200point.npy'), label200point_np)
+    np.save(os.path.join(save_dir, 'joint200point.npy'), joint200point_np)
+    print("done\n")
