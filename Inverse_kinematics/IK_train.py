@@ -3,6 +3,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 xyz_array = np.load('Roly/Inverse_kinematics/label200point.npy')
 joints_array = np.load('Roly/Inverse_kinematics/joint200point.npy')
@@ -44,8 +45,8 @@ class IKMLP(nn.Module):
     def __init__(self):
         super(IKMLP, self).__init__()
         # 定義三層線性層
-        self.fc1 = nn.Linear(3, 64)  # 輸入3維，隱藏層64
-        self.fc2 = nn.Linear(64, 128) # 隱藏層64輸出128
+        self.fc1 = nn.Linear(3, 128)  # 輸入3維，隱藏層64
+        self.fc2 = nn.Linear(128, 128) # 隱藏層64輸出128
         self.fc3 = nn.Linear(128, 4)  # 輸出4維（4個關節角度）
     
     def forward(self, x):
@@ -61,10 +62,12 @@ class IKMLP(nn.Module):
 model = IKMLP()
 criterion = nn.MSELoss()  # 使用均方誤差作為損失函數
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-epochs = 1000
+epochs = 10000
+all_losses = []  # 用來紀錄每個epoch的平均loss
 
 # 開始訓練
 for epoch in range(epochs):
+    running_loss = 0.0
     for i, (xyz, target_angles) in enumerate(dataloader):
         # 前向傳播
         predicted_angles = model(xyz)
@@ -75,7 +78,23 @@ for epoch in range(epochs):
         loss.backward()        # 計算梯度
         optimizer.step()       # 更新參數
 
-    print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}')
+        running_loss += loss.item() # 累加當前batch的loss
+
+    # 計算這個 epoch 的平均 loss
+    epoch_loss = running_loss / len(dataloader)
+    all_losses.append(epoch_loss)  # 紀錄平均loss
+
+    print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.2f}')
 
 # save model
 torch.save(model.state_dict(), 'Roly/Inverse_kinematics/Roly_IK_model.pth')
+# 繪製loss對應epoch的圖
+plt.plot(range(1, epochs+1), all_losses, label='Training Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.ylim(0, 200)
+plt.title('Training Loss vs. Epochs')
+plt.legend()
+plt.show()
+plt.savefig("Roly/Inverse_kinematics/TrainingLoss_vs_epch.png")
+plt.close()

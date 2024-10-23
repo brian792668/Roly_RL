@@ -105,11 +105,10 @@ if __name__ == '__main__':
         step += 1
         if stabletime == 2000:
             joint200point[point_index] = [np.degrees(pos[3]), np.degrees(pos[4]), np.degrees(pos[6]), np.degrees(pos[7])]
-            print(f"index = {point_index}: {np.degrees(pos[3]):.2f}, {np.degrees(pos[4]):.2f}, {np.degrees(pos[6]):.2f}, {np.degrees(pos[7]):.2f} --- label: [{label200point[point_index][0]:.2f} {label200point[point_index][1]:.2f} {label200point[point_index][2]:.2f}]")
+            print(f"index = {point_index}: {np.degrees(pos[3]):.2f}, {np.degrees(pos[4]):.2f}, {np.degrees(pos[6]):.2f}, {np.degrees(pos[7]):.2f} --- label: [{label200point[point_index][0]:.2f}, {label200point[point_index][1]:.2f}, {label200point[point_index][2]:.2f}]")
             point_index += 1
             stabletime = 0
-            # if point_index == len(sorted_target200point):
-            if point_index == 10:
+            if point_index == len(sorted_target200point):
                 renderer.close()
                 break
             model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index}")] = [0, 1, 0, 1]
@@ -142,7 +141,7 @@ if __name__ == '__main__':
         data.ctrl[6:8] = [0]*2
         mujoco.mj_step(model, data)
 
-        if step%1000 == 0:
+        if step%2000 == 0:
             for i in range(len(sorted_target200point)):
                 data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_target200point[i]
             viewer.sync()
