@@ -55,30 +55,16 @@ class RL_arm(gym.Env):
             # # print(self.inf.action)
 
             for i in range(len(action)):
-                # self.inf.action[i] = self.inf.action[i]*0.95 + action[i]*0.05
                 self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
                 # self.inf.action[i] = action[i]
 
             for i in range(20):
 
-                # for i in range(5):
-                #     self.sys.ctrlpos[i+3] = self.sys.pos[i+3]*0.95 + 0.05*((self.sys.limit_high[i]+self.sys.limit_low[i])/2 + self.inf.action[i]*(self.sys.limit_high[i]-self.sys.limit_low[i])/2)
-                # self.sys.ctrlpos[5] = 0
-
-                # for i in range(5):
-                #     if self.inf.action[i]>=0: 
-                #         # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])
-                #         self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.limit_high[i] - self.sys.pos[i+3])/(self.sys.limit_high[i] - self.sys.limit_low[i])
-                #     else: 
-                #         # self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )
-                #         self.sys.ctrlpos[i+3] = self.sys.pos[i+3] + self.inf.action[i]*0.01*(self.sys.pos[i+3] - self.sys.limit_low[i] )/(self.sys.limit_high[i] - self.sys.limit_low[i])
-                # self.sys.ctrlpos[5] = 0
-
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
-                self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002
-                self.sys.ctrlpos[5] = 0
-                self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[2]*0.002
-                self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[3]*0.002
+                self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002 - self.inf.action[2]*0.001
+                self.sys.ctrlpos[5] = self.sys.pos[5] + self.inf.action[2]*0.002
+                self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[3]*0.002
+                self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[4]*0.002
                 for i in range(5):
                     if self.sys.ctrlpos[i+3] > self.sys.limit_high[i]: 
                         self.sys.ctrlpos[i+3] = self.sys.limit_high[i]
@@ -91,13 +77,11 @@ class RL_arm(gym.Env):
                 
                 mujoco.mj_step(self.robot, self.data)
                 # print(f"{self.data.time:2f}", mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, 'trunk'))
-                print(f"{self.data.time:2f}", mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, 'hitbox1'))
-                print(f"{self.data.time:2f}", mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, 'hitbox2'))
 
                 for i, con in enumerate(self.data.contact):
                     geom1_id = con.geom1
                     geom2_id = con.geom2
-                    if geom1_id == 32 or geom2_id == 32:
+                    if geom1_id == 32 or geom2_id == 32 or geom1_id == 33 or geom2_id == 33:
                         self.inf.done = False
                         self.inf.truncated = True
                         self.inf.info = {}
@@ -133,10 +117,14 @@ class RL_arm(gym.Env):
             # self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + np.radians(random.uniform( -60, 0))*0.05
             # self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + np.radians(random.uniform( -60, 10))*0.05
             # self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + np.radians(random.uniform( 0, 110))*0.05
-            initial_arm_pos = [np.radians(random.uniform( -60, 60)),
-                               np.radians(random.uniform( -60, 0)),
-                               np.radians(random.uniform( -60, 10)),
-                               np.radians(random.uniform( 0, 110))]
+            # initial_arm_pos = [np.radians(random.uniform( -60, 0)),
+            #                    np.radians(random.uniform( -60, 0)),
+            #                    np.radians(random.uniform( -60, 10)),
+            #                    np.radians(random.uniform( 0, 110))]
+            initial_arm_pos = [np.radians(-30),
+                               np.radians(random.uniform( -30, 0)),
+                               np.radians(random.uniform( -30, 10)),
+                               np.radians(60)]
             for i in range(100):
                 self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + np.radians(-60)*0.05
                 self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + initial_arm_pos[0]*0.05
@@ -185,9 +173,11 @@ class RL_arm(gym.Env):
             r2 = (self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2)**0.5
             r2 = 1-r2
 
-        # self.inf.reward = np.exp(-3*self.sys.hand2target/self.sys.hand2target0) + reward_of_getting_close
-        self.inf.reward = r0 * (1+0.5*r2) + r1
+        # r3: reward of detail control
+        r3 = np.exp(-(40*self.sys.hand2target)**2)
 
+
+        self.inf.reward = r0 * (1+0.5*r2) + r1 + r3
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
         # print(self.inf.reward)
@@ -244,8 +234,7 @@ class RL_arm(gym.Env):
         self.hand_camera.get_target(depth = False)
 
         self.obs.joint_camera   = self.data.qpos[8:10].copy()
-        self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
-        self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
+        self.obs.joint_arm[0:5] = self.data.qpos[10:15].copy()
         self.obs.vel_arm        = self.data.qpos[9:14].copy()
         
         if np.isnan(self.head_camera.target_depth) == False:
@@ -256,7 +245,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.05):
+    def render(self, speed=0.95):
         if random.uniform( 0, 1) >= speed:
             # self.head_camera.show(rgb=True)
             # self.hand_camera.show(rgb=True)
