@@ -130,7 +130,7 @@ if __name__ == '__main__':
         mujoco.mj_step(model, data)
 
         if step%20 == 0:
-            # data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "marker1")] = target2
+            data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "marker1")] = target2
             viewer.sync()
             head_camera.get_img(data, rgb=True, depth=True)
             head_camera.get_target()
