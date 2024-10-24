@@ -5,9 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
-xyz_array = np.load('Roly/Inverse_kinematics/label200point.npy')
-joints_array = np.load('Roly/Inverse_kinematics/joint200point.npy')
-
 class IKDataset(Dataset):
     def __init__(self, xyz_data, angles_data):
         self.xyz_data = xyz_data
@@ -26,75 +23,68 @@ class IKDataset(Dataset):
         
         return xyz_tensor, angles_tensor
 
-# create dataset from numpy array
-ik_dataset = IKDataset(xyz_array, joints_array)
-dataloader = DataLoader(ik_dataset, batch_size=10, shuffle=True)
-
-# # print dataset in dataloader form
-# for batch_idx, (xyz, angles) in enumerate(dataloader):
-#     print(f"Batch {batch_idx+1}:")
-#     print("xyz: ", xyz)
-#     print("angles: ", angles)
-#     print("\n")  # 每個 batch 之間加點空行讓輸出更清楚
-
-
-# ==========================================================
-# ----------------------- 建立 MLP --------------------------
-
 class IKMLP(nn.Module):
     def __init__(self):
         super(IKMLP, self).__init__()
-        # 定義三層線性層
-        self.fc1 = nn.Linear(3, 128)  # 輸入3維，隱藏層64
-        self.fc2 = nn.Linear(128, 128) # 隱藏層64輸出128
-        self.fc3 = nn.Linear(128, 4)  # 輸出4維（4個關節角度）
+        # 定義三層線性層 3 - 64 - 128 - 4
+        self.fc1 = nn.Linear(3, 64)
+        self.fc2 = nn.Linear(64, 128)
+        self.fc3 = nn.Linear(128, 4)
     
     def forward(self, x):
-        x = F.relu(self.fc1(x))  # 第一層用 ReLU 激活
-        x = F.relu(self.fc2(x))  # 第二層用 ReLU 激活
+        x = F.relu(self.fc1(x))  # 第一層用 ReLU
+        x = F.relu(self.fc2(x))  # 第二層用 ReLU
         x = self.fc3(x)          # 最後一層直接輸出
         return x
-    
 
-# ==========================================================
-# ----------------------- Training -------------------------
+def train(numberofpoints, version):
+    # ---------------- Create datasets from numpy array -----------------
+    xyz_array = np.load(f'Roly/Inverse_kinematics/datasets/{numberofpoints}points/xyz.npy')
+    joints_array = np.load(f'Roly/Inverse_kinematics/datasets/{numberofpoints}points/joints.npy')
+    ik_dataset = IKDataset(xyz_array, joints_array)
+    dataloader = DataLoader(ik_dataset, batch_size=10, shuffle=True)
 
-model = IKMLP()
-criterion = nn.MSELoss()  # 使用均方誤差作為損失函數
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-epochs = 10000
-all_losses = []  # 用來紀錄每個epoch的平均loss
+    # ----------------------- Create MLP model --------------------------
+    model = IKMLP()
+    criterion = nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-# 開始訓練
-for epoch in range(epochs):
-    running_loss = 0.0
-    for i, (xyz, target_angles) in enumerate(dataloader):
-        # 前向傳播
-        predicted_angles = model(xyz)
-        loss = criterion(predicted_angles, target_angles)
-        
-        # 反向傳播和優化
-        optimizer.zero_grad()  # 清空上一次的梯度
-        loss.backward()        # 計算梯度
-        optimizer.step()       # 更新參數
+    # --------------------------- Training ------------------------------
+    epochs = 1000
+    all_losses = []
 
-        running_loss += loss.item() # 累加當前batch的loss
+    for epoch in range(epochs):
+        running_loss = 0.0
+        for i, (xyz, target_angles) in enumerate(dataloader):
+            # 前向傳播
+            predicted_angles = model(xyz)
+            loss = criterion(predicted_angles, target_angles)
 
-    # 計算這個 epoch 的平均 loss
-    epoch_loss = running_loss / len(dataloader)
-    all_losses.append(epoch_loss)  # 紀錄平均loss
+            # 反向傳播和優化
+            optimizer.zero_grad()  # 清空上一次的梯度
+            loss.backward()        # 計算梯度
+            optimizer.step()       # 更新參數
 
-    print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.2f}')
+            running_loss += loss.item() # 累加當前batch的loss
 
-# save model
-torch.save(model.state_dict(), 'Roly/Inverse_kinematics/Roly_IK_model.pth')
-# 繪製loss對應epoch的圖
-plt.plot(range(1, epochs+1), all_losses, label='Training Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.ylim(0, 200)
-plt.title('Training Loss vs. Epochs')
-plt.legend()
-plt.show()
-plt.savefig("Roly/Inverse_kinematics/TrainingLoss_vs_epch.png")
-plt.close()
+        epoch_loss = running_loss / len(dataloader) # epoch avg loss
+        all_losses.append(epoch_loss)
+        print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.2f}')
+
+    # save model
+    torch.save(model.state_dict(), f'Roly/Inverse_kinematics/models/{numberofpoints}points_{version}.pth')
+
+    # plot
+    fig = plt.figure(figsize=(20, 12))
+    plt.plot(range(1, epochs+1), all_losses, label='Training Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.ylim(0, 200)
+    plt.title('Training Loss vs. Epochs')
+    plt.legend()
+    plt.savefig(f"Roly/Inverse_kinematics/models/TrainingLoss_vs_epoch ({numberofpoints}points {version}).png")
+    plt.show()
+    plt.close()
+
+if __name__ == '__main__':
+    train(numberofpoints=10, version="v1")
