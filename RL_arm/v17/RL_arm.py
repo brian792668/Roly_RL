@@ -61,7 +61,7 @@ class RL_arm(gym.Env):
             for i in range(20):
 
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
-                self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002 - self.inf.action[2]*0.001
+                self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002
                 self.sys.ctrlpos[5] = self.sys.pos[5] + self.inf.action[2]*0.002
                 self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[3]*0.002
                 self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[4]*0.002
@@ -148,6 +148,8 @@ class RL_arm(gym.Env):
             return self.observation_space, self.inf.info
 
     def get_reward(self):
+        # self.sys.pos_target = self.data.qpos[36:39].copy()
+        # self.sys.pos_hand = self.data.site_xpos[42].copy()
 
         self.sys.pos_target = self.data.qpos[16:19].copy()
         self.sys.pos_hand = self.data.site_xpos[-1].copy()
@@ -159,7 +161,8 @@ class RL_arm(gym.Env):
         new_dis = new_dis ** 0.5
 
         # r0: reward of position
-        r0 = np.exp(-3*self.sys.hand2target/self.sys.hand2target0)
+        # r0 = np.exp(-3*self.sys.hand2target/self.sys.hand2target0)
+        r0 = np.exp(-30*self.sys.hand2target**1.8)
 
         # r1: panalty of leaving
         r1 = 20*(self.sys.hand2target - new_dis)
@@ -172,7 +175,7 @@ class RL_arm(gym.Env):
             r2 = 1-r2
 
         # r3: reward of detail control
-        r3 = np.exp(-(40*self.sys.hand2target)**2)
+        r3 = np.exp(-(20*self.sys.hand2target)**2)
 
 
         self.inf.reward = r0 * (1+0.5*r2) + r1 + r3
@@ -243,7 +246,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.05):
+    def render(self, speed=0.95):
         if random.uniform( 0, 1) >= speed:
             # self.head_camera.show(rgb=True)
             # self.hand_camera.show(rgb=True)

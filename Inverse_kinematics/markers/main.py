@@ -48,7 +48,7 @@ def lebal_Roly_IK():
         else:
             return True
 
-    numberofpoints = 10
+    numberofpoints = 2000
     targetpoints = [[0, 0, 0] for _ in range(numberofpoints)]
     labelpoints = [[0, 0, 0] for _ in range(numberofpoints)]
     jointpoints = [[0, 0, 0, 0] for _ in range(numberofpoints)]
@@ -119,17 +119,17 @@ def lebal_Roly_IK():
         step += 1
         if stabletime == 2000:
             jointpoints[point_index] = [np.degrees(pos[3]), np.degrees(pos[4]), np.degrees(pos[6]), np.degrees(pos[7])]
-            print(f"index: {point_index} -- label: [{labelpoints[point_index][0]:.2f}, {labelpoints[point_index][1]:.2f}, {labelpoints[point_index][2]:.2f}] -- joints: [{np.degrees(pos[3]):.1f}, {np.degrees(pos[4]):.1f}, {np.degrees(pos[6]):.1f}, {np.degrees(pos[7]):.1f}] ")
+            print(f"index: {point_index} -- xyz: [{labelpoints[point_index][0]:.2f}, {labelpoints[point_index][1]:.2f}, {labelpoints[point_index][2]:.2f}] -- joints: [{np.degrees(pos[3]):.1f}, {np.degrees(pos[4]):.1f}, {np.degrees(pos[6]):.1f}, {np.degrees(pos[7]):.1f}] ")
             point_index += 1
             stabletime = 0
             if point_index == len(sorted_targetpoints):
                 renderer.close()
                 break
-            model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index}")] = [0, 1, 0, 1]
-            model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index-1}")] = [1, 0, 1, 0.4]
+            model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index}")] = [0, 1, 0, 0.5]
+            model.site_rgba[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index-1}")] = [1, 0, 1, 0.5]
             model.site_size[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index}")] = 0.01
-            model.site_size[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index-1}")] = 0.005
-        if (np.abs(targetpoint[0] - sorted_targetpoints[point_index][0]) < 0.002) and (np.abs(targetpoint[1] - sorted_targetpoints[point_index][1]) < 0.002) and (np.abs(targetpoint[2] - sorted_targetpoints[point_index][2]) < 0.002):
+            model.site_size[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{point_index-1}")] = 0.002
+        if (np.abs(targetpoint[0] - sorted_targetpoints[point_index][0]) < 0.001) and (np.abs(targetpoint[1] - sorted_targetpoints[point_index][1]) < 0.001) and (np.abs(targetpoint[2] - sorted_targetpoints[point_index][2]) < 0.001):
             stabletime +=1
         else:
             stabletime = 0
@@ -155,11 +155,11 @@ def lebal_Roly_IK():
         data.ctrl[6:8] = [0]*2
         mujoco.mj_step(model, data)
 
-        if step%10000 == 0:
-            for i in range(len(sorted_targetpoints)):
-                data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_targetpoints[i]
-            viewer.sync()
-            # viewer.cam.azimuth += 0.1
+        # if step%10000 == 0:
+        #     for i in range(len(sorted_targetpoints)):
+        #         data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_targetpoints[i]
+        #     viewer.sync()
+        #     # viewer.cam.azimuth += 0.1
 
 
     renderer.close() 
