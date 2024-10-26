@@ -37,6 +37,7 @@ class RL_arm(gym.Env):
         self.viewer.cam.azimuth = 200
         
     def step(self, action): 
+        # self.inf.truncated = False
         if self.viewer.is_running() == False:
             self.close()
         elif self.inf.timestep > 2000:
@@ -100,7 +101,6 @@ class RL_arm(gym.Env):
                                                      [self.obs.cam2target]*5, 
                                                      self.obs.joint_arm]).astype(np.float32)
             self.inf.info = {}
-            self.inf.truncated = False
             return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
     
     def reset(self, seed=None, **kwargs): 
@@ -246,7 +246,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.95):
+    def render(self, speed=0.05):
         if random.uniform( 0, 1) >= speed:
             # self.head_camera.show(rgb=True)
             # self.hand_camera.show(rgb=True)
