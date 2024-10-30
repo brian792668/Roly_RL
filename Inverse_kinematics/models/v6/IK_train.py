@@ -38,21 +38,21 @@ def train(numberofpoints, version):
     xyz_array = np.load(f'Roly/Inverse_kinematics/datasets/{numberofpoints}points/xyz.npy')
     joints_array = np.load(f'Roly/Inverse_kinematics/datasets/{numberofpoints}points/joints.npy')
     ik_dataset = IKDataset(xyz_array, joints_array)
-    dataloader = DataLoader(ik_dataset, batch_size=8, shuffle=True)
+    dataloader = DataLoader(ik_dataset, batch_size=64, shuffle=True)
 
     # Load test data
     test_xyz_array = np.load(f'Roly/Inverse_kinematics/datasets/100points/xyz.npy')
     test_joints_array = np.load(f'Roly/Inverse_kinematics/datasets/100points/joints.npy')
     test_dataset = IKDataset(test_xyz_array, test_joints_array)
-    test_dataloader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
     # ----------------------- Model --------------------------
     model = IKMLP()
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
 
     # --------------------------- Training ------------------------------
-    epochs = 1000
+    epochs = 2500
     train_losses = []
     test_losses = []
 
@@ -87,12 +87,12 @@ def train(numberofpoints, version):
         print(f'Epoch [{epoch+1}/{epochs}], Train Loss: {epoch_loss:.2f}, Test Loss: {test_loss:.2f}')
 
         # 每個 epoch 結束後繪製並儲存圖
-        plt.figure(figsize=(12, 5))
+        plt.figure(figsize=(12, 8))
         plt.plot(range(1, epoch+2), train_losses, label='Training Loss')
         plt.plot(range(1, epoch+2), test_losses, label='Test Loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
-        plt.ylim(0, 100)
+        plt.ylim(0, 200)
         plt.title('Training and Test Loss vs. Epochs')
         plt.legend()
         plt.grid(True)
