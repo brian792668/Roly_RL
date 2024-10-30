@@ -245,8 +245,7 @@
                 </body>
                 <body name="R_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
                     <inertial pos="-4.78829e-05 0.015654 0.248212" quat="0.49075 0.509211 -0.490712 0.50899" mass="0.159234" diaginertia="7.36582e-05 5.90884e-05 4.06637e-05" />
-                    <!-- <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.01" damping="0.01" stiffness="0.01" armature=".01" limited="true" range="-0.80 1.58"/> -->
-                    <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.01" damping="0.01" stiffness="0.01" armature=".01"/>
+                    <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.01" damping="0.01" stiffness="0.01" armature=".01" limited="true" range="-1.58 1.58"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_shoulder" />
                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_shoulder" />
                     <!-- <site name="shoulder_marker" type="sphere" size="0.41" pos="0 0 0.22" rgba="1 1 1 0.15"/> -->
@@ -264,7 +263,7 @@
                             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm2" />
                             <body name="R_arm3" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
                                 <inertial pos="-3.22978e-05 -0.0109602 -0.118522" quat="0.516239 0.483237 -0.516449 0.48297" mass="0.0455132" diaginertia="1.25282e-05 1.04562e-05 7.71609e-06" />
-                                <joint name="R_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.01" damping="0.01" stiffness="0.01" armature=".01" limited="true" range="-1.10 1.58"/>
+                                <joint name="R_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.01" damping="0.01" stiffness="0.01" armature=".01" limited="true" range="-1.58 1.58"/>
                                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm3" />
                                 <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm3" />
                                 <body name="R_arm4" pos="0 0 -0.1195" quat="0.5 0.5 0.5 0.5">
