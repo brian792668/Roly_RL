@@ -24,8 +24,8 @@ class IKMLP(nn.Module):
     def __init__(self):
         super(IKMLP, self).__init__()
         self.fc1 = nn.Linear(3, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, 64)
         self.fc4 = nn.Linear(64, 4)
     
     def forward(self, x):
@@ -105,4 +105,4 @@ def train(numberofpoints, version):
     torch.save(model.state_dict(), f'Roly/Inverse_kinematics/models/{version}/IKmodel_{version}.pth')
 
 if __name__ == '__main__':
-    train(numberofpoints=2000, version="v3")
+    train(numberofpoints=2000, version="v2")

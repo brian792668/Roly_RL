@@ -24,8 +24,8 @@ class IKMLP(nn.Module):
     def __init__(self):
         super(IKMLP, self).__init__()
         self.fc1 = nn.Linear(3, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, 64)
         self.fc4 = nn.Linear(64, 4)
     
     def forward(self, x):
@@ -40,18 +40,18 @@ def train(numberofpoints, version):
     xyz_array = np.load(f'Roly/Inverse_kinematics/datasets/{numberofpoints}points/xyz.npy')
     joints_array = np.load(f'Roly/Inverse_kinematics/datasets/{numberofpoints}points/joints.npy')
     ik_dataset = IKDataset(xyz_array, joints_array)
-    dataloader = DataLoader(ik_dataset, batch_size=10, shuffle=True)
+    dataloader = DataLoader(ik_dataset, batch_size=8, shuffle=True)
 
     # Load test data
     test_xyz_array = np.load(f'Roly/Inverse_kinematics/datasets/100points/xyz.npy')
     test_joints_array = np.load(f'Roly/Inverse_kinematics/datasets/100points/joints.npy')
     test_dataset = IKDataset(test_xyz_array, test_joints_array)
-    test_dataloader = DataLoader(test_dataset, batch_size=10, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=8, shuffle=False)
 
     # ----------------------- Model --------------------------
     model = IKMLP()
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
 
     # --------------------------- Training ------------------------------
     epochs = 1000
@@ -105,4 +105,4 @@ def train(numberofpoints, version):
     torch.save(model.state_dict(), f'Roly/Inverse_kinematics/models/{version}/IKmodel_{version}.pth')
 
 if __name__ == '__main__':
-    train(numberofpoints=2000, version="v3")
+    train(numberofpoints=2000, version="v4")
