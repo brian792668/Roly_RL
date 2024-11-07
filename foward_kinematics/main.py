@@ -4,16 +4,14 @@
 
 import mujoco
 import mujoco.viewer
-import numpy as np
 import os
-import random
 
 from imports.Settings import *
 from imports.Controller import *
 from imports.Draw_joint_info import *
 from imports.Show_camera_view import *
 from imports.Camera import *
-from imports.Forward_kinematics import *
+from Forward_kinematics import *
 
 if __name__ == '__main__':
     # Add xml path
@@ -45,6 +43,14 @@ if __name__ == '__main__':
     viewer.cam.elevation = -30
     viewer.cam.azimuth = 180
     
+    table1 = [[    0.0, np.pi/2,     0.0,     0.0],
+              [np.pi/2, np.pi/2,     0.0,  0.2488],
+              [    0.0,     0.0, -0.1105,     0.0],
+              [np.pi/2, np.pi/2,     0.0,     0.0],
+              [np.pi/2, np.pi/2,     0.0, -0.1195],
+              [    0.0, np.pi/2,     0.0,     0.0],
+              [    0.0, np.pi/2,     0.0,  0.1803]]
+    DH = DHtable(table1)
     step = 0
     while viewer.is_running():
         step += 1
@@ -61,26 +67,9 @@ if __name__ == '__main__':
         mujoco.mj_step(model, data)
 
         if step%50 == 0:
-            DH = DHtable(pos[3:9])
-            T01  = T(DH, 0)
-            T12  = T(DH, 1)
-            T23  = T(DH, 2)
-            T34  = T(DH, 3)
-            T45  = T(DH, 4)
-            T56  = T(DH, 5)
-            T6E  = T(DH, 6)
-
-            T02 = np.dot(T01, T12)
-            T03 = np.dot(T02, T23)
-            T04 = np.dot(T03, T34)
-            T05 = np.dot(T04, T45)
-            T06 = np.dot(T05, T56)
-            T0E = np.dot(T06, T6E)
-            EE  = np.dot(T0E, np.array([[0], [0], [0], [1]]))
-
-            data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker2")] = [EE[0][0]+0.0, EE[1][0]+0.0, EE[2][0]+1.34]
+            EE = DH.forward(angles=pos[3:9])
+            data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker2")] = [EE[0]+0.0, EE[1]+0.0, EE[2]+1.34]
             viewer.sync()
-
 
     renderer.close() 
     cv2.destroyAllWindows() 
