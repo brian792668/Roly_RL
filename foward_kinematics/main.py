@@ -32,7 +32,7 @@ if __name__ == '__main__':
     head_camera = Camera(renderer=renderer, camID=0)
 
     # if base is free joint
-    data.qpos[:] = pos[:]
+    # data.qpos[:] = pos[:]
     # # if base is fixed
     # data.qpos[:] = pos[7:]
 
@@ -43,32 +43,44 @@ if __name__ == '__main__':
     viewer.cam.elevation = -30
     viewer.cam.azimuth = 180
     
-    table1 = [[    0.0, np.pi/2,     0.0,     0.0],
+    tableR = [[    0.0, np.pi/2,     0.0,     0.0],
               [np.pi/2, np.pi/2,     0.0,  0.2488],
               [    0.0,     0.0, -0.1105,     0.0],
               [np.pi/2, np.pi/2,     0.0,     0.0],
               [np.pi/2, np.pi/2,     0.0, -0.1195],
               [    0.0, np.pi/2,     0.0,     0.0],
               [    0.0, np.pi/2,     0.0,  0.1803]]
-    DH = DHtable(table1)
+    tableL = [[    0.0, np.pi/2,     0.0,     0.0],
+              [np.pi/2, np.pi/2,     0.0, -0.2488],
+              [    0.0,     0.0, -0.1105,     0.0],
+              [np.pi/2, np.pi/2,     0.0,     0.0],
+              [np.pi/2, np.pi/2,     0.0, -0.1195],
+              [    0.0, np.pi/2,     0.0,     0.0],
+              [    0.0, np.pi/2,     0.0,  0.1803]]
+    DH_R = DHtable(tableR)
+    DH_L = DHtable(tableL)
+    
     step = 0
     while viewer.is_running():
         step += 1
 
         ## if base is free joint
-        pos = [data.qpos[i] for i in controlList]
-        vel = [data.qvel[i-1] for i in controlList]
+        posR = [data.qpos[i] for i in controlList]
+        velR = [data.qvel[i-1] for i in controlList]
+        posL = data.qpos[16:22]
         # if base is not free joint
         # pos = [data.qpos[i-7] for i in controlList]
         # vel = [data.qvel[i-8] for i in controlList]
 
-        data.ctrl[:] = PIDctrl.getSignal(pos, vel, target)
+        data.ctrl[:] = PIDctrl.getSignal(posR, velR, target)
         data.ctrl[3:8] = [0, 0, 0, 0, 0]
         mujoco.mj_step(model, data)
 
         if step%50 == 0:
-            EE = DH.forward(angles=pos[3:9])
-            data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker2")] = [EE[0]+0.0, EE[1]+0.0, EE[2]+1.34]
+            EE_R = DH_R.forward(angles=posR[3:9])
+            EE_L = DH_L.forward(angles=posL)
+            data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"markerR")] = [EE_R[0]+0.0, EE_R[1]+0.0, EE_R[2]+1.34]
+            data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"markerL")] = [EE_L[0]+0.0, EE_L[1]+0.0, EE_L[2]+1.34]
             viewer.sync()
 
     renderer.close() 
