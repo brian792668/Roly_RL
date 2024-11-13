@@ -1,0 +1,469 @@
+<mujoco model="Roly">
+  <compiler angle="radian" meshdir="meshes/"/>
+  <option timestep="0.001" iterations="1000"/>
+  <size njmax="500" nconmax="100" />
+  <asset>
+    <mesh name="base_link" file="base_link.STL"/>
+
+    <mesh name="R_hip_yaw" file="R_hip_yaw.STL"/>
+    <mesh name="R_hip_roll" file="R_hip_roll.STL"/>
+    <mesh name="R_hip_pitch" file="R_hip_pitch.STL"/>
+    <mesh name="R_calf" file="R_calf.STL"/>
+    <mesh name="R_ankle_pitch" file="R_ankle_pitch.STL"/>
+    <mesh name="R_ankle_roll" file="R_ankle_roll.STL"/>
+    <mesh name="R_knee_rocker" file="R_knee_rocker.STL"/>
+    <mesh name="R_knee_linkage" file="R_knee_linkage.STL"/>
+
+    <mesh name="L_hip_yaw" file="L_hip_yaw.STL"/>
+    <mesh name="L_hip_roll" file="L_hip_roll.STL"/>
+    <mesh name="L_hip_pitch" file="L_hip_pitch.STL"/>
+    <mesh name="L_calf" file="L_calf.STL"/>
+    <mesh name="L_ankle_pitch" file="L_ankle_pitch.STL"/>
+    <mesh name="L_ankle_roll" file="L_ankle_roll.STL"/>
+    <mesh name="L_knee_rocker" file="L_knee_rocker.STL"/>
+    <mesh name="L_knee_linkage" file="L_knee_linkage.STL"/>
+
+    <mesh name="trunk_link" file="trunk_link.STL"/>
+    <mesh name="neck" file="neck.STL"/>
+    <mesh name="camera" file="camera.STL"/>
+
+    <mesh name="R_shoulder" file="R_shoulder.STL"/>
+    <mesh name="R_arm1" file="R_arm1.STL"/>
+    <mesh name="R_arm2" file="R_arm2.STL"/>
+    <mesh name="R_arm3" file="R_arm3.STL"/>
+    <mesh name="R_arm4" file="R_arm4.STL"/>
+    <mesh name="R_palm" file="R_palm.STL"/>
+    <mesh name="R finger1-1" file="R finger1-1.STL"/>
+    <mesh name="R finger1-2" file="R finger1-2.STL"/>
+    <mesh name="R finger2-1" file="R finger2-1.STL"/>
+    <mesh name="R finger2-2" file="R finger2-2.STL"/>
+    <mesh name="R finger3-1" file="R finger3-1.STL"/>
+    <mesh name="R finger3-2" file="R finger3-2.STL"/>
+    <mesh name="R gripper" file="R gripper.STL"/>
+
+    <mesh name="L_shoulder" file="L_shoulder.STL"/>
+    <mesh name="L_arm1" file="L_arm1.STL"/>
+    <mesh name="L_arm2" file="L_arm2.STL"/>
+    <mesh name="L_arm3" file="L_arm3.STL"/>
+    <mesh name="L_arm4" file="L_arm4.STL"/>
+    <mesh name="L_palm" file="L_palm.STL"/>
+    <mesh name="L finger1-1" file="L finger1-1.STL"/>
+    <mesh name="L finger1-2" file="L finger1-2.STL"/>
+    <mesh name="L finger2-1" file="L finger2-1.STL"/>
+    <mesh name="L finger2-2" file="L finger2-2.STL"/>
+    <mesh name="L finger3-1" file="L finger3-1.STL"/>
+    <mesh name="L finger3-2" file="L finger3-2.STL"/>
+    <mesh name="L gripper" file="L gripper.STL"/>
+
+    <texture name="wood_texture" type="2d"file="wood_texture.png" mark="cross" markrgb="1 1 1" />
+    <texture type="skybox" builtin="gradient" rgb1="0.65 0.75 0.95" rgb2="0.5 0.5 0.5" width="512" height="512" />
+    <texture name="texplane" type="2d" builtin="checker" rgb1=".9 .9 .9" rgb2=".9 .9 .9" width="64" height= "64" mark="cross" markrgb="1 1 1" />
+    <material name="matplane" reflectance="0.1" texture="wood_texture" texrepeat="4 4" />
+    <material name="table_material" texture="wood_texture" specular="0.05" shininess="0.05"/>
+    
+    <!-- <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512" />
+    <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" width="512" height= "512" mark="cross" markrgb=".8 .8 .8" />
+    <material name="matplane" reflectance="0.3" texture="texplane" texrepeat="2 2" texuniform="true" />
+    <texture name="wood_texture" type="2d" file="wood_texture.png"/>
+    <material name="table_material" texture="wood_texture" specular="0.05" shininess="0.05"/> -->
+  </asset>
+
+  <worldbody>
+    <light directional="false" diffuse=".8 .8 .8" specular="0.9 0.9 0.9" pos="0.5 0 4" dir="0 0 -1" castshadow="true" />
+    <geom name="floor" pos="0 0 0" size="1.5 1.5 0.5" type="plane" material="matplane" margin="0.001" condim="3" friction="1 0.5 0.01" />
+	<site name="marker1" type="sphere" size="0.005" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
+    <!-- <site name="marker2" type="sphere" size="0.025" pos="0 0.25 1.35" rgba="0 1 0 1"/> -->
+    <!-- <site name="marker3" type="sphere" size="0.025" pos=" 0 0.25 0.92" rgba="0 0 1 1"/> -->
+    <!-- <geom name="table"  type="box" pos="0.7 0 0.995" size="0.6 0.7 0.005" rgba="0.8 0.6 0.4 1" material="table_material" friction="1 0.5 0.01"/> -->
+    <!-- <geom name="table2" type="box" pos="0.7 0 0.95" size="0.6 0.7 0.04" rgba="1 1 1 0.1"/> -->
+    <!-- <geom name="table3" type="box" pos="0.7 0 0.49" size="0.02 0.02 0.49" rgba="1 1 1 1"/> -->
+
+    <body name="base" pos="0 0 0.83" euler="0 0 0">
+      <freejoint name="base" />
+      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="base_link" />
+      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="base_link" />
+      <site name="R_hip_yaw_X8-1" type="cylinder" size="0.05 0.025" pos="0 -0.13 0" rgba="0 0 0 1"/>
+      <site name="R_hip_yaw_X8-2" type="cylinder" size="0.036 0.028" pos="0 -0.13 0.01" rgba="0 0 0 1"/>
+      <site name="L_hip_yaw_X8-1" type="cylinder" size="0.05 0.025" pos="0 0.13 0" rgba="0 0 0 1"/>
+      <site name="L_hip_yaw_X8-2" type="cylinder" size="0.036 0.028" pos="0 0.13 0.01" rgba="0 0 0 1"/>
+      <site name="trunk_X8-1" type="cylinder" size="0.05 0.025" pos="0 0 0" rgba="0 0 0 1"/>
+      <site name="trunk_X8-2" type="cylinder" size="0.036 0.028" pos="0 0 -0.01" rgba="0 0 0 1"/>
+      <body name="R_hip_yaw" pos="0 -0.13 0">
+        <inertial pos="-0.0551157 -6.37589e-05 -0.0843448" quat="0.707116 0.70706 -0.00712038 0.00150619" mass="1.43214" diaginertia="0.00166282 0.00159533 0.00137828"/>
+        <!-- <joint name="R_hip_yaw" pos="0 0 0" axis="0 0 1" frictionloss="0.10" /> -->
+        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_hip_yaw" />
+        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_hip_yaw" />
+        <site name="R_hip_roll_X8-1" type="cylinder" size="0.05 0.021" pos="-0.068 0 -0.1" euler="0 1.5708 0" rgba="0 0 0 1"/>
+        <site name="R_hip_roll_X8-2" type="cylinder" size="0.036 0.031" pos="-0.072 0 -0.1" euler="0 1.5708 0" rgba="0 0 0 1"/>
+        <body name="R_hip_roll" pos="0 0 -0.1005" quat="0.5 0.5 0.5 0.5">
+          <inertial pos="0.00148013 4.39769e-09 9.44098e-05" quat="0.5 0.5 0.5 0.5" mass="1.31563" diaginertia="0.00199706 0.00189601 0.00058696"/>
+          <!-- <joint name="R_hip_roll" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+          <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_hip_roll" />
+          <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_hip_roll" />
+          <site name="R_hip_pitch_pro200-1" type="box" size="0.0658 0.0275 0.0275" pos="0 0 0" rgba="0 0 0 1"/>
+          <site name="R_hip_pitch_pro200-2" type="box" size="0.0658 0.0275 0.0275" pos="0 0 0" rgba="0 0 0 1"/>
+          <body name="R_hip_pitch" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
+            <inertial pos="-0.149911 0.00102059 0.00138204" quat="0.00520808 0.707066 -0.00777258 0.707085" mass="2.59035" diaginertia="0.00565082 0.0050978 0.00368104"/>
+            <!-- <joint name="R_hip_pitch" pos="0 0 0" axis="0 0 1"  frictionloss="0.10"/> -->
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_hip_pitch" />
+            <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_hip_pitch" />
+            <site name="R_knee_X10-1" type="cylinder" size="0.062 0.029" pos="-0.16 0 0" euler="0 0 0" rgba="0 0 0 1"/>
+            <site name="R_knee_X10-2" type="cylinder" size="0.036 0.038" pos="-0.16 0 0.005" euler="0 0 0" rgba="0 0 0 1"/>
+            <body name="R_calf" pos="-0.31 0 0">
+              <inertial pos="-0.115445 -0.000559768 -0.0101643" quat="0.00195961 0.706949 -0.00192355 0.707259" mass="1.86217" diaginertia="0.00516208 0.00442127 0.00121684"/>
+              <!-- <joint name="R_calf" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+              <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_calf"/>
+              <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_calf"/> -->
+              <site name="R_ankle_X8-1" type="cylinder" size="0.05 0.021" pos="-0.11 0 0" euler="0 0 0" rgba="0 0 0 1"/>
+              <site name="R_ankle_X8-2" type="cylinder" size="0.036 0.029" pos="-0.11 0 0.0054" euler="0 0 0" rgba="0 0 0 1"/>
+              <body name="R_ankle_pitch" pos="-0.26 0 0">
+                <inertial pos="-0.0459602 0.0196317 -4.06789e-05" quat="0.492558 0.507333 -0.492558 0.507333" mass="0.990578" diaginertia="0.00115084 0.00101085 0.000487115"/>
+                <!-- <joint name="R_ankle_pitch" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_ankle_pitch"/>
+                <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_ankle_pitch"/>
+                <site name="R_ankle_pro100-1" type="box" size="0.0275 0.0558 0.0275" pos="-0.05 0.02 0" rgba="0 0 0 1"/>
+                <site name="R_ankle_pro100-2" type="box" size="0.0275 0.0558 0.0275" pos="-0.05 0.02 0" rgba="0 0 0 1"/>
+                <body name="R_ankle_roll" pos="-0.05 0 0" quat="0.707107 -0.707107 0 0">
+                  <inertial pos="-0.0685998 2.19564e-11 0.02" mass="1.80751" diaginertia="0.0035606 0.00313609 0.000582665"/>
+                  <!-- <joint name="R_ankle_roll" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_ankle_roll"/>
+                  <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_ankle_roll"/>
+                
+                  <site name="R_toe_1"  pos="-0.099 -0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="0.0 0.0 1.0 1"/>
+                  <site name="R_toe_2"  pos="-0.099 -0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="0.0 0.0 1.0 1"/>
+                  <site name="R_toe_3"  pos="-0.099  0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="0.0 0.0 1.0 1"/>
+                  <site name="R_toe_4"  pos="-0.099  0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="0.0 0.0 1.0 1"/>
+                  <site name="R_heel_1" pos="-0.099 -0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="0.5 0.7 1.0 1"/>
+                  <site name="R_heel_2" pos="-0.099 -0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="0.5 0.7 1.0 1"/>
+                  <site name="R_heel_3" pos="-0.099  0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="0.5 0.7 1.0 1"/>
+                  <site name="R_heel_4" pos="-0.099  0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="0.5 0.7 1.0 1"/>
+                </body>
+              </body>
+            </body>
+            <body name="R_knee_rocker" pos="-0.16 0 -0.0345">
+              <inertial pos="-0.00719497 -0.00261875 -0.0168741" quat="-0.128906 0.659843 0.116348 0.731063" mass="0.147234" diaginertia="9.00922e-05 7.15908e-05 2.64363e-05"/>
+              <!-- <joint name="R_knee_rocker" pos="0 0 0" axis="0 0 1" frictionloss="0.10/> -->
+              <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_knee_rocker"/>
+              <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_knee_rocker"/>
+              <body name="R_knee_linkage" pos="-0.0563816 -0.0205212 -0.0215" quat="0.984808 0 0 0.173648">
+                <inertial pos="-0.0731902 0.0266388 0" quat="0.122788 0.696364 -0.122788 0.696364" mass="0.110282" diaginertia="7.74132e-05 7.7261e-05 2.91375e-06"/>
+                <!-- <joint name="R_knee_linkage" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_knee_linkage"/>
+                <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_knee_linkage"/> -->
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="L_hip_yaw" pos="0 0.13 0"><!-- <body name="L_hip_yaw" pos="0 0.13 -0.024"> -->
+        <inertial pos="-0.0551157 -6.37589e-05 -0.0843448" quat="0.707116 0.70706 -0.00712038 0.00150619" mass="1.43214" diaginertia="0.00166282 0.00159533 0.00137828"/>
+        <!-- <joint name="L_hip_yaw" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_hip_yaw"/>
+        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_hip_yaw"/>
+        <site name="L_hip_roll_X8-1" type="cylinder" size="0.05 0.021" pos="-0.068 0 -0.1" euler="0 1.5708 0" rgba="0 0 0 1"/>
+        <site name="L_hip_roll_X8-2" type="cylinder" size="0.036 0.031" pos="-0.072 0 -0.1" euler="0 1.5708 0" rgba="0 0 0 1"/>
+        <body name="L_hip_roll" pos="0 0 -0.1005" quat="0.5 0.5 0.5 0.5">
+          <inertial pos="-0.00145607 -4.43152e-09 -0.000573642" quat="0.5 0.5 0.5 0.5" mass="1.33738" diaginertia="0.00200021 0.00190217 0.000590105"/>
+          <!-- <joint name="L_hip_roll" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+          <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_hip_roll"/>
+          <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_hip_roll"/>
+          <site name="L_hip_pitch_pro200-1" type="box" size="0.0658 0.0275 0.0275" pos="0 0 0" rgba="0 0 0 1"/>
+          <site name="L_hip_pitch_pro200-2" type="box" size="0.0658 0.0275 0.0275" pos="0 0 0" rgba="0 0 0 1"/>
+          <body name="L_hip_pitch" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
+            <inertial pos="-0.149911 0.00102059 -0.00137092" quat="0.00777258 0.707085 -0.00520808 0.707066" mass="2.59035" diaginertia="0.00565082 0.0050978 0.00368104"/>
+            <!-- <joint name="L_hip_pitch" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_hip_pitch"/>
+            <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_hip_pitch"/>
+            <site name="L_knee_X10-1" type="cylinder" size="0.062 0.029" pos="-0.16 0 0" euler="0 0 0" rgba="0 0 0 1"/>
+            <site name="L_knee_X10-2" type="cylinder" size="0.036 0.038" pos="-0.16 0 -0.005" euler="0 0 0" rgba="0 0 0 1"/>
+            <body name="L_calf" pos="-0.31 0 0">
+              <inertial pos="-0.115426 -0.000677771 0.0105016" quat="0.00192255 0.707259 -0.0019588 0.706949" mass="1.87199" diaginertia="0.00516128 0.00442408 0.00121948"/>
+              <!-- <joint name="L_calf" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+              <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_calf"/>
+              <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_calf"/> -->
+              <site name="L_ankle_X8-1" type="cylinder" size="0.05 0.021" pos="-0.11 0 0" euler="0 0 0" rgba="0 0 0 1"/>
+              <site name="L_ankle_X8-2" type="cylinder" size="0.036 0.029" pos="-0.11 0 -0.0054" euler="0 0 0" rgba="0 0 0 1"/>
+              <body name="L_ankle_pitch" pos="-0.26 0 0">
+                <inertial pos="-0.0459602 0.0196317 5.49195e-05" quat="0.492558 0.507333 -0.492558 0.507333" mass="0.990578" diaginertia="0.00115084 0.00101085 0.000487114"/>
+                <!-- <joint name="L_ankle_pitch" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_ankle_pitch"/>
+                <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_ankle_pitch"/>
+                <site name="L_ankle_pro100-1" type="box" size="0.0275 0.0558 0.0275" pos="-0.05 0.02 0" rgba="0 0 0 1"/>
+                <site name="L_ankle_pro100-2" type="box" size="0.0275 0.0558 0.0275" pos="-0.05 0.02 0" rgba="0 0 0 1"/>
+                <body name="L_ankle_roll" pos="-0.05 0 0" quat="0.707107 -0.707107 0 0">
+                  <inertial pos="-0.0685998 2.19569e-11 0.02" mass="1.80751" diaginertia="0.0035606 0.00313609 0.000582665"/>
+                  <!-- <joint name="L_ankle_roll" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_ankle_roll"/>
+                  <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_ankle_roll"/>
+                
+                  <site name="L_toe_1"  pos="-0.099 -0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                  <site name="L_toe_2"  pos="-0.099 -0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                  <site name="L_toe_3"  pos="-0.099  0.068  0.155" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                  <site name="L_toe_4"  pos="-0.099  0.068  0.085" size="0.002 0.03 0.01" type="box" rgba="0.0 1.0 0.0 1"/>
+                  <site name="L_heel_1" pos="-0.099 -0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                  <site name="L_heel_2" pos="-0.099 -0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                  <site name="L_heel_3" pos="-0.099  0.068 -0.115" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                  <site name="L_heel_4" pos="-0.099  0.068 -0.045" size="0.002 0.03 0.01" type="box" rgba="0.5 1.0 0.7 1"/>
+                </body>
+              </body>
+            </body>
+            <body name="L_knee_rocker" pos="-0.16 0 0.0345">
+              <inertial pos="-0.00719497 -0.00261875 0.0168741" quat="-0.116348 0.731063 0.128906 0.659843" mass="0.147234" diaginertia="9.00922e-05 7.15908e-05 2.64363e-05"/>
+              <!-- <joint name="L_knee_rocker" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+              <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_knee_rocker"/>
+              <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_knee_rocker"/>
+              <body name="L_knee_linkage" pos="-0.0563816 -0.0205212 0.0215" quat="0.984808 0 0 0.173648">
+                <inertial pos="-0.0731902 0.0266388 0" quat="0.122788 0.696364 -0.122788 0.696364" mass="0.110282" diaginertia="7.74132e-05 7.7261e-05 2.91375e-06"/>
+                <!-- <joint name="L_knee_linkage" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_knee_linkage"/>
+                <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_knee_linkage"/> -->
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="trunk_link" pos="0 0 0.024">
+        <!-- <inertial pos="-0.00020109 -0.0017185 0.34293" quat="0.999995 0.00204643 0.00060337 0.00240006" mass="3.7174" diaginertia="0.0423653 0.02968 0.0132647"/> -->
+		<inertial pos="-0.000201063 -0.00171826 0.342962" quat="0.999995 0.00204635 0.000603463 0.00240004" mass="7.20265" diaginertia="0.082079 0.057503 0.025698" />
+        <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
+        <!-- <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/> -->
+		<body name="hitbox1" > 
+            <geom type="box" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.1"/> 
+            <geom type="box" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.1"/> 
+        </body>
+        <body name="neck" pos="0.0236 0 0.525">
+          <inertial pos="-0.01154 -2.7422e-05 0.076842" quat="-0.0193906 0.70689 0.0191848 0.706797" mass="0.091599" diaginertia="2.6139e-05 2.12139e-05 1.51841e-05"/>
+          <joint name="neck" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+          <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="neck"/>
+          <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="neck"/>
+          <body name="camera" pos="0 0 0.0799" quat="0.707107 0.707107 0 0">
+            <inertial pos="0.00773068 0.0510545 -0.00119353" quat="0.99992 0.000342776 -0.00769884 0.0100227" mass="0.0742873" diaginertia="4.43958e-05 3.98526e-05 1.53335e-05"/>
+            <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
+            <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
+            <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
+          </body>
+        </body>
+        <body name="R_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
+          <inertial pos="-4.7883e-05 0.015654 0.24821" quat="0.49075 0.509211 -0.490712 0.50899" mass="0.15923" diaginertia="7.3658e-05 5.90889e-05 4.06641e-05"/>
+          <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+          <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="R_shoulder"/>
+          <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="R_shoulder"/>
+          <body name="R_arm1" pos="0 0 0.2488" quat="0.5 0.5 0.5 0.5">
+            <inertial pos="-0.0833488 1.97169e-05 -7.82531e-06" quat="0.483195 0.516442 0.516157 0.483106" mass="0.185808" diaginertia="8.80008e-05 6.51814e-05 5.49517e-05"/>
+            <joint name="R_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
+            <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
+			<site name="R_shoulder_marker" type="sphere" size="0.025" pos="0 0 0" rgba="0 1 0 0"/>
+            <body name="R_arm2" pos="-0.1105 0 0">
+              <inertial pos="-0.0563 1.74831e-07 -0.00680843" quat="0.707087 -0.00578054 -0.00578188 0.707079" mass="0.0726996" diaginertia="2.69669e-05 2.47831e-05 1.38386e-05"/>
+              <joint name="R_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+              <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm2"/>
+              <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm2"/>
+              <body name="R_arm3" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
+                <inertial pos="-3.22978e-05 -1.49737e-05 -0.127351" quat="0.706666 -0.0244966 -0.0241464 0.706711" mass="0.0455132" diaginertia="1.24358e-05 1.04566e-05 7.80803e-06"/>
+                <joint name="R_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm3"/>
+                <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm3"/>
+                <body name="R_arm4" pos="0 0 -0.1403" quat="0.5 0.5 0.5 0.5">
+                  <inertial pos="-0.0101577 -0.0474946 9.27932e-05" quat="0.02226 0.706758 -0.0222695 0.706754" mass="0.0493363" diaginertia="1.28686e-05 1.1877e-05 9.02863e-06"/>
+                  <joint name="R_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
+                  <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
+                  <body name="R_palm" quat="0.707107 0.707107 0 0">
+                    <inertial pos="-0.0114428 0.023578 0.122371" quat="0.615966 0.339362 0.623104 0.342287" mass="0.113422" diaginertia="4.23069e-05 4.17695e-05 1.3767e-05"/>
+                    <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_palm"/>
+                    <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_palm"/> -->
+                    <body name="R finger1-1" pos="-0.035007 0 0.14" quat="0.0145557 0.0145609 0.706958 -0.706956">
+                      <inertial pos="-0.000480687 -0.01149 5.75297e-09" quat="0.510188 0.4896 -0.510188 0.4896" mass="0.00127788" diaginertia="1.35262e-07 1.18414e-07 2.02553e-08"/>
+                      <!-- <joint name="R finger1-1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger1-1"/>
+                      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger1-1"/>
+                      <body name="R finger1-2" pos="-0.00094687 -0.022981 0" quat="0.999788 0 0 -0.0205885">
+                        <inertial pos="-0.00382803 -0.029791 1.94734e-10" quat="0.449389 0.545939 -0.449389 0.545939" mass="0.0070774" diaginertia="1.72391e-06 1.56485e-06 2.73819e-07"/>
+                        <!-- <joint name="R finger1-2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger1-2"/>
+                        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger1-2"/>
+                      </body>
+                    </body>
+                    <body name="R finger2-1" pos="0.0303576 0.017527 0.14" quat="0.168911 -0.197036 0.6791 -0.686636">
+                      <inertial pos="0.000527381 -0.0114881 -6.84428e-10" quat="0.4896 0.510188 -0.4896 0.510188" mass="0.00127788" diaginertia="1.35262e-07 1.18414e-07 2.02553e-08"/>
+                      <!-- <joint name="R finger2-1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger2-1"/>
+                      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger2-1"/>
+                      <body name="R finger2-2" pos="0.000946892 -0.0229805 0" quat="0.999788 0 0 0.020589">
+                        <inertial pos="0.00387475 -0.0297911 -1.94734e-10" quat="0.545939 0.449389 -0.545939 0.449389" mass="0.0070774" diaginertia="1.72391e-06 1.56485e-06 2.73819e-07"/>
+                        <!-- <joint name="R finger2-2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger2-2"/>
+                        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger2-2"/>
+                      </body>
+                    </body>
+                    <body name="R finger3-1" pos="0.0302655 -0.0174738 0.14" quat="0.183013 -0.183013 -0.683013 0.683013">
+                      <inertial pos="-5.24198e-05 -0.0115 0" quat="0.5 0.5 -0.5 0.5" mass="0.00127788" diaginertia="1.35262e-07 1.18414e-07 2.02553e-08"/>
+                      <!-- <joint name="R finger3-1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger3-1"/>
+                      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger3-1"/>
+                      <body name="R finger3-2" pos="0 -0.023 0">
+                        <inertial pos="0.00376835 -0.029791 -1.94734e-10" quat="0.545939 0.449389 -0.545939 0.449389" mass="0.0070774" diaginertia="1.72391e-06 1.56485e-06 2.73819e-07"/>
+                        <!-- <joint name="R finger3-2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R finger3-2"/>
+                        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R finger3-2"/>
+                      </body>
+                    </body>
+                    <body name="R gripper" pos="0 0 0.163" quat="0.707105 0 0 -0.707108">
+                      <inertial pos="0 0.00156505 0" quat="0.5 0.5 -0.5 0.5" mass="0.00609127" diaginertia="9.34655e-07 8.38284e-07 3.77176e-07"/>
+                      <!-- <joint name="R gripper" pos="0 0 0" axis="0 0 1" type="slide" limited="true" range="-0.005 -0.0049" frictionloss="0.05"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="R gripper"/>
+                      <!-- <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="R gripper"/> -->
+                    </body>
+                    <!-- <site name="R_gripper" pos = "0 0 0.203" type="sphere" rgba="1 0 0 1" size="0.01 0 0"/> -->
+                    <camera name="R_hand_camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
+					<camera name="R hand camera central" mode="fixed" pos="0.0 0.0 0.15" zaxis="0 0 -1" fovy="-120"/>
+                    <site name="R_hand_marker" type="sphere" size="0.01" pos="0 0 0.22" rgba="0 1 0 0.1"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="L_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
+          <inertial pos="-4.78828e-05 0.015654 -0.248205" quat="0.490899 0.50908 -0.490563 0.509121" mass="0.159234" diaginertia="7.36582e-05 5.90884e-05 4.06637e-05"/>
+          <!-- <joint name="L_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+          <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_shoulder"/>
+          <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_shoulder"/>
+          <body name="L_arm1" pos="0 0 -0.2488" quat="0.5 0.5 0.5 0.5">
+            <inertial pos="-0.0833488 -1.35333e-05 -7.8252e-06" quat="0.483064 0.516293 0.516306 0.483237" mass="0.185808" diaginertia="8.80008e-05 6.51814e-05 5.49517e-05"/>
+            <!-- <joint name="L_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm1"/>
+            <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm1"/>
+            <body name="L_arm2" pos="-0.1105 0 0">
+              <inertial pos="-0.0563 1.74829e-07 -0.00680843" quat="0.707087 -0.00578054 -0.00578188 0.707079" mass="0.0726996" diaginertia="2.69669e-05 2.47831e-05 1.38386e-05"/>
+              <!-- <joint name="L_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+              <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm2"/>
+              <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm2"/>
+              <body name="L_arm3" quat="0.5 0.5 0.5 0.5">
+                <inertial pos="3.22976e-05 -1.49724e-05 -0.127351" quat="0.70671 0.0241465 0.0244965 0.706667" mass="0.0455132" diaginertia="1.24358e-05 1.04566e-05 7.80803e-06"/>
+                <!-- <joint name="L_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm3"/>
+                <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm3"/>
+                <body name="L_arm4" pos="0 0 -0.1403" quat="0.5 0.5 0.5 0.5">
+                  <inertial pos="-0.0101577 -0.0474946 -9.22779e-05" quat="0.022287 0.706759 -0.0222426 0.706754" mass="0.0493363" diaginertia="1.28686e-05 1.1877e-05 9.02863e-06"/>
+                  <!-- <joint name="L_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm4"/>
+                  <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_arm4"/>
+                  <body name="L_palm" quat="0.707107 0.707107 0 0">
+                    <inertial pos="-0.0114431 -0.0235778 0.122371" quat="0.338272 0.613752 0.336817 0.628836" mass="0.113422" diaginertia="4.23125e-05 4.17736e-05 1.37573e-05"/>
+                    <!-- <joint name="L_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/> -->
+                    <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_palm"/>
+                    <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_palm"/> -->
+                    <body name="L finger1-1" pos="-0.0349765 0 0.14" quat="0 0 -0.707107 0.707107">
+                      <inertial pos="2.34998e-05 -0.0115 0" quat="0.5 0.5 -0.5 0.5" mass="0.00127788" diaginertia="1.35262e-07 1.18414e-07 2.02553e-08"/>
+                      <!-- <joint name="L finger1-1" pos="0 0 0" axis="0 0 1"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger1-1"/>
+                      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger1-1"/>
+                      <body name="L finger1-2" pos="0 -0.023 0">
+                        <inertial pos="-0.00379727 -0.029791 1.94734e-10" quat="0.449389 0.545939 -0.449389 0.545939" mass="0.0070774" diaginertia="1.72391e-06 1.56485e-06 2.73819e-07"/>
+                        <!-- <joint name="L finger1-2" pos="0 0 0" axis="0 0 1"/> -->
+                        <geom type="mesh" contype="0" conaffinity="0" group="1"rgba="0.752941 0.752941 0.752941 1" mesh="L finger1-2"/>
+                        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger1-2"/>
+                      </body>
+                    </body>
+                    <body name="L finger2-1" pos="0.0303109 -0.0175 0.14" quat="0.183013 -0.183013 -0.683013 0.683013">
+                      <inertial pos="0 -0.0115 0" quat="0.5 0.5 -0.5 0.5" mass="0.00127788" diaginertia="1.35262e-07 1.18414e-07 2.02553e-08"/>
+                      <!-- <joint name="L finger2-1" pos="0 0 0" axis="0 0 1"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger2-1"/>
+                      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger2-1"/>
+                      <body name="L finger2-2" pos="0 -0.023 0">
+                        <inertial pos="0.00382077 -0.029791 -1.94733e-10" quat="0.545939 0.449389 -0.545939 0.449389" mass="0.0070774" diaginertia="1.72391e-06 1.56485e-06 2.73819e-07"/>
+                        <!-- <joint name="L finger2-2" pos="0 0 0" axis="0 0 1"/> -->
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger2-2"/>
+                        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger2-2"/>
+                      </body>
+                    </body>
+                    <body name="L finger3-1" pos="0.0303109 0.0175 0.14" quat="0.183013 -0.183013 0.683013 -0.683013">
+                      <inertial pos="0 -0.0115 0" quat="0.5 0.5 -0.5 0.5" mass="0.00127788" diaginertia="1.35262e-07 1.18414e-07 2.02553e-08"/>
+                      <!-- <joint name="L finger3-1" pos="0 0 0" axis="0 0 1"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger3-1"/>
+                      <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger3-1"/>
+                      <body name="L finger3-2" pos="0 -0.023 0">
+                        <inertial pos="0.00382077 -0.029791 -1.94734e-10" quat="0.545939 0.449389 -0.545939 0.449389" mass="0.0070774" diaginertia="1.72391e-06 1.56485e-06 2.73819e-07"/>
+                        <!-- <joint name="L finger3-2" pos="0 0 0" axis="0 0 1"/> -->
+                        <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L finger3-2"/>
+                        <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L finger3-2"/>
+                      </body>
+                    </body>
+                    <body name="L gripper" pos="0 0 0.163" quat="0.707107 0 0 -0.707107">
+                      <inertial pos="0 0.00156505 0" quat="0.5 0.5 -0.5 0.5" mass="0.00609127" diaginertia="9.34655e-07 8.38284e-07 3.77176e-07"/>
+                      <!-- <joint name="L gripper" pos="0 0 0" axis="0 0 1" type="slide" range="-0.003 0.003"/> -->
+                      <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="L gripper"/>
+                      <!-- <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="L gripper"/> -->
+                    </body>
+                    <site name="L_hand_marker" type="sphere" size="0.01" pos="0 0 0.22" rgba="0 1 0 0.1"/>
+                    <camera name="L_hand_camera" mode="fixed" pos="-0.01 -0.05 0.15" zaxis="0 -0.5 -1" fovy="85"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="red_ball" > 
+      <joint type="free" damping="0.001"/>
+      <geom type="sphere" mass="0.0000001" contype="0" conaffinity="0" group="1" pos="0.0 0.0 0.0" size="0.01" rgba="1 0 0 0.8"/> 
+    </body>
+    <body name="fix_box" > 
+      <geom type="box" mass="20000" pos="0.020  0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 1"/> 
+      <geom type="box" mass="20000" pos="0.020 -0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 1"/> 
+      <geom type="box" mass="20000" pos="0.365  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 1"/> 
+      <geom type="box" mass="20000" pos="-0.325  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 1"/> 
+    </body>
+  </worldbody>
+  <equality>
+      <connect name="linkageR_knee" active="true" body1="R_calf" body2="R_knee_linkage" anchor="-0.05638 -0.02052 -0.056" />
+      <connect name="linkageL_knee" active="true" body1="L_calf" body2="L_knee_linkage" anchor="-0.05638 -0.02052  0.056" />
+      <connect name="linkageR_gripper1" active="true" body1="R gripper" body2="R finger1-2"  anchor="0 -0.019 0" />
+      <connect name="linkageR_gripper2" active="true" body1="R gripper" body2="R finger2-2"  anchor="-0.0095 0.01645  0" />
+      <connect name="linkageR_gripper3" active="true" body1="R gripper" body2="R finger3-2"  anchor="0.0095 0.01645  0" />
+      <connect name="linkageL_gripper1" active="true" body1="L gripper" body2="L finger1-2"  anchor="0 -0.019 0" />
+      <connect name="linkageL_gripper2" active="true" body1="L gripper" body2="L finger2-2"  anchor="0.0095 0.01645  0" />
+      <connect name="linkageL_gripper3" active="true" body1="L gripper" body2="L finger3-2"  anchor="-0.0095 0.01645  0" />
+  </equality>
+  <actuator>
+      <!-- <motor joint="R_hip_yaw"     name="R_hip_yaw"       gear="1" />
+      <motor joint="R_hip_roll"    name="R_hip_roll"      gear="1" />
+      <motor joint="R_hip_pitch"   name="R_hip_pitch"     gear="1" />
+      <motor joint="R_calf"        name="R_knee"          gear="1" />
+      <motor joint="R_ankle_pitch" name="R_ankle_pitch"   gear="1" />
+      <motor joint="R_ankle_roll"  name="R_ankle_roll"    gear="1" />
+
+      <motor joint="L_hip_yaw"     name="L_hip_yaw"       gear="1"/>
+      <motor joint="L_hip_roll"    name="L_hip_roll"      gear="1" />
+      <motor joint="L_hip_pitch"   name="L_hip_pitch"     gear="1" />
+      <motor joint="L_calf"        name="L_knee"          gear="1" />
+      <motor joint="L_ankle_pitch" name="L_ankle_pitch"   gear="1" />
+      <motor joint="L_ankle_roll"  name="L_ankle_roll"    gear="1"/> -->
+
+      <motor joint="trunk"  name="trunk"  gear="1" />
+      <motor joint="neck"   name="neck"   gear="1" />
+      <motor joint="camera" name="camera" gear="1" />
+
+      <motor joint="R_shoulder"   name="R_shoulder"   gear="1" />
+      <motor joint="R_arm1"       name="R_arm1"       gear="1" />
+      <motor joint="R_arm2"       name="R_arm2"       gear="1" />
+      <motor joint="R_arm3"       name="R_arm3"       gear="1" />
+      <motor joint="R_arm4"       name="R_arm4"       gear="1" />
+      <motor joint="R_palm"       name="R_palm"       gear="1" />
+      <!-- <motor joint="R gripper"    name="R gripper"    gear="1" />
+
+      <motor joint="L_shoulder"   name="L_shoulder"   gear="1" />
+      <motor joint="L_arm1"       name="L_arm1"       gear="1" />
+      <motor joint="L_arm2"       name="L_arm2"       gear="1" />
+      <motor joint="L_arm3"       name="L_arm3"       gear="1" />
+      <motor joint="L_arm4"       name="L_arm4"       gear="1" />
+      <motor joint="L_palm"       name="L_palm"       gear="1" />
+      <motor joint="L gripper"    name="L gripper"    gear="1" /> -->
+</actuator>
+</mujoco>

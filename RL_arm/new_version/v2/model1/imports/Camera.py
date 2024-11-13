@@ -71,9 +71,11 @@ class Camera():
             if depth == True:
                 self.target_depth = float('nan')
             
-    def track(self, ctrlpos, data, speed=1.0):
+    def track(self, ctrlpos, speed=1.0):
         new_pos = ctrlpos.copy()
-        if np.abs(self.target[0]) <= 0.01 and np.abs(self.target[1]) <= 0.01:
+        if np.isnan(self.target[0]) != False:
+            return new_pos
+        elif np.abs(self.target[0]) <= 0.01 and np.abs(self.target[1]) <= 0.01:
             self.track_done = True
         else:
             self.track_done = False
