@@ -60,7 +60,7 @@ class RL_arm(gym.Env):
 
             for i in range(20):
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
-                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(self.sys.random_arm_pos[1] - self.sys.pos[4])*0.002
+                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(self.sys.random_arm_pos[2] - self.sys.pos[4])*0.002
                 self.sys.ctrlpos[5] = 0
                 self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[1]*0.002
                 self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[2]*0.002
@@ -106,16 +106,17 @@ class RL_arm(gym.Env):
             self.obs.reset()
             self.head_camera.track_done = False
 
-            self.sys.random_arm_pos = [np.radians(-30),
-                                       0.0,
-                                       np.radians(random.uniform( -30, 10)),
-                                       np.radians(60)]
+            self.sys.random_arm_pos = [ 0.0,
+                                        np.radians(-30),
+                                        0.0,
+                                        np.radians(random.uniform( -30, 10)),
+                                        np.radians(60)]
             for i in range(100):
-                self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + np.radians(-60)*0.05
-                self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + self.sys.random_arm_pos[0]*0.05
-                self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + self.sys.random_arm_pos[1]*0.05
-                self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + self.sys.random_arm_pos[2]*0.05
-                self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + self.sys.random_arm_pos[3]*0.05
+                self.sys.ctrlpos[2] = self.sys.pos[2]*0.95 + self.sys.random_arm_pos[0]*0.05
+                self.sys.ctrlpos[3] = self.sys.pos[3]*0.95 + self.sys.random_arm_pos[1]*0.05
+                self.sys.ctrlpos[4] = self.sys.pos[4]*0.95 + self.sys.random_arm_pos[2]*0.05
+                self.sys.ctrlpos[6] = self.sys.pos[6]*0.95 + self.sys.random_arm_pos[3]*0.05
+                self.sys.ctrlpos[7] = self.sys.pos[7]*0.95 + self.sys.random_arm_pos[4]*0.05
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
@@ -142,7 +143,7 @@ class RL_arm(gym.Env):
         new_dis += (self.sys.pos_target[1]-self.sys.pos_hand[1])**2
         new_dis += (self.sys.pos_target[2]-self.sys.pos_hand[2])**2
         new_dis = new_dis ** 0.5
-        print(new_dis)
+        # print(new_dis)
 
         # r0: reward of position
         # r0 = np.exp(-3*self.sys.hand2target/self.sys.hand2target0)
@@ -169,6 +170,12 @@ class RL_arm(gym.Env):
         return self.inf.reward
  
     def get_state(self):
+        self.hand_camera.get_img(self.data, rgb=True, depth=False)
+        self.hand_camera.get_target(depth = False)
+
+        self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
+        self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
+
         # if self.inf.timestep%int(3/0.02) == 0:
         #     if self.inf.timestep > 0 and self.sys.hand2target >= 0.05:
         #         self.reset()
@@ -236,12 +243,52 @@ class RL_arm(gym.Env):
         #     self.obs.obj_xyz = [x, y, z]
         # # print(self.obs.cam2target)
 
+
+
+        # if self.inf.timestep > 0 and self.inf.timestep%int(3/0.02) == 0:
+        #     if self.sys.hand2target >= 0.05:
+        #         self.reset()
+        #     else:
+        #         self.inf.reward += 10
+        #         self.sys.random_arm_pos[1] = np.radians(random.uniform( -60, 6.8))
+        #         reachable = False
+        #         while reachable == False:
+        #             self.data.qpos[16] = random.uniform( 0.02, 0.50)
+        #             self.data.qpos[17] = random.uniform(-0.70, 0.00)
+        #             self.data.qpos[18] = random.uniform( 0.90, 1.35)
+        #             self.sys.pos_target = self.data.qpos[16:19].copy()
+        #             reachable = self.check_reachable(self.sys.pos_target)
+        #         self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
+        #         new_dis = (self.sys.pos_target[0]-self.sys.pos_hand[0])**2 + (self.sys.pos_target[1]-self.sys.pos_hand[1])**2 + (self.sys.pos_target[2]-self.sys.pos_hand[2])**2
+        #         new_dis = new_dis ** 0.5
+        #         self.sys.hand2target  = new_dis
+        #         self.sys.hand2target0 = new_dis
+        #         # print(self.sys.hand2target)
+
+        #         # distoshoulder = 0.5
+        #         # while distoshoulder >= 0.4:
+        #         #     self.data.qpos[16] = random.uniform( 0.10, 0.45)
+        #         #     self.data.qpos[17] = random.uniform(-0.60, 0.00)
+        #         #     self.data.qpos[18] = random.uniform( 0.92, 1.35)
+
+        #         #     self.sys.pos_target = self.data.qpos[16:19].copy()
+        #         #     distoshoulder  = (self.sys.pos_target[0]-0.00)**2
+        #         #     distoshoulder += (self.sys.pos_target[1]+0.25)**2
+        #         #     distoshoulder += (self.sys.pos_target[2]-1.35)**2
+        #         #     distoshoulder = distoshoulder ** 0.5
+        #         mujoco.mj_step(self.robot, self.data)
+        #         neck_xyz = self.data.xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_BODY, f"camera")]
+        #         self.obs.obj_xyz = [self.sys.pos_target[0]-neck_xyz[0], self.sys.pos_target[1]-neck_xyz[1], self.sys.pos_target[2]-neck_xyz[2]]
+
         if self.inf.timestep%int(3/0.02) == 0:
-            if self.inf.timestep > 0 and self.sys.hand2target >= 0.05:
-                self.reset()
-            else:
+            hand_camera_center = 2.0
+            if np.isnan(self.hand_camera.target[0]) == False:
+                hand_camera_center = (self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2)**0.5
+            if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 0.2:
                 self.inf.reward += 10
-                self.sys.random_arm_pos[1] = np.radians(random.uniform( -60, 6.8))
+                # self.sys.random_arm_pos[2] = np.radians(random.uniform( -60, 6.8))
+                self.sys.random_arm_pos[2] = np.radians(-60+66.8*(1-random.uniform( 0, 1)**3))
+                print(np.degrees(self.sys.random_arm_pos[2]))
                 reachable = False
                 while reachable == False:
                     self.data.qpos[16] = random.uniform( 0.02, 0.50)
@@ -270,12 +317,14 @@ class RL_arm(gym.Env):
                 mujoco.mj_step(self.robot, self.data)
                 neck_xyz = self.data.xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_BODY, f"camera")]
                 self.obs.obj_xyz = [self.sys.pos_target[0]-neck_xyz[0], self.sys.pos_target[1]-neck_xyz[1], self.sys.pos_target[2]-neck_xyz[2]]
+            else:
+                self.reset()
         
-        self.hand_camera.get_img(self.data, rgb=True, depth=False)
-        self.hand_camera.get_target(depth = False)
+        # self.hand_camera.get_img(self.data, rgb=True, depth=False)
+        # self.hand_camera.get_target(depth = False)
 
-        self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
-        self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
+        # self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
+        # self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
 
     def close(self):
         self.renderer.close() 

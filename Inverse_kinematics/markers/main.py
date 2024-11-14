@@ -12,9 +12,9 @@ from imports.Camera import *
 
 def lebal_Roly_IK():
     # Add xml path
-    current_dir = os.getcwd()
-    xml_path = 'Roly/Inverse_kinematics/markers/RolyURDF2/Roly.xml'
-    xml_path = os.path.join(current_dir, xml_path)
+    file_path = os.path.dirname(os.path.abspath(__file__))
+    xml_path = os.path.join(file_path, "Roly_XML2/Roly.xml")
+    # xml_path = os.path.join(file_path, "RolyURDF2/Roly.xml")
 
     model = mujoco.MjModel.from_xml_path(xml_path)
     data = mujoco.MjData(model)
@@ -22,7 +22,8 @@ def lebal_Roly_IK():
 
     # ========================  PID2: control end effector position =========================
     body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "R gripper")
-    site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "hand_marker")
+    site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "R_hand_marker")
+    # site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "hand_marker")
     # pos2 = data.xpos[body_id].copy()
     # pos2 = data.site_xpos[site_id].copy()
     pos2 = [0.0, 0.0, 0.0]
@@ -39,7 +40,7 @@ def lebal_Roly_IK():
     # ================================= 2000 points ======================================
     def check(point):
         dtoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if dtoshoulder >= 0.4 or dtoshoulder <= 0.22:
+        if dtoshoulder >= 0.4 or dtoshoulder <= 0.25:
             return False
         elif (point[0]<0.12 and point[1] > -0.20):
             return False
@@ -48,7 +49,7 @@ def lebal_Roly_IK():
         else:
             return True
 
-    numberofpoints = 2000
+    numberofpoints = 150
     targetpoints = [[0, 0, 0] for _ in range(numberofpoints)]
     xyzs = [[0, 0, 0] for _ in range(numberofpoints)]
     joints = [[0, 0, 0, 0] for _ in range(numberofpoints)]
@@ -120,7 +121,8 @@ def lebal_Roly_IK():
     #         viewer.sync()
 
     # ======================== label all points wrt. neck (x,y,z)========================
-    neckpos = data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "neck_marker")].copy()
+    neckpos = data.xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, f"camera")].copy()
+    # neckpos = data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "neck_marker")].copy()
     for i in range(len(targetpoints)):
         xyzs[i][0] = sorted_targetpoints[i][0]-neckpos[0]
         xyzs[i][1] = sorted_targetpoints[i][1]-neckpos[1]
