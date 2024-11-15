@@ -58,7 +58,7 @@
     <texture name="wood_texture" type="2d"file="wood_texture.png" mark="cross" markrgb="1 1 1" />
     <texture type="skybox" builtin="gradient" rgb1="0.65 0.75 0.95" rgb2="0.5 0.5 0.5" width="512" height="512" />
     <texture name="texplane" type="2d" builtin="checker" rgb1=".9 .9 .9" rgb2=".9 .9 .9" width="64" height= "64" mark="cross" markrgb="1 1 1" />
-    <material name="matplane" reflectance="0.1" texture="wood_texture" texrepeat="4 4" />
+    <material name="matplane" reflectance="0.01" texture="wood_texture" texrepeat="4 4" />
     <material name="table_material" texture="wood_texture" specular="0.05" shininess="0.05"/>
     
     <!-- <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512" />
@@ -224,11 +224,11 @@
       </body>
       <body name="trunk_link" pos="0 0 0.024">
         <!-- <inertial pos="-0.00020109 -0.0017185 0.34293" quat="0.999995 0.00204643 0.00060337 0.00240006" mass="3.7174" diaginertia="0.0423653 0.02968 0.0132647"/> -->
-		<inertial pos="-0.000201063 -0.00171826 0.342962" quat="0.999995 0.00204635 0.000603463 0.00240004" mass="7.20265" diaginertia="0.082079 0.057503 0.025698" />
+		    <inertial pos="-0.000201063 -0.00171826 0.342962" quat="0.999995 0.00204635 0.000603463 0.00240004" mass="7.20265" diaginertia="0.082079 0.057503 0.025698" />
         <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
         <!-- <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/> -->
-		<body name="hitbox1" > 
+		    <body name="hitbox1" > 
             <geom type="box" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.1"/> 
             <geom type="box" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.1"/> 
         </body>
@@ -241,7 +241,7 @@
             <inertial pos="0.00773068 0.0510545 -0.00119353" quat="0.99992 0.000342776 -0.00769884 0.0100227" mass="0.0742873" diaginertia="4.43958e-05 3.98526e-05 1.53335e-05"/>
             <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
-            <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
+            <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="camera"/>
             <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
           </body>
         </body>
@@ -255,7 +255,7 @@
             <joint name="R_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
-			<site name="R_shoulder_marker" type="sphere" size="0.025" pos="0 0 0" rgba="0 1 0 0"/>
+			      <site name="R_shoulder_marker" type="sphere" size="0.025" pos="0 0 0" rgba="0 1 0 0"/>
             <body name="R_arm2" pos="-0.1105 0 0">
               <inertial pos="-0.0563 1.74831e-07 -0.00680843" quat="0.707087 -0.00578054 -0.00578188 0.707079" mass="0.0726996" diaginertia="2.69669e-05 2.47831e-05 1.38386e-05"/>
               <joint name="R_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
@@ -320,7 +320,7 @@
                     </body>
                     <!-- <site name="R_gripper" pos = "0 0 0.203" type="sphere" rgba="1 0 0 1" size="0.01 0 0"/> -->
                     <camera name="R_hand_camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
-					<camera name="R hand camera central" mode="fixed" pos="0.0 0.0 0.15" zaxis="0 0 -1" fovy="-120"/>
+					          <camera name="R hand camera central" mode="fixed" pos="0.0 0.0 0.15" zaxis="0 0 -1" fovy="-120"/>
                     <site name="R_hand_marker" type="sphere" size="0.01" pos="0 0 0.22" rgba="0 1 0 0.1"/>
                   </body>
                 </body>
@@ -465,5 +465,5 @@
       <motor joint="L_arm4"       name="L_arm4"       gear="1" />
       <motor joint="L_palm"       name="L_palm"       gear="1" />
       <motor joint="L gripper"    name="L gripper"    gear="1" /> -->
-</actuator>
+  </actuator>
 </mujoco>
