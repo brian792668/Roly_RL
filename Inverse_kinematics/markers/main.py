@@ -10,7 +10,7 @@ from imports.Draw_joint_info import *
 from imports.Show_camera_view import *
 from imports.Camera import *
 
-def lebal_Roly_IK():
+def lebal_Roly_IK(numberofpoints = 50):
     # Add xml path
     file_path = os.path.dirname(os.path.abspath(__file__))
     xml_path = os.path.join(file_path, "Roly_XML2/Roly.xml")
@@ -49,20 +49,10 @@ def lebal_Roly_IK():
         else:
             return True
 
-    numberofpoints = 150
     targetpoints = [[0, 0, 0] for _ in range(numberofpoints)]
     xyzs = [[0, 0, 0] for _ in range(numberofpoints)]
     joints = [[0, 0, 0, 0] for _ in range(numberofpoints)]
-    # for i in range(len(targetpoints)):
-    #     distoshoulder = 0.5
-    #     while distoshoulder >= 0.42:
-    #         targetpoints[i][0] = random.uniform(0.1, 0.5)
-    #         targetpoints[i][1] = random.uniform(-0.6, 0.0)
-    #         targetpoints[i][2] = random.uniform(1.35, 0.9)
-    #         distoshoulder  = (targetpoints[i][0]-0.00)**2
-    #         distoshoulder += (targetpoints[i][1]+0.25)**2
-    #         distoshoulder += (targetpoints[i][2]-1.35)**2
-    #         distoshoulder = distoshoulder ** 0.5
+
     for i in range(len(targetpoints)):
         reachable = False
         while reachable == False:
@@ -83,11 +73,7 @@ def lebal_Roly_IK():
     pos = initPos
     target = initTarget
     PIDctrl = PIDcontroller(controlParameter, target)
-    # head_camera = Camera(renderer=renderer, camID=0)
-    # if base is free joint
-    data.qpos[:] = pos[:]
-    # # if base is fixed
-    # data.qpos[:] = pos[7:]
+    # data.qpos[:] = pos[:]
 
     mujoco.mj_resetData(model, data)  # Reset state and time.
     viewer = mujoco.viewer.launch_passive(model, data, show_right_ui= False)
@@ -241,12 +227,14 @@ def lebal_Roly_IK():
 
     xyzs_np = np.array(xyzs)
     joints_np = np.array(joints)
-    np.save(os.path.join(f'Roly/Inverse_kinematics/datasets/new/xyz.npy'), xyzs_np)
-    np.save(os.path.join(f'Roly/Inverse_kinematics/datasets/new/joints.npy'), joints_np)
+    folder_path = os.path.join(file_path, f"../datasets/new/{len(xyzs)}points")
+    os.makedirs(folder_path, exist_ok=True)
+    np.save(os.path.join(folder_path, "xyz.npy"), xyzs_np)
+    np.save(os.path.join(folder_path, "joints.npy"), joints_np)
     print("Done labeling\n")
     print(f"length of dataest: {len(xyzs)}\n\n")
 
 if __name__ == '__main__':
-    lebal_Roly_IK()
+    lebal_Roly_IK(numberofpoints = 15)
     # from ..IK_train import *
     # train(numberofpoints=10, version="v1")

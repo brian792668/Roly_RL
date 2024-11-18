@@ -8,6 +8,18 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from RL_arm import *
 
+def exponential_moving_average(data, alpha=0.2):
+    # 計算指數加權平均 
+    ema = [data[0]]  # 初始值設定為第一筆數據
+    for point in data[1:]:
+        ema.append(alpha * point + (1 - alpha) * ema[-1])
+    return np.array(ema)
+
+def moving_average(data, window_size=10):
+    # 計算移動平均
+    return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
+
+
 def train(model, env, file_path):
     epoch_plot = np.array([0])
     step_reward_plot = np.array([0.0])
@@ -60,16 +72,28 @@ def train(model, env, file_path):
         np.save(os.path.join(file_path, "array/best_avg_total_reward.npy"), best_avg_total_reward)
         np.save(os.path.join(file_path, "array/best_avg_step_reward.npy"), best_avg_step_reward)
 
+        # 在儲存和繪圖之前，進行移動平均處理
+        window_size = 5  # 可以調整窗口大小，數字越大圖表越平滑
+        smoothed_step_reward_plot = moving_average(step_reward_plot, window_size)
+        smoothed_total_reward_plot = moving_average(total_reward_plot, window_size)
+
         fig = plt.figure(figsize=(14, 14))
         plt.subplot(2,1,1)
-        plt.plot(epoch_plot, total_reward_plot, label='Total Reward')
+        # plt.plot(epoch_plot, total_reward_plot, label='Total Reward')
+        # plt.plot(epoch_plot[:len(smoothed_total_reward_plot)], smoothed_total_reward_plot, label='Smoothed Total Reward')
+        
+        plt.plot(epoch_plot, total_reward_plot, label='Original Total Reward', color='blue', alpha=0.3)
+        plt.plot(epoch_plot[:len(smoothed_total_reward_plot)], smoothed_total_reward_plot, label='Smoothed Total Reward', color='blue')
         plt.title('Epoch vs. Total Reward')
         plt.xlabel('Epoch')
         plt.ylabel('Total Reward')
         plt.legend()
 
         plt.subplot(2,1,2)
-        plt.plot(epoch_plot, step_reward_plot, label='Step Reward')
+        # plt.plot(epoch_plot, step_reward_plot, label='Step Reward')
+        # plt.plot(epoch_plot[:len(smoothed_step_reward_plot)], smoothed_step_reward_plot, label='Smoothed Step Reward')
+        plt.plot(epoch_plot, step_reward_plot, label='Original Step Reward', color='blue', alpha=0.3)
+        plt.plot(epoch_plot[:len(smoothed_step_reward_plot)], smoothed_step_reward_plot, label='Smoothed Step Reward', color='blue')
         plt.title('Epoch vs. Step reward (average)')
         plt.xlabel('Epoch')
         plt.ylabel('Step reward (average)')
