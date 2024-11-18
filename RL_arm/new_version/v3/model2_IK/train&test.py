@@ -10,10 +10,10 @@ from RL_arm import *
 
 def train(model, env, file_path):
     epoch_plot = np.array([0])
-    step_reward_plot = np.array([-2.0])
-    total_reward_plot = np.array([-3000.0])
-    best_avg_step_reward = np.array([-2.0])
-    best_avg_total_reward = np.array([-3000.0])
+    step_reward_plot = np.array([-0.2])
+    total_reward_plot = np.array([-300.0])
+    best_avg_step_reward = np.array([-0.2])
+    best_avg_total_reward = np.array([-300.0])
 
     if os.path.exists(os.path.join(file_path, "array/epoch_plot.npy")):
         epoch_plot              = np.load(os.path.join(file_path, "array/epoch_plot.npy"))

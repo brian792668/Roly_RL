@@ -5,6 +5,9 @@ import gymnasium as gym
 import numpy as np
 import random
 from stable_baselines3 import SAC
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 import sys
 import os
@@ -12,6 +15,19 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from imports.Camera import *
 from imports.state_action import *
 from imports.RL_info import *
+
+class IKMLP(nn.Module):
+    def __init__(self):
+        super(IKMLP, self).__init__()
+        self.fc1 = nn.Linear(3, 64)  # 輸入3維，隱藏層64
+        self.fc2 = nn.Linear(64, 128) # 隱藏層64輸出128
+        self.fc3 = nn.Linear(128, 4)  # 輸出4維（4個關節角度）
+    
+    def forward(self, x):
+        x = F.relu(self.fc1(x))  # 第1層用 ReLU
+        x = F.relu(self.fc2(x))  # 第2層用 ReLU
+        x = self.fc3(x)          # 最後一層直接輸出
+        return x
 
 class RL_arm(gym.Env):
     def __init__(self):
@@ -41,6 +57,9 @@ class RL_arm(gym.Env):
         self.viewer.cam.azimuth = 200
 
         self.model1 = SAC.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../model1/current_model.zip"))
+        self.IK = IKMLP()
+        self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v7.pth")))
+        self.IK.eval()
         
     def step(self, action): 
         # self.inf.truncated = False
@@ -154,9 +173,14 @@ class RL_arm(gym.Env):
         self.sys.hand2target = new_dis
         # print(new_dis)
 
-        # r0: reward of torque
-        r0 = -np.abs(self.data.ctrl[3]) -np.abs(self.data.ctrl[4]) -np.abs(self.data.ctrl[6]) -np.abs(self.data.ctrl[7])
-        self.inf.reward = r0
+        mse = 0
+        with torch.no_grad():  # 不需要梯度計算，因為只做推論
+            desire_joints = self.IK(torch.tensor(self.obs.obj_xyz, dtype=torch.float32)).tolist()
+            desire_joints = np.radians(desire_joints)
+            actual_joints = self.obs.joint_arm[0:4]
+            mse = -sum((a - b)**2 for a, b in zip(desire_joints, actual_joints)) / 4
+        
+        self.inf.reward = mse
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
         # print(self.inf.reward)
