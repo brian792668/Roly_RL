@@ -1,6 +1,8 @@
 import cv2
 import pyrealsense2 as rs
 import numpy as np
+import threading
+import time
 
 class Camera():
     def __init__(self):
@@ -96,3 +98,20 @@ class Camera():
     
     def stop(self):
         self.pipeline.stop()
+
+class CameraThread(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self.head_cam = Camera()
+        self.running = True
+        self.daemon = True  # 設為 daemon thread，主程序結束時會自動結束
+        
+    def run(self):
+        while self.running:
+            self.head_cam.get_img()
+            self.head_cam.show(rgb=True, depth=False)
+            time.sleep(0.01)  # 小延遲避免 CPU 使用過高
+            
+    def stop(self):
+        self.running = False
+        self.head_cam.stop()
