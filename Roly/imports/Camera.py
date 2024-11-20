@@ -16,10 +16,12 @@ class Camera():
         depth_frame = frames.get_depth_frame()
         self.color_img = np.asanyarray(color_frame.get_data())
         self.depth_img = np.asanyarray(depth_frame.get_data())
+        self.color_mask = self.color_img
         self.depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=0.03), cv2.COLORMAP_JET)
 
         self.target_exist = False
         self.target_pixel = [320, 240]
+        self.target_norm = [0.0, 0.0]
         self.target_depth = 1.0
 
     def get_img(self, rgb=True, depth=True):
@@ -37,55 +39,52 @@ class Camera():
         if depth == True:   cv2.imshow("Realsense D435i Depth with color", self.depth_colormap)
         cv2.waitKey(1)
 
-    def get_depth(self):
-        self.target_depth = self.depth_img[int(self.target_pixel[1])][int(self.target_pixel[0])]
-        # print(self.target_depth*0.01)
-
     def get_target(self, depth=False):
-    #     # 定義紅色的RGB範圍
-    #     lower_red = np.array([100, 0, 0], dtype=np.uint8)
-    #     upper_red = np.array([255, 50, 50], dtype=np.uint8)
-    #     # 創建紅色遮罩
-    #     mask = cv2.inRange(self.rgbimg, lower_red, upper_red)
+        # 定義紅色的RGB範圍
+        lower_red = np.array([0, 0, 150], dtype=np.uint8)
+        upper_red = np.array([100, 100, 255], dtype=np.uint8)
+        # 創建紅色遮罩
+        mask = cv2.inRange(self.color_img, lower_red, upper_red)
+        self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
+        cv2.imshow("Masked Image", self.color_mask)
+        cv2.waitKey(1)
 
-    #     # 確保在圖像中有紅色物體
-    #     if np.any(mask):
-    #         # 獲取紅色物體的像素坐標
-    #         coords = np.column_stack(np.where(mask > 0))
+        # 確保在圖像中有紅色物體
+        if np.any(mask):
+            self.target_exist = True
 
-    #         # 計算紅色物體的中心點
-    #         center = np.mean(coords, axis=0)
-    #         center_y, center_x = center
+            # 獲取紅色物體的像素坐標
+            coords = np.column_stack(np.where(mask > 0))
 
-    #         # 在RGB圖像上畫十字標
-    #         size = 3  # 十字標的大小
-    #         thickness = 1  # 線條的粗細
+            # 計算紅色物體的中心點
+            center = np.mean(coords, axis=0)
+            center_y, center_x = center
 
-    #         # 畫橫線
-    #         cv2.line(self.rgbimg, (int(center_x) - size, int(center_y)), 
-    #                  (int(center_x) + size, int(center_y)), (255, 255, 255), thickness)
-    #         # 畫縱線
-    #         cv2.line(self.rgbimg, (int(center_x), int(center_y) - size), 
-    #                  (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
+            # 在RGB圖像上畫十字標
+            size = 3  # 十字標的大小
+            thickness = 1  # 線條的粗細
 
-    #         if depth == True:
-    #             # 從深度圖像中獲取對應的深度值
-    #             self.target_depth = 100*self.depthimg[int(center_y), int(center_x)]
+            # 畫橫線
+            cv2.line(self.color_img, (int(center_x) - size, int(center_y)), 
+                     (int(center_x) + size, int(center_y)), (255, 255, 255), thickness)
+            # 畫縱線
+            cv2.line(self.color_img, (int(center_x), int(center_y) - size), 
+                     (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
 
-    #             cv2.putText(self.rgbimg, f"{self.target_depth:.1f}", (int(center_x) + 10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
-    #                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
+            if depth == True:
+                # 從深度圖像中獲取對應的深度值
+                self.target_depth = self.depth_img[int(center_y), int(center_x)]*0.001  # m
 
-    #         # 將像素座標轉換至[-1, 1]區間
-    #         norm_x = (center_x / self.rgbimg.shape[1]) * 2 - 1
-    #         norm_y = (center_y / self.rgbimg.shape[0]) * 2 - 1
-    #         self.target = [norm_x, norm_y]
+                cv2.putText(self.color_img, f"{self.target_depth:.3f} m", (int(center_x) + 10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
+                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
-    #     else:
-    #         # 若無紅色物體，返回None並設置target為無效值
-    #         self.track_done = False
-    #         self.target = [float('nan'), float('nan')]
-    #         if depth == True:
-    #             self.target_depth = float('nan')
+            # 將像素座標轉換至[-1, 1]區間
+            norm_x = (center_x / self.color_img.shape[1]) * 2 - 1
+            norm_y = (center_y / self.color_img.shape[0]) * 2 - 1
+            self.target_norm = [norm_x, norm_y]
+
+        else:
+            self.target_exist = False
         pass
 
     #     new_pos = ctrlpos.copy()
