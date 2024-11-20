@@ -18,11 +18,9 @@ class Camera():
         self.depth_img = np.asanyarray(depth_frame.get_data())
         self.depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=0.03), cv2.COLORMAP_JET)
 
-        # self.rgbimg = np.zeros((480, 640, 3), dtype=np.uint8)
-        # self.depthimg = np.zeros((480, 640), dtype=np.uint8)
-        self.target = ['nan', 'nan']
-        self.target_depth = float('nan')
-        self.track_done = False
+        self.target_exist = False
+        self.target_pixel = [320, 240]
+        self.target_depth = 1.0
 
     def get_img(self, rgb=True, depth=True):
         frames = self.pipeline.wait_for_frames()
@@ -39,7 +37,11 @@ class Camera():
         if depth == True:   cv2.imshow("Realsense D435i Depth with color", self.depth_colormap)
         cv2.waitKey(1)
 
-    # def get_target(self, depth=False):
+    def get_depth(self):
+        self.target_depth = self.depth_img[int(self.target_pixel[1])][int(self.target_pixel[0])]
+        # print(self.target_depth*0.01)
+
+    def get_target(self, depth=False):
     #     # 定義紅色的RGB範圍
     #     lower_red = np.array([100, 0, 0], dtype=np.uint8)
     #     upper_red = np.array([255, 50, 50], dtype=np.uint8)
@@ -84,8 +86,8 @@ class Camera():
     #         self.target = [float('nan'), float('nan')]
     #         if depth == True:
     #             self.target_depth = float('nan')
-            
-    # def track(self, ctrlpos, speed=1.0):
+        pass
+
     #     new_pos = ctrlpos.copy()
     #     if np.abs(self.target[0]) <= 0.05 and np.abs(self.target[1]) <= 0.05:
     #         self.track_done = True
@@ -95,6 +97,7 @@ class Camera():
     #             new_pos[0] += -0.1*self.target[0]*speed
     #             new_pos[1] += -0.1*self.target[1]*speed
     #     return new_pos
+        pass
     
     def stop(self):
         self.pipeline.stop()

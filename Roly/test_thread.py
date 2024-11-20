@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
 from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
-from Camera import *
+from imports.Camera import *
 
 def init_motor():
     X_series_info = X_Motor_Info()

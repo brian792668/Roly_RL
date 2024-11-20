@@ -43,8 +43,8 @@ class RL_arm(gym.Env):
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
         self.viewer.cam.distance = 1.0
         self.viewer.cam.lookat = [0.0, -0.25, 1.2]
-        self.viewer.cam.elevation = -20
-        self.viewer.cam.azimuth = 180
+        self.viewer.cam.elevation = -40
+        self.viewer.cam.azimuth = 200
         
     def step(self, action): 
         # self.inf.truncated = False
@@ -62,9 +62,10 @@ class RL_arm(gym.Env):
             self.inf.totaltimestep += 1
 
             for i in range(len(action)):
-                self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
+                # self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
+                self.inf.action[i] = self.inf.action[i]*0.95 + action[i]*0.05
 
-            for i in range(20):
+            for i in range(10):
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
                 self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(self.sys.random_arm_pos[2] - self.sys.pos[4])*0.002
                 self.sys.ctrlpos[5] = 0
@@ -116,12 +117,12 @@ class RL_arm(gym.Env):
         if self.viewer.is_running() == False:
             self.close()
         else:
-            for i in range(200):
-                self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(0.05*(0-self.sys.ctrlpos[2]))
-                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(0.05*(0-self.sys.ctrlpos[3]))
-                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(0.05*(0-self.sys.ctrlpos[4]))
-                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(0.05*(0-self.sys.ctrlpos[6]))
-                self.sys.ctrlpos[7] = self.sys.pos[7] + np.tanh(0.05*(0-self.sys.ctrlpos[7]))
+            for i in range(500):
+                self.sys.ctrlpos[2] = self.sys.pos[2] + 0.1*np.tanh(0.1*(0-self.sys.ctrlpos[2]))
+                self.sys.ctrlpos[3] = self.sys.pos[3] + 0.1*np.tanh(0.1*(0-self.sys.ctrlpos[3]))
+                self.sys.ctrlpos[4] = self.sys.pos[4] + 0.1*np.tanh(0.1*(0-self.sys.ctrlpos[4]))
+                self.sys.ctrlpos[6] = self.sys.pos[6] + 0.1*np.tanh(0.1*(0-self.sys.ctrlpos[6]))
+                self.sys.ctrlpos[7] = self.sys.pos[7] + 0.1*np.tanh(0.1*(0-self.sys.ctrlpos[7]))
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
@@ -149,13 +150,13 @@ class RL_arm(gym.Env):
                                         0.0,
                                         np.radians(random.uniform( -30, 10)),
                                         np.radians(60)]
-            for i in range(200):
+            for i in range(300):
 
-                self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(0.10*(self.sys.random_arm_pos[0]-self.sys.ctrlpos[2]))
-                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(0.10*(self.sys.random_arm_pos[1]-self.sys.ctrlpos[3]))
-                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(0.10*(self.sys.random_arm_pos[2]-self.sys.ctrlpos[4]))
-                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(0.10*(self.sys.random_arm_pos[3]-self.sys.ctrlpos[6]))
-                self.sys.ctrlpos[7] = self.sys.pos[7] + np.tanh(0.10*(self.sys.random_arm_pos[4]-self.sys.ctrlpos[7]))
+                self.sys.ctrlpos[2] = self.sys.pos[2] + 0.1*np.tanh(0.1*(self.sys.random_arm_pos[0]-self.sys.ctrlpos[2]))
+                self.sys.ctrlpos[3] = self.sys.pos[3] + 0.1*np.tanh(0.1*(self.sys.random_arm_pos[1]-self.sys.ctrlpos[3]))
+                self.sys.ctrlpos[4] = self.sys.pos[4] + 0.1*np.tanh(0.1*(self.sys.random_arm_pos[2]-self.sys.ctrlpos[4]))
+                self.sys.ctrlpos[6] = self.sys.pos[6] + 0.1*np.tanh(0.1*(self.sys.random_arm_pos[3]-self.sys.ctrlpos[6]))
+                self.sys.ctrlpos[7] = self.sys.pos[7] + 0.1*np.tanh(0.1*(self.sys.random_arm_pos[4]-self.sys.ctrlpos[7]))
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
@@ -225,7 +226,7 @@ class RL_arm(gym.Env):
         self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
         self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
 
-        if self.inf.timestep%int(3/0.02) == 0:
+        if self.inf.timestep%int(3/0.01) == 0:
             hand_camera_center = 2.0
             if np.isnan(self.hand_camera.target[0]) == False:
                 hand_camera_center = (self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2)**0.5
@@ -284,12 +285,12 @@ class RL_arm(gym.Env):
 
         motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
         motor.changeAllMotorOperatingMode(OP_MODE=3)
-        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[20]*len(motor.pos_ctrl))
+        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[30]*len(motor.pos_ctrl))
         motor.setAllMotorTorqueEnable()
         time.sleep(0.1)
-        for i in range(200):
-            motor.pos_ctrl = motor.toRolyctrl([0, 0, 0, 0, 0, 0, 0, 0])
-            motor.writeAllMotorPosition(motor.pos_ctrl)
+        # for i in range(500):
+        motor.pos_ctrl = motor.toRolyctrl([0, 0, 0, 0, 0, 0, 0, 0])
+        motor.writeAllMotorPosition(motor.pos_ctrl)
+        time.sleep(3)
         
-        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[150]*len(motor.pos_ctrl))
         return motor

@@ -136,7 +136,7 @@ class RL_arm(gym.Env):
             self.obs.reset()
             self.head_camera.track_done = False
 
-            dummy_random = np.radians(random.uniform( 0, 1)**3)*60
+            dummy_random = np.radians(random.uniform( 0, 1)**2)*60
             self.sys.random_arm_pos = [ 0.0,
                                         -dummy_random,
                                         0.0,
@@ -225,7 +225,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.9):
+    def render(self, speed=0.0):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 

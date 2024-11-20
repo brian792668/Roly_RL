@@ -19,7 +19,6 @@ def moving_average(data, window_size=10):
     # 計算移動平均
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
-
 def train(model, env, file_path):
     epoch_plot = np.array([0])
     step_reward_plot = np.array([0.0])

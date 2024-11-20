@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
 from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
-from Camera import *
+from imports.Camera import *
 
 
 X_series_info = X_Motor_Info()
@@ -16,13 +16,11 @@ DXL_MODELS = {"id":[1, 2, 10, 11, 12, 13, 14, 15], "model":[X_series_info, X_ser
 
 motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 motor.changeAllMotorOperatingMode(OP_MODE=3)
-# motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[230, 230, 10, 10, 10, 10, 10, 10])
 motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[10]*len(motor.pos_ctrl))
 motor.setAllMotorTorqueEnable()
 time.sleep(0.1) 
 
 # head_cam = Camera()
-
 # time.sleep(5) 
 
 if __name__ == '__main__':

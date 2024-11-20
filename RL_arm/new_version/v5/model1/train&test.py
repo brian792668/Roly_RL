@@ -100,7 +100,7 @@ if __name__ == '__main__':
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.SAC.load(current_model_path, my_env)
     else:
-        my_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0005)
+        my_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0002)
         my_model.save(current_model_path)
 
     train(my_model, my_env, file_path)
