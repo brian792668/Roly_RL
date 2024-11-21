@@ -153,6 +153,7 @@ class RL_arm(gym.Env):
         # r1: panalty of leaving
         r1 = 20*(self.sys.hand2target - new_dis)
         if r1 >= 0: r1 = 0
+        print(f"{r1:.3f}")
 
         # r2: reward of handCAM central
         r2 = 1.0
@@ -198,10 +199,9 @@ class RL_arm(gym.Env):
                 self.sys.hand2target  = new_dis
                 self.sys.hand2target0 = new_dis
                 # print(self.sys.hand2target)
-
-                mujoco.mj_step(self.robot, self.data)
                 neck_xyz = self.data.xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_BODY, f"camera")]
                 self.obs.obj_xyz = [self.sys.pos_target[0]-neck_xyz[0], self.sys.pos_target[1]-neck_xyz[1], self.sys.pos_target[2]-neck_xyz[2]]
+                mujoco.mj_step(self.robot, self.data)
             else:
                 self.reset()
 
@@ -209,7 +209,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
+    def render(self, speed=0):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
