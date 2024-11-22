@@ -20,18 +20,18 @@ class Robot_system:
         self.target_pixel_norm = self.head_camera.target_norm
 
         # Initial RL
-        RL_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RL_model.zip")
-        self.RL_model   = SAC.load(RL_path)
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RL_model.zip")
+        self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
-        self.RL_action  = [0] * 8
+        self.RL_action  = [0] * 6
 
         # Initial motors
         self.joints     = [0] * 8
         self.motor = self.init_motor()
 
         # Initial mechanism
-        self.EE_goal_pos      = [0.00, -0.25, -0.40]
-        self.EE_current_pos   = [0.00, -0.25, -0.40]
+        self.EE_goal_pos      = [0.30, -0.25, -0.40]
+        self.EE_current_pos   = [0.30, -0.25, -0.40]
         self.DH_table_R = DHtable([[    0.0, np.pi/2,     0.0,     0.0],
                                    [np.pi/2, np.pi/2,     0.0,  0.2488],
                                    [    0.0,     0.0, -0.1105,     0.0],
@@ -69,7 +69,7 @@ class Robot_system:
         motor.changeAllMotorOperatingMode(OP_MODE=3)
         motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[30]*len(motor.pos_ctrl))
         motor.setAllMotorTorqueEnable()
-        motor.writeAllMotorPosition(motor.toRolyctrl(self.joints))
+        # motor.writeAllMotorPosition(motor.toRolyctrl(self.joints))
         time.sleep(0.1)
         
         return motor
@@ -99,17 +99,19 @@ class Robot_system:
             time.sleep(0.01)
 
             # clock
-            # with self.lock: clock = time.time() - self.time_start
+            # with self.lock: clock = time.time() - self.time_start.copy()
             # print(f"{clock:.1f}")
 
             # Farward Kinematics of EE position
-            with self.lock: angles=self.joints
+            with self.lock: angles=self.joints.copy()
             angles = [ np.radians(angles[i]) for i in range(len(angles))]
             EE_current_pos = self.DH_table_R.forward(angles=angles[2:8])
             # print(f"{EE_current_pos[0]:.2f}, {EE_current_pos[1]:.2f}, {EE_current_pos[2]:.2f}")
 
             # Farward Kinematics of target position
-            EE_goal_pos = [0.20, -0.25, -0.30]
+            with self.lock:
+                EE_goal_pos = self.EE_goal_pos.copy()
+            # EE_goal_pos = [0.20, -0.25, -0.30]
             neck_angle = angles[0]
             camera_angle = angles[1]
             with self.lock: 
@@ -128,65 +130,94 @@ class Robot_system:
                 # print(f"{EE_goal_pos[0]:.2f}, {EE_goal_pos[1]:.2f}, {EE_goal_pos[2]:.2f}")
 
             with self.lock:
-                self.EE_goal_pos = EE_goal_pos
-                self.EE_current_pos = EE_current_pos
+                self.EE_goal_pos = EE_goal_pos.copy()
+                self.EE_current_pos = EE_current_pos.copy()
 
     def RL_thread(self):
         while not self.stop_event.is_set():
             # 100 Hz
             time.sleep(0.01)
             with self.lock:
-                observation = self.motor_angles[2:7] + self.hand_goal_pos
-                self.rl_action = self.RL_model.predict(observation)[0]
+                joints = self.joints.copy()
+                object_xyz = self.EE_goal_pos.copy()
+                action_old = self.RL_action.copy()
+
+            joints = [ np.radians(joints[i]) for i in range(len(joints))]
+            state = np.concatenate([object_xyz, joints[2:4], joints[5:7]]).astype(np.float32)
+            # print(state)
+            print(f"{state[0]:.2f}, {state[1]:.2f}, {state[2]:.2f}")
+            action, _ = self.RL_model1.predict(state)
+            # print(action)
+            action_new = [action_old[0]*0.90 + action[0]*0.10,
+                          action_old[1]*0.90 + 0, 
+                          action_old[2]*0.90 + 0, 
+                          action_old[3]*0.90 + action[1]*0.10, 
+                          action_old[4]*0.90 + action[2]*0.10,
+                          action_old[5]*0.90 + 0]
+            
+            joints[2] += action_new[0]*0.01
+            joints[3] += action_new[1]*0.01
+            joints[4] += action_new[2]*0.01
+            joints[5] += action_new[3]*0.01
+            joints[6] += action_new[4]*0.01
+            joints[7] += action_new[5]*0.01
+            joints = [ np.degrees(joints[i]) for i in range(len(joints))]
+            
+            with self.lock:
+                self.RL_action = action_new.copy()
+                self.joints = joints.copy()
+
+            # observation = self.motor_angles[2:7] + self.hand_goal_pos
+            # self.rl_action = self.RL_model.predict(observation)[0]
 
     def motor_thread(self):
         # initial
-        with self.lock: angles = self.joints
-        angles = [0, 0, -30, 0, 0, 0, 60, 0]
+        with self.lock: joints = self.joints.copy()
+        joints = [0, 0, -30, -10, 0, 0, 60, 0]
 
-        angles[1] *= -1
-        angles[5] *= -1
-        angles[6] *= -1
-        self.motor.writeAllMotorPosition(self.motor.toRolyctrl(angles))
-        angles[1] *= -1
-        angles[5] *= -1
-        angles[6] *= -1
-        with self.lock: self.joints = angles
+        joints[1] *= -1
+        joints[5] *= -1
+        joints[6] *= -1
+        self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints))
+        joints[1] *= -1
+        joints[5] *= -1
+        joints[6] *= -1
+        with self.lock: self.joints = joints.copy()
         time.sleep(3)
         self.motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100, 100, 30, 30, 30, 30, 30, 30])
 
         while not self.stop_event.is_set():
             # 100 Hz
             time.sleep(0.01)
-            with self.lock: angles = self.joints
+            with self.lock: joints = self.joints.copy()
             with self.lock: 
-                pixel_norm = self.target_pixel_norm
+                pixel_norm = self.target_pixel_norm.copy()
                 target_exist = self.target_exist
 
-            angles[0] += -1.5*pixel_norm[0]*target_exist
-            angles[1] += -1.5*pixel_norm[1]*target_exist
-            # angles[2] += 0
-            # angles[3] += 0
-            # angles[4] += 0
-            # angles[5] += 0
-            # angles[6] += 0
+            joints[0] += -1.5*pixel_norm[0]*target_exist
+            joints[1] += -1.5*pixel_norm[1]*target_exist
+            # joints[2] += 0
+            # joints[3] += 0
+            # joints[4] += 0
+            # joints[5] += 0
+            # joints[6] += 0
 
-            angles[1] *= -1
-            angles[5] *= -1
-            angles[6] *= -1
-            self.motor.writeAllMotorPosition(self.motor.toRolyctrl(angles))
-            angles[1] *= -1
-            angles[5] *= -1
-            angles[6] *= -1
+            joints[1] *= -1
+            joints[5] *= -1
+            joints[6] *= -1
+            self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints))
+            joints[1] *= -1
+            joints[5] *= -1
+            joints[6] *= -1
 
-            with self.lock: self.joints = angles
+            with self.lock: self.joints = joints.copy()
 
     def run(self):     
         threads = [
             threading.Thread(target=self.motor_thread),
             threading.Thread(target=self.system_thread),
             threading.Thread(target=self.camera_thread),
-            # threading.Thread(target=self.RL_thread),
+            threading.Thread(target=self.RL_thread),
         ]
 
         for t in threads:
@@ -194,7 +225,7 @@ class Robot_system:
 
         while not self.stop_event.is_set():
             self.time_now = time.time() - self.time_start
-            if self.time_now > 10:  # 執行 10 秒後結束
+            if self.time_now > 30:  # 執行 10 秒後結束
                 self.stop_event.set()
             time.sleep(0.1)  # 減少CPU負擔
 
