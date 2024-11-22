@@ -125,7 +125,7 @@ class Robot_system:
                 x = d2*np.cos(neck_angle)
                 y = d2*np.sin(neck_angle)
                 EE_goal_pos = [x, y, z]
-                print(f"{EE_goal_pos[0]:.2f}, {EE_goal_pos[1]:.2f}, {EE_goal_pos[2]:.2f}")
+                # print(f"{EE_goal_pos[0]:.2f}, {EE_goal_pos[1]:.2f}, {EE_goal_pos[2]:.2f}")
 
             with self.lock:
                 self.EE_goal_pos = EE_goal_pos

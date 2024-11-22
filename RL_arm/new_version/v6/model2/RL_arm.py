@@ -82,12 +82,12 @@ class RL_arm(gym.Env):
             # self.inf.action[2] = self.inf.action[2]*0.5 + action_from_model1[1]*0.5
             # self.inf.action[3] = self.inf.action[3]*0.5 + action_from_model1[2]*0.5
             action_from_model1, _ = self.model1.predict(self.observation_space, deterministic=True)
-            self.inf.action[0] = self.inf.action[0]*0.5 + action_from_model1[0]*0.5
-            self.inf.action[1] = self.inf.action[1]*0.5 + action[0]*0.5
-            self.inf.action[2] = self.inf.action[2]*0.5 + action_from_model1[1]*0.5
-            self.inf.action[3] = self.inf.action[3]*0.5 + action_from_model1[2]*0.5
+            self.inf.action[0] = self.inf.action[0]*0.8 + action_from_model1[0]*0.2
+            self.inf.action[1] = self.inf.action[1]*0.8 + action[0]*0.2
+            self.inf.action[2] = self.inf.action[2]*0.8 + action_from_model1[1]*0.2
+            self.inf.action[3] = self.inf.action[3]*0.8 + action_from_model1[2]*0.2
 
-            for i in range(20):
+            for i in range(10):
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
                 self.sys.ctrlpos[4] = self.sys.pos[4] + self.inf.action[1]*0.002
                 self.sys.ctrlpos[5] = 0
@@ -194,7 +194,7 @@ class RL_arm(gym.Env):
         self.obs.joint_arm[0:2] = self.data.qpos[10:12].copy()
         self.obs.joint_arm[2:4] = self.data.qpos[13:15].copy()
 
-        if self.inf.timestep%int(3/0.02) == 0:
+        if self.inf.timestep%int(3/0.01) == 0:
             hand_camera_center = 2.0
             if np.isnan(self.hand_camera.target[0]) == False:
                 hand_camera_center = (self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2)**0.5
@@ -225,7 +225,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.0):
+    def render(self, speed=0):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
