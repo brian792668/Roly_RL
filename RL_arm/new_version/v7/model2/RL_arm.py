@@ -56,7 +56,7 @@ class RL_arm(gym.Env):
         self.viewer.cam.elevation = -60
         self.viewer.cam.azimuth = 200
 
-        self.model1 = SAC.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../model1/current_model.zip"))
+        self.model1 = SAC.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model1.zip"))
         self.IK = IKMLP()
         self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v7.pth")))
         self.IK.eval()
@@ -76,16 +76,11 @@ class RL_arm(gym.Env):
             self.inf.timestep += 1
             self.inf.totaltimestep += 1
 
-            # action_from_model1, _ = self.model1.predict(self.observation_space, deterministic=True)
-            # self.inf.action[0] = self.inf.action[0]*0.5 + action_from_model1[0]*0.5
-            # self.inf.action[1] = self.inf.action[1]*0.5 + action[0]*0.5
-            # self.inf.action[2] = self.inf.action[2]*0.5 + action_from_model1[1]*0.5
-            # self.inf.action[3] = self.inf.action[3]*0.5 + action_from_model1[2]*0.5
             action_from_model1, _ = self.model1.predict(self.observation_space, deterministic=True)
-            self.inf.action[0] = self.inf.action[0]*0.5 + action_from_model1[0]*0.5
-            self.inf.action[1] = self.inf.action[1]*0.5 +             action[0]*0.5
-            self.inf.action[2] = self.inf.action[2]*0.5 + action_from_model1[1]*0.5
-            self.inf.action[3] = self.inf.action[3]*0.5 + action_from_model1[2]*0.5
+            self.inf.action[0] = self.inf.action[0]*0.8 + action_from_model1[0]*0.2
+            self.inf.action[1] = self.inf.action[1]*0.8 +             action[0]*0.2
+            self.inf.action[2] = self.inf.action[2]*0.8 + action_from_model1[1]*0.2
+            self.inf.action[3] = self.inf.action[3]*0.8 + action_from_model1[2]*0.2
 
             for i in range(self.sys.Hz):
                 self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
@@ -203,7 +198,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0):
+    def render(self, speed=1):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 

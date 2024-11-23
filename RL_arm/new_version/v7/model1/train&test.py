@@ -103,6 +103,6 @@ if __name__ == '__main__':
         my_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0003)
         my_model.save(current_model_path)
 
-    train(my_model, my_env, file_path)
-    # test(my_model, my_env, current_model_path)
+    # train(my_model, my_env, file_path)
+    test(my_model, my_env, current_model_path)
     # test(my_model, my_env, best_model_path)

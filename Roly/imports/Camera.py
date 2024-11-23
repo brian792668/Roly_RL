@@ -41,13 +41,18 @@ class Camera():
 
     def get_target(self, depth=False):
         # 定義紅色的RGB範圍
-        lower_red = np.array([0, 50, 200], dtype=np.uint8)
-        upper_red = np.array([50, 200, 255], dtype=np.uint8)
+        lower_red = np.array([0, 10, 180], dtype=np.uint8)
+        upper_red = np.array([50, 255, 255], dtype=np.uint8)
         # 創建紅色遮罩
         mask = cv2.inRange(self.color_img, lower_red, upper_red)
         self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
-        cv2.imshow("Masked Image", self.color_mask)
-        cv2.waitKey(1)
+        
+        # 將原圖與遮罩層進行混合
+        alpha = 0.5  # 透明度
+        self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1-alpha, 0)
+
+        # cv2.imshow("Masked Image", self.color_mask)
+        # cv2.waitKey(1)
 
         # 確保在圖像中有紅色物體
         if np.any(mask):
@@ -75,7 +80,7 @@ class Camera():
                 # 從深度圖像中獲取對應的深度值
                 self.target_depth = self.depth_img[int(center_y), int(center_x)]*0.001  # m
 
-                cv2.putText(self.color_img, f"{self.target_depth:.3f} m", (int(center_x) + 10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
+                cv2.putText(self.color_img, f"{self.target_depth:.3f} m", (int(center_x) + 30, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
                         0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
             # 將像素座標轉換至[-1, 1]區間

@@ -31,7 +31,7 @@ def train(model, env, file_path):
     epoch = epoch_plot[-1]
     timer0 = time.time()
 
-    while epoch <= 1000:
+    while epoch <= 500:
         epoch += 1
         print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr")
         model.learn(total_timesteps = 2048)
@@ -105,6 +105,6 @@ if __name__ == '__main__':
         my_model = stable_baselines3.SAC('MlpPolicy', my_env, verbose=0)
         my_model.save(current_model_path)
 
-    train(my_model, my_env, file_path)
-    # test(my_model, my_env, current_model_path)
+    # train(my_model, my_env, file_path)
+    test(my_model, my_env, current_model_path)
     # test(my_model, my_env, best_model_path)

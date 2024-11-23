@@ -27,7 +27,7 @@ class Robot_system:
 
         # Initial motors
         self.joints     = [0] * 8
-        self.motor = self.init_motor()
+        # self.motor = self.init_motor()
 
         # Initial mechanism
         self.EE_goal_pos      = [0.30, -0.25, -0.40]
@@ -81,7 +81,7 @@ class Robot_system:
 
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
-            self.head_camera.show(rgb=True, depth=True)
+            self.head_camera.show(rgb=True, depth=False)
 
             if self.head_camera.target_exist == True:
                 with self.lock:
@@ -214,10 +214,10 @@ class Robot_system:
 
     def run(self):     
         threads = [
-            threading.Thread(target=self.motor_thread),
+            # threading.Thread(target=self.motor_thread),
             threading.Thread(target=self.system_thread),
             threading.Thread(target=self.camera_thread),
-            threading.Thread(target=self.RL_thread),
+            # threading.Thread(target=self.RL_thread),
         ]
 
         for t in threads:
@@ -225,7 +225,7 @@ class Robot_system:
 
         while not self.stop_event.is_set():
             self.time_now = time.time() - self.time_start
-            if self.time_now > 30:  # 執行 10 秒後結束
+            if self.time_now > 10:  # 執行 10 秒後結束
                 self.stop_event.set()
             time.sleep(0.1)  # 減少CPU負擔
 

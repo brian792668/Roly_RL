@@ -44,7 +44,7 @@ class RL_sys():
         self.hand2target  = 1.0
         self.hand2target0 = 1.0
         self.limit_high = [ 1.57, 0.12, 1.57, 2.10]
-        self.limit_low  = [-1.05,-1.05,-1.57, 0.00]
+        self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
         self.random_arm_pos = [0.0, 0.0, 0.0, 0.0]
 
     def reset(self):

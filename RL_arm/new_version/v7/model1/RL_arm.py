@@ -144,19 +144,19 @@ class RL_arm(gym.Env):
         r0 = np.exp(-30*new_dis**1.8)
 
         # r1: panalty of leaving
-        r1 = 100*(self.sys.hand2target - new_dis)
+        r1 = 50*(self.sys.hand2target - new_dis)
         if r1 >= 0: r1 *= 0.2
 
         # r2: reward of handCAM central
-        r2 = 1.0
+        r2 = 0.0
         if np.isnan(self.hand_camera.target[0]) == False:
             r2 = (self.hand_camera.target[0]**2 + self.hand_camera.target[1]**2)**0.5
-            r2 = 1 + 0.5*(1-r2/1.4143)
+            r2 = 0.5 + 0.5*(1-r2)
 
         # r3: reward of detail control
         r3 = np.exp(-(20*new_dis)**2)
 
-        self.inf.reward = 0.3*r0*r2 + r1 + r3
+        self.inf.reward = r0*r2 + r1 + r3
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
 
@@ -182,7 +182,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
+    def render(self, speed=0):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
