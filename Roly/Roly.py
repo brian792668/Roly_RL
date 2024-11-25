@@ -20,14 +20,14 @@ class Robot_system:
         self.target_pixel_norm = self.head_camera.target_norm
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RL_model.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RL_model/model_1/v7.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
 
         # Initial motors
         self.joints     = [0] * 8
-        # self.motor = self.init_motor()
+        self.motor = self.init_motor()
 
         # Initial mechanism
         self.EE_goal_pos      = [0.30, -0.25, -0.40]
@@ -67,9 +67,8 @@ class Robot_system:
 
         motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
         motor.changeAllMotorOperatingMode(OP_MODE=3)
-        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[30]*len(motor.pos_ctrl))
+        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[20]*len(motor.pos_ctrl))
         motor.setAllMotorTorqueEnable()
-        # motor.writeAllMotorPosition(motor.toRolyctrl(self.joints))
         time.sleep(0.1)
         
         return motor
@@ -128,6 +127,8 @@ class Robot_system:
                 y = d2*np.sin(neck_angle)
                 EE_goal_pos = [x, y, z]
                 # print(f"{EE_goal_pos[0]:.2f}, {EE_goal_pos[1]:.2f}, {EE_goal_pos[2]:.2f}")
+            
+            target_to_EE = [EE_goal_pos[i]-EE_current_pos[i] for i in range(3)]
 
             with self.lock:
                 self.EE_goal_pos = EE_goal_pos.copy()
@@ -140,10 +141,14 @@ class Robot_system:
             with self.lock:
                 joints = self.joints.copy()
                 object_xyz = self.EE_goal_pos.copy()
+                hand_xyz = self.EE_current_pos.copy()
                 action_old = self.RL_action.copy()
 
+            target_to_EE = [object_xyz[0]-hand_xyz[0], object_xyz[1]-hand_xyz[1], object_xyz[2]-hand_xyz[2]]
+            # print(target_to_EE)
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
-            state = np.concatenate([object_xyz, joints[2:4], joints[5:7]]).astype(np.float32)
+            state = np.concatenate([object_xyz, target_to_EE, joints[2:4], joints[5:7]]).astype(np.float32)
+            # state = np.concatenate([object_xyz, joints[2:4], joints[5:7]]).astype(np.float32)
             # print(state)
             print(f"{state[0]:.2f}, {state[1]:.2f}, {state[2]:.2f}")
             action, _ = self.RL_model1.predict(state)
@@ -172,6 +177,7 @@ class Robot_system:
 
     def motor_thread(self):
         # initial
+        self.motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[30]*len(self.motor.pos_ctrl))
         with self.lock: joints = self.joints.copy()
         joints = [0, 0, -30, -10, 0, 0, 60, 0]
 
@@ -184,7 +190,7 @@ class Robot_system:
         joints[6] *= -1
         with self.lock: self.joints = joints.copy()
         time.sleep(3)
-        self.motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100, 100, 30, 30, 30, 30, 30, 30])
+        self.motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100, 100, 40, 40, 40, 40, 40, 40])
 
         while not self.stop_event.is_set():
             # 100 Hz
@@ -214,10 +220,10 @@ class Robot_system:
 
     def run(self):     
         threads = [
-            # threading.Thread(target=self.motor_thread),
+            threading.Thread(target=self.motor_thread),
             threading.Thread(target=self.system_thread),
             threading.Thread(target=self.camera_thread),
-            # threading.Thread(target=self.RL_thread),
+            threading.Thread(target=self.RL_thread),
         ]
 
         for t in threads:
@@ -225,7 +231,7 @@ class Robot_system:
 
         while not self.stop_event.is_set():
             self.time_now = time.time() - self.time_start
-            if self.time_now > 10:  # 執行 10 秒後結束
+            if self.time_now > 20:  # 執行 10 秒後結束
                 self.stop_event.set()
             time.sleep(0.1)  # 減少CPU負擔
 

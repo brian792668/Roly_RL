@@ -272,6 +272,7 @@
                   <joint name="R_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
                   <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
                   <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
+                  <site name="R_elbow_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
                   <body name="R_palm" quat="0.707107 0.707107 0 0">
                     <inertial pos="-0.0114428 0.023578 0.122371" quat="0.615966 0.339362 0.623104 0.342287" mass="0.113422" diaginertia="4.23069e-05 4.17695e-05 1.3767e-05"/>
                     <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
