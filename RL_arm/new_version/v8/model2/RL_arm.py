@@ -116,7 +116,7 @@ class RL_arm(gym.Env):
 
             self.inf.reward = self.get_reward()
             self.get_state()
-            self.observation_space = np.concatenate([self.obs.obj_to_neck_xyz, self.obs.obj_to_hand_xyz, self.obs.joint_arm]).astype(np.float32)
+            self.observation_space = np.concatenate([self.obs.obj_to_hand_xyz, self.obs.joint_arm]).astype(np.float32)
             self.inf.info = {}
             return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
     
@@ -150,7 +150,7 @@ class RL_arm(gym.Env):
 
             self.head_camera.get_img(self.data, rgb=True, depth=True)
             self.get_state()
-            self.observation_space = np.concatenate([self.obs.obj_to_neck_xyz, self.obs.obj_to_hand_xyz, self.obs.joint_arm]).astype(np.float32)
+            self.observation_space = np.concatenate([self.obs.obj_to_hand_xyz, self.obs.joint_arm]).astype(np.float32)
             self.inf.done = False
             self.inf.truncated = False
             self.inf.info = {}

@@ -13,7 +13,7 @@ class DXL_Motor():
         self.portHandler = PortHandler(self.DEVICENAME)
         self.packetHandler = PacketHandler(2.0)
         self.checkPortAndBaudRate(BAUDRATE)
-        self.pos_init = [185.0, 180.0, 180.0, 180.0, 180.0, 180.0, 180.0, 180.0]
+        self.pos_init = [180.0, 180.0, 180.0, 178.0, 180.0, 180.0, 180.0, 180.0]
         self.pos_ctrl = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.pos_read = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.vel = [1, 1, 1, 1, 1, 1, 1, 1]

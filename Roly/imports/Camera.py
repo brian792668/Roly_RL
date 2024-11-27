@@ -24,25 +24,51 @@ class Camera():
         self.target_norm = [0.0, 0.0]
         self.target_depth = 1.0
 
+        self.colorizer = rs.colorizer()        
+        self.depth_to_disparity = rs.disparity_transform(True)
+        self.disparity_to_depth = rs.disparity_transform(False)
+
+        self.decimation = rs.decimation_filter()
+        self.spatial = rs.spatial_filter()
+        self.temporal = rs.temporal_filter()
+        self.hole_filling = rs.hole_filling_filter()
+        self.align = rs.align(rs.stream.color)
+
     def get_img(self, rgb=True, depth=True):
         frames = self.pipeline.wait_for_frames()
+        aligned_frames = self.align.process(frames)
         if rgb == True:
             color_frame = frames.get_color_frame()
+            # color_frame = aligned_frames.get_color_frame()
             self.color_img = np.asanyarray(color_frame.get_data())
         if depth == True:
             depth_frame = frames.get_depth_frame()
+            depth_frame = aligned_frames.get_depth_frame()
+
+            # depth_frame = self.decimation.process(depth_frame)
+            # depth_frame = self.depth_to_disparity.process(depth_frame)
+            # depth_frame = self.disparity_to_depth.process(depth_frame)
+            depth_frame = self.hole_filling.process(depth_frame)
+            depth_frame = self.spatial.process(depth_frame)
+            depth_frame = self.temporal.process(depth_frame)
             self.depth_img = np.asanyarray(depth_frame.get_data())
-            self.depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=0.03), cv2.COLORMAP_JET)
+            # self.depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=0.3), cv2.COLORMAP_JET)
+            # self.depth_colormap = cv2.convertScaleAbs(self.depth_img, alpha=0.3)
+
+
+            new_depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=-0.2), cv2.COLORMAP_JET)
+            self.depth_colormap = cv2.addWeighted(self.depth_colormap, 0.5, new_depth_colormap, 0.5, 0)
 
     def show(self, rgb = True, depth = True):
         if rgb == True:     cv2.imshow("Realsense D435i RGB", self.color_img)
         if depth == True:   cv2.imshow("Realsense D435i Depth with color", self.depth_colormap)
+        # if depth == True:   cv2.imshow("Realsense D435i Depth with color", self.depth_img)
         cv2.waitKey(1)
 
     def get_target(self, depth=False):
         # 定義紅色的RGB範圍
         lower_red = np.array([0, 10, 180], dtype=np.uint8)
-        upper_red = np.array([50, 255, 255], dtype=np.uint8)
+        upper_red = np.array([50, 100, 255], dtype=np.uint8)
         # 創建紅色遮罩
         mask = cv2.inRange(self.color_img, lower_red, upper_red)
         self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
@@ -105,6 +131,7 @@ class Camera():
     
     def stop(self):
         self.pipeline.stop()
+        cv2.destroyAllWindows()
 
 class CameraThread(threading.Thread):
     def __init__(self):

@@ -58,20 +58,20 @@ class RL_arm(gym.Env):
             for i in range(len(action)):
                 self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
 
-            alpha1 = 1-0.3*np.exp(-300*self.sys.hand2target**2)
-            alpha2 = 0
-            v1 = (   self.sys.elbow_to_hand[0]**2 +   self.sys.elbow_to_hand[1]**2 +   self.sys.elbow_to_hand[2]**2 ) **0.5
-            v2 = ( self.sys.elbow_to_target[0]**2 + self.sys.elbow_to_target[1]**2 + self.sys.elbow_to_target[2]**2 ) **0.5
-            alpha2 = np.arccos(np.dot(self.sys.elbow_to_hand, self.sys.elbow_to_target)/(v1*v2))
-            alpha2 = 1-0.3*np.exp(-50*alpha2**2)
-            alpha = alpha1 if alpha1 >= alpha2 else alpha2
+            # alpha1 = 1-0.3*np.exp(-300*self.sys.hand2target**2)
+            # alpha2 = 0
+            # v1 = (   self.sys.elbow_to_hand[0]**2 +   self.sys.elbow_to_hand[1]**2 +   self.sys.elbow_to_hand[2]**2 ) **0.5
+            # v2 = ( self.sys.elbow_to_target[0]**2 + self.sys.elbow_to_target[1]**2 + self.sys.elbow_to_target[2]**2 ) **0.5
+            # alpha2 = np.arccos(np.dot(self.sys.elbow_to_hand, self.sys.elbow_to_target)/(v1*v2))
+            # alpha2 = 1-0.3*np.exp(-50*alpha2**2)
+            # alpha = alpha1 if alpha1 >= alpha2 else alpha2
 
             for i in range(int(1/self.sys.Hz/0.001)):
-                self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002*alpha
+                self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
                 self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(self.sys.random_arm_pos[1] - self.sys.pos[4])*0.002
                 self.sys.ctrlpos[5] = 0
-                self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[1]*0.002*alpha
-                self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[2]*0.002*alpha
+                self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[1]*0.002
+                self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[2]*0.002
                 if   self.sys.ctrlpos[3] > self.sys.limit_high[0]: self.sys.ctrlpos[3] = self.sys.limit_high[0]
                 elif self.sys.ctrlpos[3] < self.sys.limit_low[0] : self.sys.ctrlpos[3] = self.sys.limit_low[0]
                 if   self.sys.ctrlpos[6] > self.sys.limit_high[2]: self.sys.ctrlpos[6] = self.sys.limit_high[2]
@@ -175,9 +175,9 @@ class RL_arm(gym.Env):
  
     def get_state(self):
         # update position of target
-        self.data.qpos[16] += 0.01*np.tanh(10*(self.sys.pos_target0[0] - self.data.qpos[16]))
-        self.data.qpos[17] += 0.01*np.tanh(10*(self.sys.pos_target0[1] - self.data.qpos[17]))
-        self.data.qpos[18] += 0.01*np.tanh(10*(self.sys.pos_target0[2] - self.data.qpos[18]))
+        self.data.qpos[16] += 0.01*np.tanh(2*(self.sys.pos_target0[0] - self.data.qpos[16]))
+        self.data.qpos[17] += 0.01*np.tanh(2*(self.sys.pos_target0[1] - self.data.qpos[17]))
+        self.data.qpos[18] += 0.01*np.tanh(2*(self.sys.pos_target0[2] - self.data.qpos[18]))
 
         # update camera
         # self.hand_camera.get_img(self.data, rgb=True, depth=False)
@@ -207,7 +207,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
+    def render(self, speed=0):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
@@ -236,6 +236,19 @@ class RL_arm(gym.Env):
             self.inf.reward += 10
             # self.sys.random_arm_pos[2] = np.radians(random.uniform( -60, 6.8))
             self.sys.random_arm_pos[1] = np.radians(-60+66.8*(1-random.uniform( 0, 1)**2))
+            reachable = False
+            while reachable == False:
+                self.sys.pos_target0[0] = random.uniform( 0.02, 0.50)
+                self.sys.pos_target0[1] = random.uniform(-0.70, 0.00)
+                self.sys.pos_target0[2] = random.uniform( 0.90, 1.35)
+
+                # self.data.qpos[16] = random.uniform( 0.02, 0.50)
+                # self.data.qpos[17] = random.uniform(-0.70, 0.00)
+                # self.data.qpos[18] = random.uniform( 0.90, 1.35)
+                # self.sys.pos_target0 = self.data.qpos[16:19].copy()
+                reachable = self.check_reachable(self.sys.pos_target0)
+            self.data.qpos[16:19] = self.sys.pos_target0.copy()
+
             reachable = False
             while reachable == False:
                 self.sys.pos_target0[0] = random.uniform( 0.02, 0.50)
