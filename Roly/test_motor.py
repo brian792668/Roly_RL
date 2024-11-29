@@ -12,11 +12,12 @@ X_series_info = X_Motor_Info()
 P_series_info = P_Motor_Info()
 
 DEVICENAME = "/dev/ttyUSB0"
-DXL_MODELS = {"id":[1, 2, 10, 11, 12, 13, 14, 15], "model":[X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info]}
+DXL_MODELS = {"id":[1, 2, 10, 11, 12, 13, 14, 15, 20, 21, 22],
+               "model":[X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info]}
 
 motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 motor.changeAllMotorOperatingMode(OP_MODE=3)
-motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[10]*len(motor.pos_ctrl))
+motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200]*len(motor.pos_ctrl))
 motor.setAllMotorTorqueEnable()
 time.sleep(0.1) 
 
@@ -24,9 +25,43 @@ time.sleep(0.1)
 # time.sleep(5) 
 
 if __name__ == '__main__':
-    for i in range(150):
-        motor.pos_ctrl = motor.toRolyctrl([0, 0, 0, -20, 0, 0, 0, 0])
-        motor.writeAllMotorPosition(motor.pos_ctrl)
+    motor.pos_ctrl = [0]*11
+    t=0
+    while t<=1:
+        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, -100, 0, 0, 20, 0], speed=0.005 )
+        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        print(motor.pos_ctrl[3])
+    t=0
+    while t<=1:
+        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0, 0, 20, 0], speed=0.020 )
+        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        print(motor.pos_ctrl[3])
+    t=0
+    while t<=1:
+        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0, 0, 20, 0], speed=0.020 )
+        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        print(motor.pos_ctrl[3])
+    t=0
+    while t<=1:
+        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0, 0, 20, 0], speed=0.020 )
+        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        print(motor.pos_ctrl[3])
+    t=0
+    while t<=1:
+        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0, 0, 20, 0], speed=0.02 )
+        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        print(motor.pos_ctrl[3])
+    t=0
+    while t<=1:
+        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], speed=0.005 )
+        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        print(motor.pos_ctrl[3])
+
+
+    # for i in range(150):
+    #     motor.pos_ctrl = motor.toRolyctrl([0, 0, 0, -20, 0, 0, 0, 0, 0, 0, 0])
+    #     motor.writeAllMotorPosition(motor.pos_ctrl)
+        # time.sleep(0.01)
         # head_cam.get_img()
         # head_cam.show(rgb=True, depth=False)
     # for i in range(50):
@@ -34,18 +69,18 @@ if __name__ == '__main__':
     #     head_cam.get_img()
     #     head_cam.show(rgb=True, depth=False)
 
-    motor.vel = [1]*len(motor.pos_ctrl)
-    motor.writeAllMotorProfileVelocity(motor.vel)
-    for i in range(100):
-        motor.move([-30, 20, 60, -60, 60, -60, -60, 0], speed=0.9)
-        # head_cam.get_img()
-        # head_cam.show(rgb=True, depth=False)
-    motor.vel = [1]*len(motor.pos_ctrl)
-    motor.writeAllMotorProfileVelocity(motor.vel)
-    for i in range(200):
-        motor.move([0, 0, 0, -20, 0, 0, 0, 0], speed=0.2)
-        # head_cam.get_img()
-        # head_cam.show(rgb=True, depth=False)
+    # motor.vel = [1]*len(motor.pos_ctrl)
+    # motor.writeAllMotorProfileVelocity(motor.vel)
+    # for i in range(100):
+    #     motor.move([-30, 20, 60, -60, 60, -60, -60, 0], speed=0.9)
+    #     # head_cam.get_img()
+    #     # head_cam.show(rgb=True, depth=False)
+    # motor.vel = [1]*len(motor.pos_ctrl)
+    # motor.writeAllMotorProfileVelocity(motor.vel)
+    # for i in range(200):
+    #     motor.move([0, 0, 0, -20, 0, 0, 0, 0], speed=0.2)
+    #     # head_cam.get_img()
+    #     # head_cam.show(rgb=True, depth=False)
         
 motor.setAllMotorTorqurDisable()
 time.sleep(0.1) 

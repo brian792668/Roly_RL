@@ -39,7 +39,7 @@ class Robot_system:
         self.head_rgb = self.head_camera.color_img.copy()
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v9/RL_model_v9.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v10/RL_model_v10.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
@@ -462,4 +462,4 @@ class Robot_system:
 if __name__ == "__main__":
 
     Roly = Robot_system()
-    Roly.run(endtime=5)
+    Roly.run(endtime=20)

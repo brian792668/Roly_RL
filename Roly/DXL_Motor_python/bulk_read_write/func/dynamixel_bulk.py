@@ -18,7 +18,7 @@ class DXL_Motor():
         self.pos_read = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.vel = [1, 1, 1, 1, 1, 1, 1, 1]
 
-    def checkPortAndBaudRate(self, BAUDRATE=57600):
+    def checkPortAndBaudRate(self, BAUDRATE=115200):
         if not self.portHandler.openPort():
             print("error opening port")
             quit()
@@ -178,3 +178,16 @@ class DXL_Motor():
 
     def toRolyctrl(self, ctrlpos):
         return [ctrlpos[i]+self.pos_init[i] for i in range(len(self.pos_init))]
+    
+    def smooth_transition(self, t, initial_angles, final_angles, speed=0.001):
+
+        initial_angles = np.array(initial_angles)
+        final_angles = np.array(final_angles)
+
+        # progress = min(t, 1)
+        smooth_factor = ((1 - np.cos(np.pi * t)) / 2)
+        current_angles = initial_angles * (1 - smooth_factor) + final_angles * smooth_factor
+
+        t_next = t + speed
+        time.sleep(0.02)
+        return current_angles.tolist(), t_next

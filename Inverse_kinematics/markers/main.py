@@ -10,7 +10,7 @@ from imports.Draw_joint_info import *
 from imports.Show_camera_view import *
 from imports.Camera import *
 
-def lebal_Roly_IK(numberofpoints = 50):
+def lebal_Roly_IK(numberofpoints = 2000):
     # Add xml path
     file_path = os.path.dirname(os.path.abspath(__file__))
     xml_path = os.path.join(file_path, "Roly_XML2/Roly.xml")
@@ -40,7 +40,7 @@ def lebal_Roly_IK(numberofpoints = 50):
     # ================================= 2000 points ======================================
     def check(point):
         dtoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if dtoshoulder >= 0.4 or dtoshoulder <= 0.25:
+        if dtoshoulder >= 0.49 or dtoshoulder <= 0.30:
             return False
         elif (point[0]<0.12 and point[1] > -0.20):
             return False
@@ -56,9 +56,9 @@ def lebal_Roly_IK(numberofpoints = 50):
     for i in range(len(targetpoints)):
         reachable = False
         while reachable == False:
-            targetpoints[i][0] = random.uniform(0.02, 0.5)
+            targetpoints[i][0] = random.uniform(0.00, 0.5)
             targetpoints[i][1] = random.uniform(-0.7, 0.0)
-            targetpoints[i][2] = random.uniform(1.32, 0.9)
+            targetpoints[i][2] = random.uniform(1.35, 0.9)
             reachable = check(targetpoints[i])
     sorted_targetpoints = sorted(targetpoints, key=lambda x: x[2])
     point_index = 0
@@ -219,7 +219,6 @@ def lebal_Roly_IK(numberofpoints = 50):
             for i in range(len(sorted_targetpoints)):
                 data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_targetpoints[i]
             viewer.sync()
-            viewer.cam.azimuth += 0.1
 
 
     renderer.close() 
@@ -235,6 +234,6 @@ def lebal_Roly_IK(numberofpoints = 50):
     print(f"length of dataest: {len(xyzs)}\n\n")
 
 if __name__ == '__main__':
-    lebal_Roly_IK(numberofpoints = 15)
+    lebal_Roly_IK(numberofpoints = 5000)
     # from ..IK_train import *
     # train(numberofpoints=10, version="v1")
