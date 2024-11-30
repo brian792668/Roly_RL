@@ -56,10 +56,7 @@ class RL_arm(gym.Env):
             self.inf.totaltimestep += 1
 
             for i in range(len(action)):
-                self.inf.action[i] = self.inf.action[i]*0.8 + action[i]*0.2
-            self.sys.arm_target_pos[0] = self.sys.limit_low[0]*(1-(1+self.inf.action[0])/2) + self.sys.limit_high[0]*(1+self.inf.action[0])/2
-            self.sys.arm_target_pos[3] = self.sys.limit_low[2]*(1-(1+self.inf.action[1])/2) + self.sys.limit_high[2]*(1+self.inf.action[1])/2
-            self.sys.arm_target_pos[4] = self.sys.limit_low[3]*(1-(1+self.inf.action[2])/2) + self.sys.limit_high[3]*(1+self.inf.action[2])/2
+                self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
 
             # alpha1 = 1-0.3*np.exp(-300*self.sys.hand2target**2)
             # alpha2 = 0
@@ -70,11 +67,17 @@ class RL_arm(gym.Env):
             # alpha = alpha1 if alpha1 >= alpha2 else alpha2
 
             for i in range(int(1/self.sys.Hz/0.001)):
-                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(0.1*(self.sys.arm_target_pos[0] - self.sys.pos[3]))*0.02
-                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(0.1*(self.sys.arm_target_pos[1] - self.sys.pos[4]))*0.02
+                self.sys.ctrlpos[3] = self.sys.pos[3] + self.inf.action[0]*0.002
+                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(self.sys.arm_target_pos[1] - self.sys.pos[4])*0.002
                 self.sys.ctrlpos[5] = 0
-                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(0.1*(self.sys.arm_target_pos[3] - self.sys.pos[6]))*0.02
-                self.sys.ctrlpos[7] = self.sys.pos[7] + np.tanh(0.1*(self.sys.arm_target_pos[4] - self.sys.pos[7]))*0.02
+                self.sys.ctrlpos[6] = self.sys.pos[6] + self.inf.action[1]*0.002
+                self.sys.ctrlpos[7] = self.sys.pos[7] + self.inf.action[2]*0.002
+                if   self.sys.ctrlpos[3] > self.sys.limit_high[0]: self.sys.ctrlpos[3] = self.sys.limit_high[0]
+                elif self.sys.ctrlpos[3] < self.sys.limit_low[0] : self.sys.ctrlpos[3] = self.sys.limit_low[0]
+                if   self.sys.ctrlpos[6] > self.sys.limit_high[2]: self.sys.ctrlpos[6] = self.sys.limit_high[2]
+                elif self.sys.ctrlpos[6] < self.sys.limit_low[2] : self.sys.ctrlpos[6] = self.sys.limit_low[2]
+                if   self.sys.ctrlpos[7] > self.sys.limit_high[3]: self.sys.ctrlpos[7] = self.sys.limit_high[3]
+                elif self.sys.ctrlpos[7] < self.sys.limit_low[3] : self.sys.ctrlpos[7] = self.sys.limit_low[3]
 
                 self.sys.pos = [self.data.qpos[i] for i in controlList]
                 self.sys.vel = [self.data.qvel[i-1] for i in controlList]
@@ -121,7 +124,7 @@ class RL_arm(gym.Env):
             for i in range(100):
                 self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(10*(self.sys.arm_target_pos[0] - self.sys.pos[3]))*0.01
                 self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(10*(self.sys.arm_target_pos[1] - self.sys.pos[4]))*0.01
-                self.sys.ctrlpos[5] = self.sys.pos[5] + np.tanh(10*(self.sys.arm_target_pos[2] - self.sys.pos[5]))*0.01
+                self.sys.ctrlpos[5] = 0
                 self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.arm_target_pos[3] - self.sys.pos[6]))*0.01
                 self.sys.ctrlpos[7] = self.sys.pos[7] + np.tanh(10*(self.sys.arm_target_pos[4] - self.sys.pos[7]))*0.01
                 self.sys.ctrlpos[8] = self.sys.pos[8] + np.tanh(10*(self.sys.arm_target_pos[5] - self.sys.pos[8]))*0.01
@@ -152,19 +155,20 @@ class RL_arm(gym.Env):
         # r0: reward of position
         r0 = np.exp(-30*new_dis**1.8)
 
-        # r1: panalty of leaving
-        r1 = 50*(self.sys.hand2target - new_dis)
-        if r1 >= 0: r1 *= 0.2
+        # # r1: panalty of leaving
+        # r1 = 50*(self.sys.hand2target - new_dis)
+        # if r1 >= 0: r1 *= 0.2
 
         # r2: reward of handCAM central
         v1 = (   self.sys.elbow_to_hand[0]**2 +   self.sys.elbow_to_hand[1]**2 +   self.sys.elbow_to_hand[2]**2 ) **0.5
         v2 = ( self.sys.elbow_to_target[0]**2 + self.sys.elbow_to_target[1]**2 + self.sys.elbow_to_target[2]**2 ) **0.5
         r2 = np.dot(self.sys.elbow_to_hand, self.sys.elbow_to_target)/(v1*v2)
+        r2 *= np.abs(r2)
 
         # r3: reward of detail control
         r3 = np.exp(-(20*new_dis)**2)
 
-        self.inf.reward = r0*r2 + r1 + r3
+        self.inf.reward = r0*r2 + r3
         self.inf.total_reward += self.inf.reward
         self.sys.hand2target = new_dis
         # print(f"reward: {self.inf.reward:.2f}, ({r0:.2f}, {r1:.2f}, {r2:.2f}, {r3:.2f})")
@@ -204,7 +208,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0):
+    def render(self, speed=1):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
@@ -226,7 +230,7 @@ class RL_arm(gym.Env):
         hand_camera_center = np.degrees(np.arccos(np.dot(self.sys.elbow_to_hand, self.sys.elbow_to_target)/(v1*v2)))
         # print(hand_camera_center)
 
-        if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 10:
+        if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 5:
             self.inf.reward += 10
             # self.sys.self.sys.arm_target_pos[2] = np.radians(random.uniform( -60, 6.8))
             self.sys.arm_target_pos[1] = np.radians(-60+66.8*(1-random.uniform( 0, 1)**2))

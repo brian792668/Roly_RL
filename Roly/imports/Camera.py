@@ -57,7 +57,7 @@ class Camera():
 
 
             new_depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=-0.2), cv2.COLORMAP_JET)
-            self.depth_colormap = cv2.addWeighted(self.depth_colormap, 0.5, new_depth_colormap, 0.5, 0)
+            self.depth_colormap = cv2.addWeighted(self.depth_colormap, 0.1, new_depth_colormap, 0.9, 0)
 
     def show(self, rgb = True, depth = True):
         if rgb == True:     cv2.imshow("Realsense D435i RGB", self.color_img)

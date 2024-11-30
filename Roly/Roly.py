@@ -59,6 +59,7 @@ class Robot_system:
         self.hand_pos   = [0.19, -0.22, -0.36]
         self.shoulder_pos = [-0.02, -0.2488, -0.104]
         self.elbow_pos = [-0.02, -0.2488, -0.35]
+        self.arm_target_joints = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.DH_table_R = DHtable([[    0.0, np.pi/2,   -0.02,  -0.104],
                                    [np.pi/2, np.pi/2,     0.0,  0.2488],
                                    [    0.0,     0.0, -0.1105,     0.0],
@@ -199,15 +200,15 @@ class Robot_system:
                 self.elbow_pos = elbow_pos.copy()
                 self.target_pos = target_pos.copy()
 
-            # 定義點的座標
-            points_x = [0,   0,     shoulder_pos[0],     elbow_pos[0],     hand_pos[0],     target_pos[0]].copy()  # x座標
-            points_y = [0,   0,     shoulder_pos[1],     elbow_pos[1],     hand_pos[1],     target_pos[1]].copy()  # y座標
-            points_z = [1, 1.5, 1.5+shoulder_pos[2], 1.5+elbow_pos[2], 1.5+hand_pos[2], 1.5+target_pos[2]].copy()  # z座標
+            # # 定義點的座標
+            # points_x = [0,   0,     shoulder_pos[0],     elbow_pos[0],     hand_pos[0],     target_pos[0]].copy()  # x座標
+            # points_y = [0,   0,     shoulder_pos[1],     elbow_pos[1],     hand_pos[1],     target_pos[1]].copy()  # y座標
+            # points_z = [1, 1.5, 1.5+shoulder_pos[2], 1.5+elbow_pos[2], 1.5+hand_pos[2], 1.5+target_pos[2]].copy()  # z座標
 
-            with self.lock:
-                self.points_x = points_x.copy()
-                self.points_y = points_y.copy()
-                self.points_z = points_z.copy()
+            # with self.lock:
+            #     self.points_x = points_x.copy()
+            #     self.points_y = points_y.copy()
+            #     self.points_z = points_z.copy()
 
 
             # # # 定義連接點的索引
@@ -277,7 +278,7 @@ class Robot_system:
     def RL_thread(self):
         while not self.stop_event.is_set():
             # 100 Hz
-            time.sleep(0.02)
+            time.sleep(0.005)
             with self.lock:
                 joints = self.joints.copy()
                 object_xyz = self.target_pos.copy()
@@ -297,20 +298,30 @@ class Robot_system:
                 desire_joints = np.radians(desire_joints)
 
             action, _ = self.RL_model1.predict(state)
-            action_new = [action_old[0]*0.85 + action[0]*0.15,
-                          action_old[1]*0.85 + 0, 
-                          action_old[2]*0.85 + 0, 
-                          action_old[3]*0.85 + action[1]*0.15, 
-                          action_old[4]*0.85 + action[2]*0.15,
-                          action_old[5]*0.85 + 0]
+            action_new = [action_old[0]*0.70 + action[0]*0.3,
+                          action_old[1]*0.70 + 0, 
+                          action_old[2]*0.70 + 0, 
+                          action_old[3]*0.70 + action[1]*0.3, 
+                          action_old[4]*0.70 + action[2]*0.3,
+                          action_old[5]*0.70 + 0]
             
-            joints[2] += action_new[0]*0.08*alpha
-            joints[3] += action_new[1]*0.05
+            self.arm_target_joints[0] = self.limit_low[0]*(1-(1+action_new[0])/2) + self.limit_high[0]*(1+action_new[0])/2
+            self.arm_target_joints[3] = self.limit_low[2]*(1-(1+action_new[3])/2) + self.limit_high[2]*(1+action_new[3])/2
+            self.arm_target_joints[4] = self.limit_low[3]*(1-(1+action_new[4])/2) + self.limit_high[3]*(1+action_new[4])/2
+
+            joints[2] += np.tanh(0.005*(self.arm_target_joints[0] - joints[2]))*2.0
+            # joints[3] += np.tanh(0.005*(desire_joints[1] - joints[3]))*2.0
+            joints[3] += np.tanh(0.005*(np.radians(-45) - joints[3]))*2.0
+            joints[5] += np.tanh(0.005*(self.arm_target_joints[3] - joints[5]))*2.0
+            joints[6] += np.tanh(0.005*(self.arm_target_joints[4] - joints[6]))*2.0
+            
+            # joints[2] += action_new[0]*0.08*alpha
+            # joints[3] += action_new[1]*0.05
             # joints[3] = joints[3]*0.95+ desire_joints[1]*0.05
-            joints[4] += action_new[2]*0.08*alpha
-            joints[5] += action_new[3]*0.08*alpha
-            joints[6] += action_new[4]*0.08*alpha
-            joints[7] += action_new[5]*0.05*alpha
+            # joints[4] += action_new[2]*0.08*alpha
+            # joints[5] += action_new[3]*0.08*alpha
+            # joints[6] += action_new[4]*0.08*alpha
+            # joints[7] += action_new[5]*0.05*alpha
 
             if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
             elif joints[2] < self.limit_low[0] : joints[2] = self.limit_low[0]
@@ -328,7 +339,7 @@ class Robot_system:
     def motor_thread(self):
         while not self.stop_event.is_set():
             # 100 Hz
-            time.sleep(0.02)
+            time.sleep(0.01)
             with self.lock: joints = self.joints.copy()
             with self.lock: 
                 pixel_norm = self.target_pixel_norm.copy()
@@ -337,7 +348,7 @@ class Robot_system:
             joints[0] += -3.0*pixel_norm[0]*target_exist
             joints[1] += -3.0*pixel_norm[1]*target_exist
 
-            joints[3] = -30
+            # joints[3] = -30
 
             with self.lock: self.joints = joints.copy()
 

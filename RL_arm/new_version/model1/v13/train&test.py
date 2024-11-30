@@ -28,7 +28,7 @@ def train(model, env, file_path):
     timer0 = time.time()
 
     while True:
-        model.learn(total_timesteps = 4096)
+        model.learn(total_timesteps = 2048)
         model.save(os.path.join(file_path, "current_model.zip"))
         epoch += 1
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     my_env = RL_arm()
     file_path = os.path.dirname(os.path.abspath(__file__))
     current_model_path = os.path.join(file_path, "current_model.zip")
-    best_model_path = os.path.join(file_path, "best_total/best_total_model_epoch756.zip")
+    best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch1470.zip")
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         my_model = stable_baselines3.SAC.load(current_model_path, my_env)
@@ -86,6 +86,6 @@ if __name__ == '__main__':
         my_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0003)
         my_model.save(current_model_path)
 
-    # train(my_model, my_env, file_path)
-    test(my_model, my_env, current_model_path)
+    train(my_model, my_env, file_path)
+    # test(my_model, my_env, current_model_path)
     # test(my_model, my_env, best_model_path)

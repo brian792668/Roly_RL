@@ -56,7 +56,7 @@ class RL_arm(gym.Env):
             self.inf.totaltimestep += 1
 
             for i in range(len(action)):
-                self.inf.action[i] = self.inf.action[i]*0.5 + action[i]*0.5
+                self.inf.action[i] = self.inf.action[i]*0.8 + action[i]*0.2
             self.sys.arm_target_pos[0] = self.sys.limit_low[0]*(1-(1+self.inf.action[0])/2) + self.sys.limit_high[0]*(1+self.inf.action[0])/2
             self.sys.arm_target_pos[3] = self.sys.limit_low[2]*(1-(1+self.inf.action[1])/2) + self.sys.limit_high[2]*(1+self.inf.action[1])/2
             self.sys.arm_target_pos[4] = self.sys.limit_low[3]*(1-(1+self.inf.action[2])/2) + self.sys.limit_high[3]*(1+self.inf.action[2])/2
@@ -70,11 +70,11 @@ class RL_arm(gym.Env):
             # alpha = alpha1 if alpha1 >= alpha2 else alpha2
 
             for i in range(int(1/self.sys.Hz/0.001)):
-                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(10*(self.sys.arm_target_pos[0] - self.sys.pos[3]))*0.002
-                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(10*(self.sys.arm_target_pos[1] - self.sys.pos[4]))*0.002
-                self.sys.ctrlpos[5] = self.sys.pos[5] + np.tanh(10*(self.sys.arm_target_pos[2] - self.sys.pos[5]))*0.002
-                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.arm_target_pos[3] - self.sys.pos[6]))*0.002
-                self.sys.ctrlpos[7] = self.sys.pos[7] + np.tanh(10*(self.sys.arm_target_pos[4] - self.sys.pos[7]))*0.002
+                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(0.1*(self.sys.arm_target_pos[0] - self.sys.pos[3]))*0.01
+                self.sys.ctrlpos[4] = self.sys.pos[4] + np.tanh(0.1*(self.sys.arm_target_pos[1] - self.sys.pos[4]))*0.01
+                self.sys.ctrlpos[5] = 0
+                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(0.1*(self.sys.arm_target_pos[3] - self.sys.pos[6]))*0.01
+                self.sys.ctrlpos[7] = self.sys.pos[7] + np.tanh(0.1*(self.sys.arm_target_pos[4] - self.sys.pos[7]))*0.01
                 # if   self.sys.ctrlpos[3] > self.sys.limit_high[0]: self.sys.ctrlpos[3] = self.sys.limit_high[0]
                 # elif self.sys.ctrlpos[3] < self.sys.limit_low[0] : self.sys.ctrlpos[3] = self.sys.limit_low[0]
                 # if   self.sys.ctrlpos[6] > self.sys.limit_high[2]: self.sys.ctrlpos[6] = self.sys.limit_high[2]
@@ -210,7 +210,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
+    def render(self, speed=0):
         if int(1000*self.data.time)%int(450*speed+50) == 0: # 50ms render 一次
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
