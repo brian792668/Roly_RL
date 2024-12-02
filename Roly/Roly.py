@@ -39,7 +39,7 @@ class Robot_system:
         self.head_rgb = self.head_camera.color_img.copy()
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v10/RL_model_v10.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v15/RL_model_v15.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
@@ -290,7 +290,7 @@ class Robot_system:
             alpha = 1-0.8*np.exp(-100*distotarget**2)
             # print(target_to_EE)
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
-            state = np.concatenate([target_to_EE.copy(), joints[2:4], joints[5:7]]).astype(np.float32)
+            state = np.concatenate([object_xyz.copy(), target_to_EE.copy(), joints[2:4], joints[5:7]]).astype(np.float32)
             # print(f"{state[0]:.2f}, {state[1]:.2f}, {state[2]:.2f}")
 
             with torch.no_grad():  # 不需要梯度計算，因為只做推論
@@ -298,23 +298,24 @@ class Robot_system:
                 desire_joints = np.radians(desire_joints)
 
             action, _ = self.RL_model1.predict(state)
-            action_new = [action_old[0]*0.70 + action[0]*0.3,
-                          action_old[1]*0.70 + 0, 
-                          action_old[2]*0.70 + 0, 
-                          action_old[3]*0.70 + action[1]*0.3, 
-                          action_old[4]*0.70 + action[2]*0.3,
-                          action_old[5]*0.70 + 0]
+            action_new = [action_old[0]*0.8 + action[0]*0.2,
+                          action_old[1]*0.8 + 0, 
+                          action_old[2]*0.8 + 0, 
+                          action_old[3]*0.8 + action[1]*0.2, 
+                          action_old[4]*0.8 + action[2]*0.2,
+                          action_old[5]*0.8 + 0]
             
-            self.arm_target_joints[0] = self.limit_low[0]*(1-(1+action_new[0])/2) + self.limit_high[0]*(1+action_new[0])/2
-            self.arm_target_joints[3] = self.limit_low[2]*(1-(1+action_new[3])/2) + self.limit_high[2]*(1+action_new[3])/2
-            self.arm_target_joints[4] = self.limit_low[3]*(1-(1+action_new[4])/2) + self.limit_high[3]*(1+action_new[4])/2
+            # self.arm_target_joints[0] = self.limit_low[0]*(1-(1+action_new[0])/2) + self.limit_high[0]*(1+action_new[0])/2
+            # self.arm_target_joints[3] = self.limit_low[2]*(1-(1+action_new[3])/2) + self.limit_high[2]*(1+action_new[3])/2
+            # self.arm_target_joints[4] = self.limit_low[3]*(1-(1+action_new[4])/2) + self.limit_high[3]*(1+action_new[4])/2
 
-            joints[2] += np.tanh(0.005*(self.arm_target_joints[0] - joints[2]))*2.0
-            # joints[3] += np.tanh(0.005*(desire_joints[1] - joints[3]))*2.0
-            joints[3] += np.tanh(0.005*(np.radians(-45) - joints[3]))*2.0
-            joints[5] += np.tanh(0.005*(self.arm_target_joints[3] - joints[5]))*2.0
-            joints[6] += np.tanh(0.005*(self.arm_target_joints[4] - joints[6]))*2.0
+            # joints[2] += np.tanh(0.005*(self.arm_target_joints[0] - joints[2]))*2.0
+            # # joints[3] += np.tanh(0.005*(desire_joints[1] - joints[3]))*2.0
+            # joints[3] += np.tanh(0.005*(np.radians(-45) - joints[3]))*2.0
+            # joints[5] += np.tanh(0.005*(self.arm_target_joints[3] - joints[5]))*2.0
+            # joints[6] += np.tanh(0.005*(self.arm_target_joints[4] - joints[6]))*2.0
             
+
             # joints[2] += action_new[0]*0.08*alpha
             # joints[3] += action_new[1]*0.05
             # joints[3] = joints[3]*0.95+ desire_joints[1]*0.05
@@ -322,6 +323,19 @@ class Robot_system:
             # joints[5] += action_new[3]*0.08*alpha
             # joints[6] += action_new[4]*0.08*alpha
             # joints[7] += action_new[5]*0.05*alpha
+
+
+            joints[2] += action_new[0]**3 * 0.05
+            joints[3] += action_new[1]**3 * 0.05
+            joints[4] += action_new[2]**3 * 0.05
+            joints[5] += action_new[3]**3 * 0.05
+            joints[6] += action_new[4]**3 * 0.05
+            joints[7] += action_new[5]**3 * 0.05
+
+            # joints[2] = joints[2]*0.99+ desire_joints[0]*0.01
+            # joints[3] = joints[3]*0.99+ desire_joints[1]*0.01
+            # joints[5] = joints[5]*0.99+ desire_joints[2]*0.01
+            # joints[6] = joints[6]*0.99+ desire_joints[3]*0.01
 
             if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
             elif joints[2] < self.limit_low[0] : joints[2] = self.limit_low[0]
