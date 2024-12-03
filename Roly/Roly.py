@@ -30,16 +30,20 @@ class IKMLP(nn.Module):
 
 class Robot_system:
     def __init__(self):
+        # Initial system
+        self.system_running = True
+        self.lock = threading.Lock()
+        self.stop_event = threading.Event()
+        self.time_start = time.time()
+
         # Initial camera
         self.head_camera = Camera()
         self.target_exist = self.head_camera.target_exist
         self.target_depth = self.head_camera.target_depth
         self.target_pixel_norm = self.head_camera.target_norm
 
-        self.head_rgb = self.head_camera.color_img.copy()
-
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v15/RL_model_v15.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v17/model.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
@@ -49,16 +53,16 @@ class Robot_system:
         self.IK.eval()
 
         # Initial motors
-        self.joints     = [0] * 8
-        self.motor = self.init_motor()
-        self.limit_high = [ 1.57, 0.12, 1.57, 2.10]
+        self.joints = [0] * 8
+        # self.motor = self.init_motor()
+        self.limit_high = [ 1.57, 0.12, 1.57, 1.90]
         self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
 
         # Initial mechanism
-        self.target_pos      = [0.19, -0.22, -0.36]
-        self.hand_pos   = [0.19, -0.22, -0.36]
+        self.target_pos   = [0.19, -0.22, -0.36]
+        self.hand_pos     = [0.19, -0.22, -0.36]
         self.shoulder_pos = [-0.02, -0.2488, -0.104]
-        self.elbow_pos = [-0.02, -0.2488, -0.35]
+        self.elbow_pos    = [-0.02, -0.2488, -0.35]
         self.arm_target_joints = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.DH_table_R = DHtable([[    0.0, np.pi/2,   -0.02,  -0.104],
                                    [np.pi/2, np.pi/2,     0.0,  0.2488],
@@ -80,20 +84,12 @@ class Robot_system:
                                        [np.pi/2, np.pi/2,     0.0,     0.0],
                                        [np.pi/2, np.pi/2,     0.0, -0.1403]])
         
-        # Initial system
-        self.system_running = True
-        self.time_start = time.time()
-        
-        # Lock物件用於多執行緒資源管理
-        self.lock = threading.Lock()
-        self.stop_event = threading.Event()
-
         self.blue_line_points = [0, 1, 2, 3, 4]  # 藍線連接 point1 ~ point5
         self.red_line_points = [4, 5]  # 紅線連接 point5 ~ point6
    
     def init_motor(self):
         X_series_info = X_Motor_Info()
-        P_series_info = P_Motor_Info()
+        # P_series_info = P_Motor_Info()
 
         DEVICENAME = "/dev/ttyUSB0"
         DXL_MODELS = {
@@ -104,24 +100,20 @@ class Robot_system:
         motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
         motor.changeAllMotorOperatingMode(OP_MODE=3)
         motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*len(motor.pos_ctrl))
-        motor.setAllMotorTorqueEnable()
         time.sleep(0.1)
+        initial_angles = motor.readAllMotorPosition()
+        final_angles=[-20, -45, 10, 4, 0, 5, 78, 0]
 
         # initial
         t=0
         while t <= 1.0:
-            joints, t = self.smooth_transition(t, initial_angles=[0]*8, final_angles=[-20, -45, -30, -30, 0, 0, 60, 0], speed=0.005)
-            joints[1] *= -1
-            joints[5] *= -1
-            joints[6] *= -1
+            joints, t = self.smooth_transition(t, initial_angles=initial_angles.copy(), final_angles=final_angles.copy(), speed=0.005)
             motor.writeAllMotorPosition(motor.toRolyctrl(joints.copy()))
-            joints[1] *= -1
-            joints[5] *= -1
-            joints[6] *= -1
             time.sleep(0.01)
-            self.joints = joints.copy()
-        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100, 100, 50, 50, 50, 50, 50, 50])
-        time.sleep(0.5)
+        with self.lock:
+            self.joints = final_angles.copy()
+        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50])
+        time.sleep(0.1)
         
         return motor
 
@@ -133,15 +125,12 @@ class Robot_system:
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
             self.head_camera.show(rgb=True, depth=True)
-            with self.lock:
-                self.head_rgb = self.head_camera.color_img.copy()
 
             if self.head_camera.target_exist == True:
                 with self.lock:
                     self.target_exist = True
                     self.target_pixel_norm = self.head_camera.target_norm
-                    # print(f"{self.target_pixel_norm[0]:.2f}, {self.target_pixel_norm[1]:.2f}")
-                if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
+                if np.abs(self.head_camera.target_norm[0]) <= 0.1 and np.abs(self.head_camera.target_norm[1]) <= 0.1 :
                     with self.lock:
                         self.target_depth = self.head_camera.target_depth
             else:
@@ -154,19 +143,12 @@ class Robot_system:
         while not self.stop_event.is_set():
             # 100 Hz
             time.sleep(0.02)
-            # plt.clf()
-            # plt.close('all')
-
-            # clock
-            # with self.lock: clock = time.time() - self.time_start.copy()
-            # print(f"{clock:.1f}")
 
             # Farward Kinematics of EE position
             with self.lock: angles=self.joints.copy()
             angles = [ np.radians(angles[i]) for i in range(len(angles))]
             elbow_pos = self.DH_table_elbow.forward2(angles=angles[2:6].copy())
             hand_pos = self.DH_table_R.forward(angles=angles[2:8].copy())
-            # hand_pos = [hand_pos[0], hand_pos[1], hand_pos[2]]
             # print(f"{hand_pos[0]:.2f}, {hand_pos[1]:.2f}, {hand_pos[2]:.2f}")
 
             # Farward Kinematics of target position
@@ -174,7 +156,7 @@ class Robot_system:
                 target_pos = self.target_pos.copy()
                 self.hand_pos = hand_pos.copy()
                 shoulder_pos = self.shoulder_pos.copy()
-            # target_pos = [0.20, -0.25, -0.30]
+                
             neck_angle = angles[0]
             camera_angle = angles[1]
             with self.lock: 
@@ -189,7 +171,7 @@ class Robot_system:
                 z = b*np.sin(gamma)
                 x = d2*np.cos(neck_angle)
                 y = d2*np.sin(neck_angle)
-                if self.check_reachable([x,y,z].copy()) == True: 
+                if self.reachable([x,y,z].copy()) == True: 
                     target_pos = [x, y, z] 
                 # print(f"{target_pos[0]:.2f}, {target_pos[1]:.2f}, {target_pos[2]:.2f}")
 
@@ -200,90 +182,16 @@ class Robot_system:
                 self.elbow_pos = elbow_pos.copy()
                 self.target_pos = target_pos.copy()
 
-            # # 定義點的座標
-            # points_x = [0,   0,     shoulder_pos[0],     elbow_pos[0],     hand_pos[0],     target_pos[0]].copy()  # x座標
-            # points_y = [0,   0,     shoulder_pos[1],     elbow_pos[1],     hand_pos[1],     target_pos[1]].copy()  # y座標
-            # points_z = [1, 1.5, 1.5+shoulder_pos[2], 1.5+elbow_pos[2], 1.5+hand_pos[2], 1.5+target_pos[2]].copy()  # z座標
-
-            # with self.lock:
-            #     self.points_x = points_x.copy()
-            #     self.points_y = points_y.copy()
-            #     self.points_z = points_z.copy()
-
-
-            # # # 定義連接點的索引
-            # # self.blue_line_points = [0, 1, 2, 3, 4]  # 藍線連接 point1 ~ point5
-            # # self.red_line_points = [4, 5]  # 紅線連接 point5 ~ point6
-
-            # # 創建三維繪圖
-            # fig = plt.figure(figsize=(6, 6))
-            # ax = fig.add_subplot(111, projection='3d')
-
-            # # 繪製藍線連接點1~點5
-            # ax.plot(
-            #     [self.points_x[j] for j in self.blue_line_points],
-            #     [self.points_y[j] for j in self.blue_line_points],
-            #     [self.points_z[j] for j in self.blue_line_points],
-            #     color='blue',
-            #     label='Line Point1-Point5'
-            # )
-
-            # # 繪製紅線連接點5~點6
-            # ax.plot(
-            #     [self.points_x[j] for j in self.red_line_points],
-            #     [self.points_y[j] for j in self.red_line_points],
-            #     [self.points_z[j] for j in self.red_line_points],
-            #     color='red',
-            #     label='Line Point5-Point6'
-            # )
-
-            # # 繪製所有點
-            # ax.scatter(self.points_x, self.points_y, self.points_z, color='black', label='Points')
-
-            # # 設置視角
-            # ax.view_init(elev=30, azim=-30)
-
-            # # 添加標籤和標題
-            # ax.set_xlabel('X Label')
-            # ax.set_ylabel('Y Label')
-            # ax.set_zlabel('Z Label')
-            # ax.set_title('Default View (30, 30)')
-            # # ax.legend()
-
-            # # # 顯示圖形
-            # # plt.show()
-            # # time.sleep(0.01)
-            # # plt.clf()
-            # # plt.close('all')
-
-            # # # # 儲存圖形為檔案
-            # # save_path = "3d_plot.png"
-            # # plt.savefig(save_path)  # 設定解析度 dpi
-            # # # plt.close()  # 關閉 Matplotlib 圖形，節省記憶體
-            # # # time.sleep(0.01)
-
-
-            # # 將 Matplotlib 圖存成 numpy array
-            # fig.canvas.draw()  # 繪製畫布
-            # img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
-            # img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))  # 轉成 (H, W, C)         
-
-            # # Matplotlib 是 RGB 格式，OpenCV 是 BGR 格式，轉換一下
-            # self.plotimg  = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)    
-            
-            # # 用 OpenCV 顯示圖像
-            # # cv2.imshow("Matplotlib in OpenCV", self.plotimg)
-            # # cv2.waitKey(10)
-
     def RL_thread(self):
         while not self.stop_event.is_set():
             # 100 Hz
-            time.sleep(0.005)
+            time.sleep(0.01)
             with self.lock:
                 joints = self.joints.copy()
                 object_xyz = self.target_pos.copy()
                 hand_xyz = self.hand_pos.copy()
                 action_old = self.RL_action.copy()
+                timenow = time.time() - self.time_start
 
             target_to_EE = [object_xyz[0]-hand_xyz[0], object_xyz[1]-hand_xyz[1], object_xyz[2]-hand_xyz[2]]
             distotarget = (target_to_EE[0]**2 + target_to_EE[1]**2 + target_to_EE[2]**2) ** 0.5
@@ -296,25 +204,15 @@ class Robot_system:
             with torch.no_grad():  # 不需要梯度計算，因為只做推論
                 desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
                 desire_joints = np.radians(desire_joints)
+            desire_joints[2] = np.radians(30+30*np.sin(timenow))
 
             action, _ = self.RL_model1.predict(state)
-            action_new = [action_old[0]*0.8 + action[0]*0.2,
-                          action_old[1]*0.8 + 0, 
-                          action_old[2]*0.8 + 0, 
-                          action_old[3]*0.8 + action[1]*0.2, 
-                          action_old[4]*0.8 + action[2]*0.2,
-                          action_old[5]*0.8 + 0]
-            
-            # self.arm_target_joints[0] = self.limit_low[0]*(1-(1+action_new[0])/2) + self.limit_high[0]*(1+action_new[0])/2
-            # self.arm_target_joints[3] = self.limit_low[2]*(1-(1+action_new[3])/2) + self.limit_high[2]*(1+action_new[3])/2
-            # self.arm_target_joints[4] = self.limit_low[3]*(1-(1+action_new[4])/2) + self.limit_high[3]*(1+action_new[4])/2
-
-            # joints[2] += np.tanh(0.005*(self.arm_target_joints[0] - joints[2]))*2.0
-            # # joints[3] += np.tanh(0.005*(desire_joints[1] - joints[3]))*2.0
-            # joints[3] += np.tanh(0.005*(np.radians(-45) - joints[3]))*2.0
-            # joints[5] += np.tanh(0.005*(self.arm_target_joints[3] - joints[5]))*2.0
-            # joints[6] += np.tanh(0.005*(self.arm_target_joints[4] - joints[6]))*2.0
-            
+            action_new = [action_old[0]*0.98 + action[0]*0.02,
+                          action_old[1]*0.98 + action[1]*0.02,  
+                          action_old[2]*0.95 + 0, 
+                          action_old[3]*0.95 + 0,
+                          action_old[4]*0.95 + action[2]*0.05,
+                          action_old[5]*0.95 + 0]          
 
             # joints[2] += action_new[0]*0.08*alpha
             # joints[3] += action_new[1]*0.05
@@ -324,6 +222,10 @@ class Robot_system:
             # joints[6] += action_new[4]*0.08*alpha
             # joints[7] += action_new[5]*0.05*alpha
 
+            # joints[2] = joints[2]*0.95 + desire_joints[0]*0.05
+            # joints[3] = joints[3]*0.95 + desire_joints[1]*0.05
+            joints[5] = joints[5]*0.9 + desire_joints[2]*0.1
+            # joints[6] = joints[6]*0.95 + desire_joints[3]*0.05
 
             joints[2] += action_new[0]**3 * 0.05
             joints[3] += action_new[1]**3 * 0.05
@@ -332,13 +234,11 @@ class Robot_system:
             joints[6] += action_new[4]**3 * 0.05
             joints[7] += action_new[5]**3 * 0.05
 
-            # joints[2] = joints[2]*0.99+ desire_joints[0]*0.01
-            # joints[3] = joints[3]*0.99+ desire_joints[1]*0.01
-            # joints[5] = joints[5]*0.99+ desire_joints[2]*0.01
-            # joints[6] = joints[6]*0.99+ desire_joints[3]*0.01
-
+        
             if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
             elif joints[2] < self.limit_low[0] : joints[2] = self.limit_low[0]
+            if   joints[3] > self.limit_high[1]: joints[3] = self.limit_high[1]
+            elif joints[3] < self.limit_low[1] : joints[3] = self.limit_low[1]
             if   joints[5] > self.limit_high[2]: joints[5] = self.limit_high[2]
             elif joints[5] < self.limit_low[2] : joints[5] = self.limit_low[2]
             if   joints[6] > self.limit_high[3]: joints[6] = self.limit_high[3]
@@ -354,31 +254,21 @@ class Robot_system:
         while not self.stop_event.is_set():
             # 100 Hz
             time.sleep(0.01)
-            with self.lock: joints = self.joints.copy()
             with self.lock: 
+                joints = self.joints.copy()
                 pixel_norm = self.target_pixel_norm.copy()
                 target_exist = self.target_exist
 
             joints[0] += -3.0*pixel_norm[0]*target_exist
             joints[1] += -3.0*pixel_norm[1]*target_exist
-
-            # joints[3] = -30
-
             with self.lock: self.joints = joints.copy()
-
-            joints[1] *= -1
-            joints[5] *= -1
-            joints[6] *= -1
             self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
         
         self.motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*8)
         with self.lock: joints = self.joints.copy()
         t=0
         while t <= 1.0:
-            joints, t = self.smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.001)
-            joints[1] *= -1
-            joints[5] *= -1
-            joints[6] *= -1
+            joints, t = self.smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.002)
             self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
             time.sleep(0.01)
 
@@ -387,7 +277,7 @@ class Robot_system:
 
     def run(self, endtime = 10):     
         threads = [
-                threading.Thread(target=self.motor_thread),
+                # threading.Thread(target=self.motor_thread),
                 threading.Thread(target=self.system_thread),
                 threading.Thread(target=self.camera_thread),
                 threading.Thread(target=self.RL_thread)
@@ -396,11 +286,12 @@ class Robot_system:
         for t in threads:
             t.start()
 
+        with self.lock: 
+            time0 = self.time_start
         while not self.stop_event.is_set():
-            self.time_now = time.time() - self.time_start
-            if self.time_now >= endtime:  # 執行 10 秒後結束
+            if time.time() - time0 >= endtime:  # 執行 10 秒後結束
                 self.stop_event.set()
-            time.sleep(0.1)  # 減少CPU負擔
+            time.sleep(0.2)  # 減少CPU負擔
             # self.plot()
             
 
@@ -461,10 +352,10 @@ class Robot_system:
         plt.clf()
         plt.close('all')
 
-    def check_reachable(self, target):
+    def reachable(self, target):
         with self.lock:
             shoulder_pos = self.shoulder_pos.copy()
-            target_pos = target.copy()
+        target_pos = target.copy()
         distoshoulder = ( (target_pos[0]-shoulder_pos[0])**2 + (target_pos[1]-shoulder_pos[1])**2 + (target_pos[2]-shoulder_pos[2])**2 ) **0.5
         # distoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
         if distoshoulder >= 0.45 or distoshoulder <= 0.25:
@@ -478,8 +369,8 @@ class Robot_system:
         final_angles = np.array(final_angles)
 
         progress = min(t, 1)
-        smooth_factor = ((1 - np.cos(np.pi * progress)) / 2)**2
-        current_angles = initial_angles * (1 - smooth_factor) + final_angles * smooth_factor
+        progress = ((1 - np.cos(np.pi * progress)) / 2)**2
+        current_angles = initial_angles*(1-progress) + final_angles*progress
 
         t_next = t + speed
         return current_angles.tolist(), t_next
@@ -487,4 +378,4 @@ class Robot_system:
 if __name__ == "__main__":
 
     Roly = Robot_system()
-    Roly.run(endtime=20)
+    Roly.run(endtime=30)

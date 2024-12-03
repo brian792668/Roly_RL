@@ -225,12 +225,12 @@
       <body name="trunk_link" pos="0 0 0.024">
         <!-- <inertial pos="-0.00020109 -0.0017185 0.34293" quat="0.999995 0.00204643 0.00060337 0.00240006" mass="3.7174" diaginertia="0.0423653 0.02968 0.0132647"/> -->
 		    <inertial pos="-0.000201063 -0.00171826 0.342962" quat="0.999995 0.00204635 0.000603463 0.00240004" mass="7.20265" diaginertia="0.082079 0.057503 0.025698" />
-        <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+        <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
         <!-- <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/> -->
 		    <body name="hitbox1" > 
-            <geom type="box" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.1"/> 
-            <geom type="box" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.1"/> 
+            <!-- <geom type="box" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.1"/> 
+            <geom type="box" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.1"/>  -->
         </body>
         <body name="neck" pos="0.0236 0 0.525">
           <inertial pos="-0.01154 -2.7422e-05 0.076842" quat="-0.0193906 0.70689 0.0191848 0.706797" mass="0.091599" diaginertia="2.6139e-05 2.12139e-05 1.51841e-05"/>

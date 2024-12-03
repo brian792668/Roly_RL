@@ -13,9 +13,9 @@ class DXL_Motor():
         self.portHandler = PortHandler(self.DEVICENAME)
         self.packetHandler = PacketHandler(2.0)
         self.checkPortAndBaudRate(BAUDRATE)
-        self.pos_init = [180.0, 180.0, 180.0, 178.0, 180.0, 180.0, 180.0, 180.0]
+        self.pos_bias = [180.0, 180.0, 180.0, 178.0, 180.0, 180.0, 180.0, 180.0]
+        self.pos_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1  ]
         self.pos_ctrl = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.pos_read = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.vel = [1, 1, 1, 1, 1, 1, 1, 1]
 
     def checkPortAndBaudRate(self, BAUDRATE=115200):
@@ -112,13 +112,13 @@ class DXL_Motor():
 
     def readAllMotorPosition(self):
         present_resolution, dxl_comm_result = self.readAllMotorStatus("PRESENT_POSITION")
-        present_degree = [resolution2degree(present_resolution[i]) for i in range(len(present_resolution))]
+        pos_read = [(resolution2degree(present_resolution[i])-self.pos_bias[i])*self.pos_axis[i] for i in range(len(present_resolution))]
         
         if dxl_comm_result != COMM_SUCCESS:
             pass
             print(f"Read motor position fail : {self.packetHandler.getTxRxResult(dxl_comm_result)}")
         else:
-            self.pos_read = [present_degree[i]-self.pos_init[i] for i in range(len(present_degree))]
+            return pos_read
             # for i, dxl_id in enumerate(self.DXL_MODELS["id"]):
             #     print(f"motor {dxl_id}'s position is {present_degree[i]}") # 關
 
@@ -172,22 +172,9 @@ class DXL_Motor():
         self.pos_ctrl = [ (self.pos_ctrl[i] + new_pos_ctrl[i]) for i in range(len(self.pos_ctrl))]
         self.writeAllMotorPosition(self.pos_ctrl)
         # self.readAllMotorPosition()
-        # print(f"{self.pos_read[3]-self.pos_ctrl[3]+self.pos_init[3]:.2f}")
+        # print(f"{self.pos_read[3]-self.pos_ctrl[3]+self.pos_bias[3]:.2f}")
         # print(new_pos_ctrl)
         # time.sleep(0.001) 
 
     def toRolyctrl(self, ctrlpos):
-        return [ctrlpos[i]+self.pos_init[i] for i in range(len(self.pos_init))]
-    
-    def smooth_transition(self, t, initial_angles, final_angles, speed=0.001):
-
-        initial_angles = np.array(initial_angles)
-        final_angles = np.array(final_angles)
-
-        # progress = min(t, 1)
-        smooth_factor = ((1 - np.cos(np.pi * t)) / 2)
-        current_angles = initial_angles * (1 - smooth_factor) + final_angles * smooth_factor
-
-        t_next = t + speed
-        time.sleep(0.02)
-        return current_angles.tolist(), t_next
+        return [(ctrlpos[i]*self.pos_axis[i]+self.pos_bias[i]) for i in range(len(self.pos_bias))]
