@@ -14,6 +14,7 @@ from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
 from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
 from imports.Camera import *
 from imports.Forward_kinematics import *
+from imports.Roly_motor import *
 
 class IKMLP(nn.Module):
     def __init__(self):
@@ -41,6 +42,8 @@ class Robot_system:
         self.target_exist = self.head_camera.target_exist
         self.target_depth = self.head_camera.target_depth
         self.target_pixel_norm = self.head_camera.target_norm
+        self.color_img = self.head_camera.color_img
+        self.depth_colormap = self.head_camera.depth_colormap
 
         # Initial RL
         RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v17/model.zip")
@@ -49,12 +52,12 @@ class Robot_system:
         self.RL_action  = [0] * 6
 
         self.IK = IKMLP()
-        self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v7.pth")))
+        self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v7.pth"), weights_only=True))
         self.IK.eval()
 
         # Initial motors
         self.joints = [0] * 8
-        # self.motor = self.init_motor()
+        self.motor = self.init_motor()
         self.limit_high = [ 1.57, 0.12, 1.57, 1.90]
         self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
 
@@ -118,13 +121,20 @@ class Robot_system:
         return motor
 
     def camera_thread(self):
+        self.head_camera.start()
         while not self.stop_event.is_set():
             # 50 Hz
-            time.sleep(0.02)
+            time.sleep(0.01)
 
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
-            self.head_camera.show(rgb=True, depth=True)
+            # self.head_camera.show(rgb=True, depth=True)
+            with self.lock:
+                self.color_img = self.head_camera.color_img
+                self.depth_colormap = self.head_camera.depth_colormap
+            cv2.imshow("Realsense D435i RGB", self.color_img)
+            cv2.imshow("Realsense D435i Depth with color", self.depth_colormap)
+            cv2.waitKey(1)
 
             if self.head_camera.target_exist == True:
                 with self.lock:
@@ -251,6 +261,8 @@ class Robot_system:
                 self.joints = joints.copy()
 
     def motor_thread(self):
+        # with self.lock:
+        #     self.joints = self.motor.readAllMotorPosition()
         while not self.stop_event.is_set():
             # 100 Hz
             time.sleep(0.01)
@@ -268,7 +280,7 @@ class Robot_system:
         with self.lock: joints = self.joints.copy()
         t=0
         while t <= 1.0:
-            joints, t = self.smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.002)
+            joints, t = smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.002)
             self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
             time.sleep(0.01)
 
@@ -277,7 +289,7 @@ class Robot_system:
 
     def run(self, endtime = 10):     
         threads = [
-                # threading.Thread(target=self.motor_thread),
+                threading.Thread(target=self.motor_thread),
                 threading.Thread(target=self.system_thread),
                 threading.Thread(target=self.camera_thread),
                 threading.Thread(target=self.RL_thread)
@@ -291,9 +303,7 @@ class Robot_system:
         while not self.stop_event.is_set():
             if time.time() - time0 >= endtime:  # 執行 10 秒後結束
                 self.stop_event.set()
-            time.sleep(0.2)  # 減少CPU負擔
-            # self.plot()
-            
+            time.sleep(0.02)  # 減少CPU負擔
 
         for t in threads:
             t.join()
@@ -378,4 +388,4 @@ class Robot_system:
 if __name__ == "__main__":
 
     Roly = Robot_system()
-    Roly.run(endtime=30)
+    Roly.run(endtime=20)

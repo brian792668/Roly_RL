@@ -7,10 +7,10 @@ import time
 class Camera():
     def __init__(self):
         self.pipeline = rs.pipeline()
-        config = rs.config()
-        config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30) # 60Hz
-        config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16,  30) # 60Hz
-        self.pipeline.start(config)  # start pipeline with config
+        self.config = rs.config()
+        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30) # 60Hz
+        self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16,  30) # 60Hz
+        self.pipeline.start(self.config)  # start pipeline with config
         frames = self.pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
         depth_frame = frames.get_depth_frame()
@@ -34,6 +34,9 @@ class Camera():
         self.hole_filling = rs.hole_filling_filter()
         self.align = rs.align(rs.stream.color)
 
+        self.pipeline.stop()
+        self.is_running = False
+
     def get_img(self, rgb=True, depth=True):
         frames = self.pipeline.wait_for_frames()
         aligned_frames = self.align.process(frames)
@@ -45,16 +48,10 @@ class Camera():
             depth_frame = frames.get_depth_frame()
             depth_frame = aligned_frames.get_depth_frame()
 
-            # depth_frame = self.decimation.process(depth_frame)
-            # depth_frame = self.depth_to_disparity.process(depth_frame)
-            # depth_frame = self.disparity_to_depth.process(depth_frame)
-            depth_frame = self.hole_filling.process(depth_frame)
-            depth_frame = self.spatial.process(depth_frame)
             depth_frame = self.temporal.process(depth_frame)
+            depth_frame = self.spatial.process(depth_frame)
+            depth_frame = self.hole_filling.process(depth_frame)
             self.depth_img = np.asanyarray(depth_frame.get_data())
-            # self.depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=0.3), cv2.COLORMAP_JET)
-            # self.depth_colormap = cv2.convertScaleAbs(self.depth_img, alpha=0.3)
-
 
             new_depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=-0.2), cv2.COLORMAP_JET)
             self.depth_colormap = cv2.addWeighted(self.depth_colormap, 0.1, new_depth_colormap, 0.9, 0)
@@ -129,23 +126,11 @@ class Camera():
     #     return new_pos
         pass
     
+    def start(self):
+        self.pipeline.start(self.config)  # start pipeline with config
+        self.is_running = True
+
     def stop(self):
+        self.is_running = False
         self.pipeline.stop()
         cv2.destroyAllWindows()
-
-class CameraThread(threading.Thread):
-    def __init__(self):
-        super().__init__()
-        self.head_cam = Camera()
-        self.running = True
-        self.daemon = True  # 設為 daemon thread，主程序結束時會自動結束
-        
-    def run(self):
-        while self.running:
-            self.head_cam.get_img()
-            self.head_cam.show(rgb=True, depth=False)
-            time.sleep(0.01)  # 小延遲避免 CPU 使用過高
-            
-    def stop(self):
-        self.running = False
-        self.head_cam.stop()
