@@ -17,6 +17,11 @@ class mywindow(QtWidgets.QMainWindow):
         self.ui = UI.Roly_UI(self)
         self.setup_button()
 
+        # System
+        self.system_timer = QtCore.QTimer(self)
+        self.system_timer.timeout.connect(self.System_update)
+        self.system_timer.start(100)
+
         # Initial Camera
         self.camera = Camera()
         self.camera_timer = QtCore.QTimer(self)
@@ -36,11 +41,12 @@ class mywindow(QtWidgets.QMainWindow):
 
 
         # Initial motor
+        self.joints = [0] * 8
         self.motor = init_motor()
         self.motor_is_running = False
+        self.torque_is_on = False
         self.motor_timer = QtCore.QTimer(self)
         self.motor_timer.timeout.connect(self.Motor_update)
-        self.joints  = [0] * 8
         self.xyz_target = [0, 0, 0]
         self.xyz_shoulder = [0, 0, 0]
         self.xyz_hand = [0, 0, 0]
@@ -54,23 +60,42 @@ class mywindow(QtWidgets.QMainWindow):
 
         self.ui.motor_start.clicked.connect(self.Motor_start)
         self.ui.motor_stop.clicked.connect(self.Motor_stop)
+        self.ui.motor_init.clicked.connect(self.Motor_init)
+        self.ui.motor_on.clicked.connect(self.Motor_on)
+        self.ui.motor_off.clicked.connect(self.Motor_off)
 
         self.ui.stop_all.clicked.connect(self.Stop_all)
-        
+
+    def System_update(self):
+        # camera status
+        if self.camera.is_running == True: self.ui.camera_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
+        else: self.ui.camera_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+
+        # RL status
+        if self.RL_is_running == True: self.ui.RL_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
+        else: self.ui.RL_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+
+        # motor status
+        if self.motor_is_running == True: self.ui.motor_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
+        else: self.ui.motor_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+
+        # torque status
+        if self.torque_is_on == True: self.ui.torque_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
+        else: self.ui.torque_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+
+
     # Camera
     def Camera_start(self):
         if self.camera.is_running != True:
             self.camera_timer.start(20)
             self.camera.start()
             self.camera.is_running = True
-            self.ui.camera_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
 
     def Camera_stop(self):
         if self.camera.is_running == True:
             self.camera_timer.stop()
             self.camera.stop()
             self.camera.is_running = False
-            self.ui.camera_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
 
     def Camera_update(self):
         self.camera.get_img(rgb=True, depth=True)
@@ -90,13 +115,11 @@ class mywindow(QtWidgets.QMainWindow):
         if self.RL_is_running != True:
             self.RL_timer.start(10)
             self.RL_is_running = True
-            self.ui.RL_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
 
     def RL_stop(self):
         if self.RL_is_running == True:
             self.RL_timer.stop()
             self.RL_is_running = False
-            self.ui.RL_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
 
     def RL_update(self):
         xyz_target_to_hand = np.array(self.xyz_target.copy()) - np.array(self.xyz_hand.copy())
@@ -117,22 +140,38 @@ class mywindow(QtWidgets.QMainWindow):
         self.joints[7] += action_new[5]**3 * 0.05
 
         self.RL_action = action_new.copy()
+        print("RL running")
         # print(self.joints)
 
     # Motor
     def Motor_start(self):
+        self.Motor_on()
         if self.motor_is_running != True:
             self.motor_timer.start(10)
             self.motor_is_running = True
-            self.ui.motor_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
 
     def Motor_stop(self):
         if self.motor_is_running == True:
             self.motor_timer.stop()
             self.motor_is_running = False
-            self.ui.motor_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+            # self.motor.portHandler.closePort()
+
+    def Motor_init(self):
+        self.motor_is_running = False
+        self.Motor_on()
+        self.joints = initial_pos(self.motor)
+
+    def Motor_on(self):
+        self.motor.changeAllMotorOperatingMode(OP_MODE=3)
+        self.torque_is_on = True
+
+    def Motor_off(self):
+        self.motor.setAllMotorTorqurDisable()
+        self.torque_is_on = False
+        self.motor_is_running = False
 
     def Motor_update(self):
+        print("motor running")
         pass
 
 
@@ -141,14 +180,14 @@ class mywindow(QtWidgets.QMainWindow):
             self.camera_timer.stop()
             self.camera.stop()
             self.camera.is_running = False
-            self.ui.camera_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+            # self.ui.camera_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
         
         if self.RL_is_running == True:
             self.RL_timer.stop()
             self.RL_is_running = False
-            self.ui.RL_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+            # self.ui.RL_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
 
         if self.motor_is_running == True:
             self.motor_timer.stop()
             self.motor_is_running = False
-            self.ui.motor_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+            # self.ui.motor_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)

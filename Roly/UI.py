@@ -4,7 +4,7 @@ class Roly_UI(object):
     def __init__(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setWindowTitle("Roly")
-        MainWindow.resize(350, 330)
+        MainWindow.resize(700, 330)
         self.mainwidget = QtWidgets.QWidget(MainWindow)
         self.mainwidget.setObjectName("centralwidget")
         MainWindow.setCentralWidget(self.mainwidget)
@@ -13,8 +13,18 @@ class Roly_UI(object):
 
     def init_ui_groupbox1(self): # groupbox 1
         self.groupBox1 = QtWidgets.QGroupBox(self.mainwidget)
-        self.groupBox1.setGeometry(QtCore.QRect(20, 20, 310, 230))
+        self.groupBox1.setGeometry(QtCore.QRect(20, 20, 650, 230))
         self.groupBox1.setObjectName("groupBox1")
+
+        self.target_pos = QtWidgets.QLabel(self.groupBox1)
+        self.target_pos.setGeometry(QtCore.QRect(330, 30, 200, 30))
+        self.target_pos.setText("Target  xyz")
+        self.hand_pos = QtWidgets.QLabel(self.groupBox1)
+        self.hand_pos.setGeometry(QtCore.QRect(330, 50, 200, 30))
+        self.hand_pos.setText("Hand   xyz")
+        self.joint_angles = QtWidgets.QLabel(self.groupBox1)
+        self.joint_angles.setGeometry(QtCore.QRect(330, 70, 200, 30))
+        self.joint_angles.setText("joints   00 01    02 03 04 05 06")
 
         self.camera_status_light = QtWidgets.QLabel(self.groupBox1)
         self.camera_status_light.setGeometry(QtCore.QRect(25, 40, 10, 10))
@@ -54,6 +64,21 @@ class Roly_UI(object):
         self.motor_stop = QtWidgets.QPushButton(self.groupBox1)
         self.motor_stop.setGeometry(QtCore.QRect(195, 130, 80, 30))
         self.motor_stop.setText("Stop")
+        self.torque_status_light = QtWidgets.QLabel(self.groupBox1)
+        self.torque_status_light.setGeometry(QtCore.QRect(25, 175, 10, 10))
+        self.torque_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
+        self.text_torque = QtWidgets.QLabel(self.groupBox1)
+        self.text_torque.setGeometry(QtCore.QRect(45, 165, 50, 30))
+        self.text_torque.setText("Torque")
+        self.motor_init = QtWidgets.QPushButton(self.groupBox1)
+        self.motor_init.setGeometry(QtCore.QRect(105, 165, 80, 30))
+        self.motor_init.setText("Initial")
+        self.motor_on = QtWidgets.QPushButton(self.groupBox1)
+        self.motor_on.setGeometry(QtCore.QRect(195, 165, 38, 30))
+        self.motor_on.setText("On")
+        self.motor_off = QtWidgets.QPushButton(self.groupBox1)
+        self.motor_off.setGeometry(QtCore.QRect(237, 165, 38, 30))
+        self.motor_off.setText("Off")
 
 
         self.stop_all = QtWidgets.QPushButton(self.mainwidget)

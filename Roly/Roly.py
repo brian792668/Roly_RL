@@ -46,7 +46,7 @@ class Robot_system:
         self.depth_colormap = self.head_camera.depth_colormap
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v17/model.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v17-2/model.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
@@ -57,7 +57,8 @@ class Robot_system:
 
         # Initial motors
         self.joints = [0] * 8
-        self.motor = self.init_motor()
+        self.motor = init_motor()
+        self.joints = initial_pos(self.motor)
         self.limit_high = [ 1.57, 0.12, 1.57, 1.90]
         self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
 
@@ -89,36 +90,6 @@ class Robot_system:
         
         self.blue_line_points = [0, 1, 2, 3, 4]  # 藍線連接 point1 ~ point5
         self.red_line_points = [4, 5]  # 紅線連接 point5 ~ point6
-   
-    def init_motor(self):
-        X_series_info = X_Motor_Info()
-        # P_series_info = P_Motor_Info()
-
-        DEVICENAME = "/dev/ttyUSB0"
-        DXL_MODELS = {
-            "id": [1, 2, 10, 11, 12, 13, 14, 15], 
-            "model": [X_series_info] * 8
-        }
-
-        motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
-        motor.changeAllMotorOperatingMode(OP_MODE=3)
-        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*len(motor.pos_ctrl))
-        time.sleep(0.1)
-        initial_angles = motor.readAllMotorPosition()
-        final_angles=[-20, -45, 10, 4, 0, 5, 78, 0]
-
-        # initial
-        t=0
-        while t <= 1.0:
-            joints, t = self.smooth_transition(t, initial_angles=initial_angles.copy(), final_angles=final_angles.copy(), speed=0.005)
-            motor.writeAllMotorPosition(motor.toRolyctrl(joints.copy()))
-            time.sleep(0.01)
-        with self.lock:
-            self.joints = final_angles.copy()
-        motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50])
-        time.sleep(0.1)
-        
-        return motor
 
     def camera_thread(self):
         self.head_camera.start()
@@ -215,10 +186,11 @@ class Robot_system:
                 desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
                 desire_joints = np.radians(desire_joints)
             desire_joints[2] = np.radians(30+30*np.sin(timenow))
+            desire_joints[2] = np.radians(60)
 
             action, _ = self.RL_model1.predict(state)
-            action_new = [action_old[0]*0.98 + action[0]*0.02,
-                          action_old[1]*0.98 + action[1]*0.02,  
+            action_new = [action_old[0]*0.95 + action[0]*0.05,
+                          action_old[1]*0.95 + action[1]*0.05,  
                           action_old[2]*0.95 + 0, 
                           action_old[3]*0.95 + 0,
                           action_old[4]*0.95 + action[2]*0.05,
@@ -373,7 +345,7 @@ class Robot_system:
         else:
             return True
 
-    def smooth_transition(self, t, initial_angles, final_angles, speed=0.001):
+    # def smooth_transition(self, t, initial_angles, final_angles, speed=0.001):
 
         initial_angles = np.array(initial_angles)
         final_angles = np.array(final_angles)
