@@ -18,6 +18,7 @@ if __name__ == '__main__':
     # Add xml path
     current_dir = os.getcwd()
     xml_path = 'Roly/Roly_simulator/whole body/RolyURDF2/Roly.xml'
+    xml_path = 'Roly/Roly_simulator/whole body/Roly_XML4/Roly.xml'
     xml_path = os.path.join(current_dir, xml_path)
 
     model = mujoco.MjModel.from_xml_path(xml_path)
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     PIDctrl = PIDcontroller(controlParameter, target)
 
     # if base is free joint
-    data.qpos[:] = pos[:]
+    # data.qpos[:] = pos[:]
     # # if base is fixed
     # data.qpos[:] = pos[7:]
 
@@ -110,12 +111,7 @@ if __name__ == '__main__':
                 head_camera.get_img(data, rgb=True, depth=True)
                 head_camera.get_target()
                 head_camera.show(rgb=True, depth=True)
-                viewer.cam.azimuth = 180+10*np.sin(step*0.0002)
-
-            # Rudimentary time keeping, will drift relative to wall clock.
-            # time_until_next_step = model.opt(step - (time.time() - step_start)
-            # if time_until_next_step > 0:
-            #     time.sleep(time_until_next_step) 
+                # viewer.cam.azimuth = 180+10*np.sin(step*0.0002)
 
         renderer.close() 
         cv2.destroyAllWindows() 
