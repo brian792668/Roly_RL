@@ -1,6 +1,6 @@
 <mujoco model="Roly">
   <compiler angle="radian" meshdir="meshes/"/>
-  <option timestep="0.001" iterations="1000"/>
+  <option timestep="0.005" iterations="1000"/>
   <size njmax="500" nconmax="100" />
   <asset>
     <mesh name="base_link" file="base_link.STL"/>
@@ -113,7 +113,7 @@
               <inertial pos="-0.115445 -0.000559768 -0.0101643" quat="0.00195961 0.706949 -0.00192355 0.707259" mass="1.86217" diaginertia="0.00516208 0.00442127 0.00121684"/>
               <!-- <joint name="R_calf" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
               <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_calf"/>
-              <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_calf"/> -->
+              <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_calf"/>
               <site name="R_ankle_X8-1" type="cylinder" size="0.05 0.021" pos="-0.11 0 0" euler="0 0 0" rgba="0 0 0 1"/>
               <site name="R_ankle_X8-2" type="cylinder" size="0.036 0.029" pos="-0.11 0 0.0054" euler="0 0 0" rgba="0 0 0 1"/>
               <body name="R_ankle_pitch" pos="-0.26 0 0">
@@ -180,7 +180,7 @@
               <inertial pos="-0.115426 -0.000677771 0.0105016" quat="0.00192255 0.707259 -0.0019588 0.706949" mass="1.87199" diaginertia="0.00516128 0.00442408 0.00121948"/>
               <!-- <joint name="L_calf" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
               <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="L_calf"/>
-              <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_calf"/> -->
+              <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="L_calf"/>
               <site name="L_ankle_X8-1" type="cylinder" size="0.05 0.021" pos="-0.11 0 0" euler="0 0 0" rgba="0 0 0 1"/>
               <site name="L_ankle_X8-2" type="cylinder" size="0.036 0.029" pos="-0.11 0 -0.0054" euler="0 0 0" rgba="0 0 0 1"/>
               <body name="L_ankle_pitch" pos="-0.26 0 0">
@@ -225,7 +225,7 @@
       <body name="trunk_link" pos="0 0 0.024">
         <!-- <inertial pos="-0.00020109 -0.0017185 0.34293" quat="0.999995 0.00204643 0.00060337 0.00240006" mass="3.7174" diaginertia="0.0423653 0.02968 0.0132647"/> -->
 		    <inertial pos="-0.000201063 -0.00171826 0.342962" quat="0.999995 0.00204635 0.000603463 0.00240004" mass="7.20265" diaginertia="0.082079 0.057503 0.025698" />
-        <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+        <!-- <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.3" stiffness="0.01" armature="0.01"/> -->
         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
         <!-- <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/> -->
 		    <body name="hitbox1" > 
@@ -234,12 +234,12 @@
         </body>
         <body name="neck" pos="0.0236 0 0.525">
           <inertial pos="-0.01154 -2.7422e-05 0.076842" quat="-0.0193906 0.70689 0.0191848 0.706797" mass="0.091599" diaginertia="2.6139e-05 2.12139e-05 1.51841e-05"/>
-          <joint name="neck" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+          <!-- <joint name="neck" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
           <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="neck"/>
           <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="neck"/>
           <body name="camera" pos="0 0 0.0799" quat="0.707107 0.707107 0 0">
             <inertial pos="0.00773068 0.0510545 -0.00119353" quat="0.99992 0.000342776 -0.00769884 0.0100227" mass="0.0742873" diaginertia="4.43958e-05 3.98526e-05 1.53335e-05"/>
-            <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/>
+            <!-- <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10"/> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
             <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="camera"/>
             <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
@@ -448,9 +448,9 @@
       <motor joint="L_ankle_pitch" name="L_ankle_pitch"   gear="1" />
       <motor joint="L_ankle_roll"  name="L_ankle_roll"    gear="1"/> -->
 
-      <motor joint="trunk"  name="trunk"  gear="1" />
+      <!-- <motor joint="trunk"  name="trunk"  gear="1" />
       <motor joint="neck"   name="neck"   gear="1" />
-      <motor joint="camera" name="camera" gear="1" />
+      <motor joint="camera" name="camera" gear="1" /> -->
 
       <motor joint="R_shoulder"   name="R_shoulder"   gear="1" />
       <motor joint="R_arm1"       name="R_arm1"       gear="1" />

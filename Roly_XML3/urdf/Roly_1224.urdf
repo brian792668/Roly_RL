@@ -1,0 +1,2461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Roly_1224">
+  <mujoco>
+    <compiler meshdir="../meshes" balanceinertia="true" discardvisual="false"/>
+  </mujoco>
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-2.09693302730845E-05 -4.03625351399176E-13 -0.0187178691238857"
+        rpy="0 0 0" />
+      <mass
+        value="4.35454338307744" />
+      <inertia
+        ixx="0.019772220354647"
+        ixy="1.18998862197271E-07"
+        ixz="6.77704110682819E-06"
+        iyy="0.00413553225471282"
+        iyz="-7.81217747579506E-15"
+        izz="0.021630011357051" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="R_hip_yaw">
+    <inertial>
+      <origin
+        xyz="-0.0376961379513844 2.56625665287502E-06 -0.0690573024444017"
+        rpy="0 0 0" />
+      <mass
+        value="0.733343615600181" />
+      <inertia
+        ixx="0.00119900118613847"
+        ixy="6.01653813839247E-08"
+        ixz="9.24155578825336E-07"
+        iyy="0.000924833085839684"
+        iyz="-7.6979662571908E-10"
+        izz="0.00124906806994162" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_hip_yaw.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_hip_yaw.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_hip_yaw"
+    type="continuous">
+    <origin
+      xyz="0 -0.13 -0.024"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="R_hip_yaw" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_hip_roll">
+    <inertial>
+      <origin
+        xyz="0.00146093919704943 4.4463285414631E-09 -0.000423486625366125"
+        rpy="0 0 0" />
+      <mass
+        value="1.33291706220482" />
+      <inertia
+        ixx="0.000591897359084708"
+        ixy="-1.60236032039886E-11"
+        ixz="-4.84517470853037E-13"
+        iyy="0.00200428114901879"
+        iyz="-6.76858682964351E-17"
+        izz="0.00190740917285887" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_hip_roll.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_hip_roll.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_hip_roll"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.1165"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="R_hip_yaw" />
+    <child
+      link="R_hip_roll" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_hip_pitch">
+    <inertial>
+      <origin
+        xyz="-0.127210532308635 0.000292504184818076 0.00107219503644981"
+        rpy="0 0 0" />
+      <mass
+        value="2.89882038414392" />
+      <inertia
+        ixx="0.00467343751010157"
+        ixy="2.13719906053841E-05"
+        ixz="-5.6518479776336E-10"
+        iyy="0.00483644807960927"
+        iyz="-2.05000027372552E-06"
+        izz="0.00547575849667531" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_hip_pitch.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_hip_pitch.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_hip_pitch"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="R_hip_roll" />
+    <child
+      link="R_hip_pitch" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_calf">
+    <inertial>
+      <origin
+        xyz="-0.115064212556169 -0.000572949014918703 -0.0104599967609764"
+        rpy="0 0 0" />
+      <mass
+        value="1.80952664426131" />
+      <inertia
+        ixx="0.00120585904578178"
+        ixy="1.76830897841789E-05"
+        ixz="-1.72650824574503E-06"
+        iyy="0.00439268233185776"
+        iyz="4.6424876500587E-08"
+        izz="0.00514146636651206" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_calf.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_calf.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_calf"
+    type="continuous">
+    <origin
+      xyz="-0.27 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="R_hip_pitch" />
+    <child
+      link="R_calf" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_ankle_pitch">
+    <inertial>
+      <origin
+        xyz="-0.0459607705923536 0.0196304584089844 -4.06788864639185E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.990577841443612" />
+      <inertia
+        ixx="0.00101039477916189"
+        ixy="1.54818542472632E-05"
+        ixz="-8.03481486413635E-13"
+        iyy="0.000487572584280793"
+        iyz="-4.50082286340812E-13"
+        izz="0.00115084495203271" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_ankle_pitch.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_ankle_pitch.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_ankle_pitch"
+    type="continuous">
+    <origin
+      xyz="-0.259999999905383 0 0"
+      rpy="0 0 -2.69781849139839E-05" />
+    <parent
+      link="R_calf" />
+    <child
+      link="R_ankle_pitch" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_ankle_roll">
+    <inertial>
+      <origin
+        xyz="-0.0685998049348311 2.20836959829995E-11 0.019999999997078"
+        rpy="0 0 0" />
+      <mass
+        value="1.80750858879406" />
+      <inertia
+        ixx="0.00356060489977588"
+        ixy="5.03488588914844E-14"
+        ixz="5.67862172835683E-14"
+        iyy="0.00313608673879828"
+        iyz="-3.22423802828859E-13"
+        izz="0.00058266456747892" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_ankle_roll.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_ankle_roll.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_ankle_roll"
+    type="continuous">
+    <origin
+      xyz="-0.0499999999818046 0 0"
+      rpy="-1.57079632679489 0 2.69781888389941E-05" />
+    <parent
+      link="R_ankle_pitch" />
+    <child
+      link="R_ankle_roll" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="R_knee_rocker">
+    <inertial>
+      <origin
+        xyz="-0.007194965944889 -0.00261875342616329 -0.0218740723753147"
+        rpy="0 0 0" />
+      <mass
+        value="0.147234181769684" />
+      <inertia
+        ixx="3.23048235529037E-05"
+        ixy="-1.4298916093054E-05"
+        ixz="-6.07779307989089E-06"
+        iyy="6.63863926532267E-05"
+        iyz="-2.21213576191369E-06"
+        izz="8.94281354141202E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_knee_rocker.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_knee_rocker.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_knee_rocker"
+    type="continuous">
+    <origin
+      xyz="-0.15 0 -0.0295000000000031"
+      rpy="0 0 0" />
+    <parent
+      link="R_hip_pitch" />
+    <child
+      link="R_knee_rocker" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_knee_linkage">
+    <inertial>
+      <origin
+        xyz="-0.0656726774647621 0.0239026373386673 -5.56360513215282E-13"
+        rpy="0 0 0" />
+      <mass
+        value="0.110281845782562" />
+      <inertia
+        ixx="1.16107281445784E-05"
+        ixy="2.38947586613589E-05"
+        ixz="2.06937327636861E-13"
+        iyy="6.8564057108433E-05"
+        iyz="5.72483289736154E-13"
+        izz="7.74131693353277E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_knee_linkage.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_knee_linkage.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_knee_linkage"
+    type="continuous">
+    <origin
+      xyz="-0.0543815572467983 -0.0205212086005182 -0.0265000000000002"
+      rpy="0 0 0.349065850416189" />
+    <parent
+      link="R_knee_rocker" />
+    <child
+      link="R_knee_linkage" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_hip_yaw">
+    <inertial>
+      <origin
+        xyz="-0.0376961379513853 2.5662566443263E-06 -0.0690573024444017"
+        rpy="0 0 0" />
+      <mass
+        value="0.733343615600181" />
+      <inertia
+        ixx="0.00119900118613847"
+        ixy="6.01653813846355E-08"
+        ixz="9.24155578825339E-07"
+        iyy="0.000924833085839683"
+        iyz="-7.69796626017812E-10"
+        izz="0.00124906806994162" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_hip_yaw.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_hip_yaw.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_hip_yaw"
+    type="continuous">
+    <origin
+      xyz="0 0.13 -0.024"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="L_hip_yaw" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_hip_roll">
+    <inertial>
+      <origin
+        xyz="-0.00146134805967965 -4.44757354556291E-09 -0.000413805692940463"
+        rpy="0 0 0" />
+      <mass
+        value="1.33254396984758" />
+      <inertia
+        ixx="0.000591888195356318"
+        ixy="-1.6044031165596E-11"
+        ixz="3.46676912382387E-13"
+        iyy="0.00200428001628851"
+        iyz="-2.1651525249567E-16"
+        izz="0.00190740000129135" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_hip_roll.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_hip_roll.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_hip_roll"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.1165"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="L_hip_yaw" />
+    <child
+      link="L_hip_roll" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_hip_pitch">
+    <inertial>
+      <origin
+        xyz="-0.127210532308636 0.000292504184816363 -0.00112657093858282"
+        rpy="0 0 0" />
+      <mass
+        value="2.89882038414392" />
+      <inertia
+        ixx="0.00467343751010157"
+        ixy="2.1371990605383E-05"
+        ixz="-5.65184797684369E-10"
+        iyy="0.00483644807960927"
+        iyz="2.05001926409394E-06"
+        izz="0.0054757584966753" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_hip_pitch.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_hip_pitch.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_hip_pitch"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="L_hip_roll" />
+    <child
+      link="L_hip_pitch" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_calf">
+    <inertial>
+      <origin
+        xyz="-0.11504693138273 -0.000697382529229965 0.0108054494606965"
+        rpy="0 0 0" />
+      <mass
+        value="1.81934397391708" />
+      <inertia
+        ixx="0.00120849467573946"
+        ixy="1.7589861816723E-05"
+        ixz="1.72520219163425E-06"
+        iyy="0.00439549186433966"
+        iyz="-4.63703272484908E-08"
+        izz="0.0051406660037251" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_calf.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_calf.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_calf"
+    type="continuous">
+    <origin
+      xyz="-0.270000000000001 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="L_hip_pitch" />
+    <child
+      link="L_calf" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_ankle_pitch">
+    <inertial>
+      <origin
+        xyz="-0.0379602037507675 0.0196317254657191 5.49195569373995E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.990577843355175" />
+      <inertia
+        ixx="0.00101039570334525"
+        ixy="1.54676262322761E-05"
+        ixz="-1.95867571401987E-12"
+        iyy="0.000487571655961356"
+        iyz="-1.71303039775115E-15"
+        izz="0.00115084495573058" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_ankle_pitch.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_ankle_pitch.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_ankle_pitch"
+    type="continuous">
+    <origin
+      xyz="-0.268 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="L_calf" />
+    <child
+      link="L_ankle_pitch" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_ankle_roll">
+    <inertial>
+      <origin
+        xyz="-0.0605998049356964 2.13501993862053E-11 0.0199999999714312"
+        rpy="0 0 0" />
+      <mass
+        value="1.80750858879406" />
+      <inertia
+        ixx="0.00356060489977588"
+        ixy="5.45548176555048E-14"
+        ixz="1.67775233040133E-13"
+        iyy="0.00313608673879828"
+        iyz="-3.22423776614651E-13"
+        izz="0.000582664567478919" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_ankle_roll.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_ankle_roll.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_ankle_roll"
+    type="continuous">
+    <origin
+      xyz="-0.05 0 0"
+      rpy="-1.5707963267949 0 0" />
+    <parent
+      link="L_ankle_pitch" />
+    <child
+      link="L_ankle_roll" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_knee_rocker">
+    <inertial>
+      <origin
+        xyz="-0.00719496593563268 -0.00261875345159127 0.0168740723753078"
+        rpy="0 0 0" />
+      <mass
+        value="0.147234181769685" />
+      <inertia
+        ixx="3.23048234922348E-05"
+        ixy="-1.42989160207515E-05"
+        ixz="6.07779307394664E-06"
+        iyy="6.63863927138957E-05"
+        iyz="2.21213577824525E-06"
+        izz="8.94281354141203E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_knee_rocker.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_knee_rocker.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_knee_rocker"
+    type="continuous">
+    <origin
+      xyz="-0.150000000000001 0 0.0344999999999993"
+      rpy="0 0 0" />
+    <parent
+      link="L_hip_pitch" />
+    <child
+      link="L_knee_rocker" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_knee_linkage">
+    <inertial>
+      <origin
+        xyz="-0.0656726774652409 0.0239026373373545 -5.5364046680495E-13"
+        rpy="0 0 0" />
+      <mass
+        value="0.110281845782561" />
+      <inertia
+        ixx="1.16107281436418E-05"
+        ixy="2.38947586602427E-05"
+        ixz="2.06937395783921E-13"
+        iyy="6.85640571093689E-05"
+        iyz="5.72483272224594E-13"
+        izz="7.74131693353272E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_knee_linkage.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_knee_linkage.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_knee_linkage"
+    type="continuous">
+    <origin
+      xyz="-0.0543815572471993 -0.0205212085993825 0.0214999999999903"
+      rpy="0 0 0.349065850396594" />
+    <parent
+      link="L_knee_rocker" />
+    <child
+      link="L_knee_linkage" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="trunk_link">
+    <inertial>
+      <origin
+        xyz="-0.000201091103482582 -0.0017185025937486 0.342933302682403"
+        rpy="0 0 0" />
+      <mass
+        value="3.71736761608289" />
+      <inertia
+        ixx="0.0423654714360518"
+        ixy="6.10031795665191E-05"
+        ixz="-3.51532548621826E-05"
+        iyy="0.0296803741935269"
+        iyz="6.70641597388617E-05"
+        izz="0.0132646084404227" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/trunk_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/trunk_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="trunk"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="trunk_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="neck">
+    <inertial>
+      <origin
+        xyz="-0.0115401971148564 -0.00305819315450973 2.74217546394347E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.0915993237937377" />
+      <inertia
+        ixx="1.52019609168068E-05"
+        ixy="1.43206387589899E-09"
+        ixz="3.28341386543831E-07"
+        iyy="2.61388223158171E-05"
+        iyz="1.37470597830518E-09"
+        izz="2.11960891861308E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/neck.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/neck.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="neck"
+    type="continuous">
+    <origin
+      xyz="0.0236000000000003 0 0.6049"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="trunk_link" />
+    <child
+      link="neck" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="camera">
+    <inertial>
+      <origin
+        xyz="0.00773068278361724 0.0510544535429485 -0.00119353011540578"
+        rpy="0 0 0" />
+      <mass
+        value="0.074287263423426" />
+      <inertia
+        ixx="4.43870779407165E-05"
+        ixy="9.06935673607431E-08"
+        ixz="4.47251575648331E-07"
+        iyy="3.98543909637004E-05"
+        iyz="2.19915553005928E-08"
+        izz="1.5340417371391E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/camera.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/camera.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="camera"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="neck" />
+    <child
+      link="camera" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_shoulder">
+    <inertial>
+      <origin
+        xyz="-4.78828931242546E-05 0.0156539518070262 0.248211898616547"
+        rpy="0 0 0" />
+      <mass
+        value="0.159233792908747" />
+      <inertia
+        ixx="5.90635379080723E-05"
+        ixy="6.7634014877001E-07"
+        ixz="3.93669860266289E-09"
+        iyy="4.06885503332512E-05"
+        iyz="-6.05489800768199E-09"
+        izz="7.36582148170001E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_shoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_shoulder.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_shoulder"
+    type="continuous">
+    <origin
+      xyz="0 0 0.495"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="trunk_link" />
+    <child
+      link="R_shoulder" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_arm1">
+    <inertial>
+      <origin
+        xyz="-0.133478677161681 1.93810793081561E-05 -7.69201038695704E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.189027914195661" />
+      <inertia
+        ixx="5.50086142018853E-05"
+        ixy="1.24338572181752E-08"
+        ixz="6.76337657030831E-07"
+        iyy="9.0260773760028E-05"
+        iyz="3.9387760784714E-09"
+        izz="6.73964220260777E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_arm1"
+    type="continuous">
+    <origin
+      xyz="0 0 0.2488"
+      rpy="1.57079632679491 0 1.5707963267949" />
+    <parent
+      link="R_shoulder" />
+    <child
+      link="R_arm1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_arm2">
+    <inertial>
+      <origin
+        xyz="-0.0928720824914285 1.67416240148821E-07 -0.00651967320174327"
+        rpy="0 0 0" />
+      <mass
+        value="0.075919568245842" />
+      <inertia
+        ixx="2.47922147508112E-05"
+        ixy="2.31836798351766E-11"
+        ixz="1.78932145416602E-07"
+        iyy="2.92268550020728E-05"
+        iyz="2.41655414274306E-11"
+        izz="1.61014820233827E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_arm2"
+    type="continuous">
+    <origin
+      xyz="-0.170499999999998 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="R_arm1" />
+    <child
+      link="R_arm2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_arm3">
+    <inertial>
+      <origin
+        xyz="-3.2297763601391E-05 -1.49737468606333E-05 -0.187350702194832"
+        rpy="0 0 0" />
+      <mass
+        value="0.0455132201726528" />
+      <inertia
+        ixx="1.04441289107308E-05"
+        ixy="-1.21609224937034E-12"
+        ixz="1.81663840661966E-07"
+        iyy="1.24358375510277E-05"
+        iyz="-2.28574770322612E-09"
+        izz="7.82054953991462E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_arm3"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5707963267949 0 1.57079632679489" />
+    <parent
+      link="R_arm2" />
+    <child
+      link="R_arm3" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_arm4">
+    <inertial>
+      <origin
+        xyz="-0.0101576588872355 -0.0474946152588633 9.27931642478175E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.0493363034804283" />
+      <inertia
+        ixx="9.0399158715539E-06"
+        ixy="1.7893257478444E-07"
+        ixz="2.41603387565927E-11"
+        iyy="1.18657637430998E-05"
+        iyz="-1.47190672583656E-11"
+        izz="1.28686059122131E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_arm4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_arm4"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.2003"
+      rpy="1.5707963267949 0 1.57079632679489" />
+    <parent
+      link="R_arm3" />
+    <child
+      link="R_arm4" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R_palm">
+    <inertial>
+      <origin
+        xyz="-0.0113938047202379 0.0235201597117775 0.122398990601325"
+        rpy="0 0 0" />
+      <mass
+        value="0.11370086762227" />
+      <inertia
+        ixx="1.37805698844369E-05"
+        ixy="-2.42636927691298E-07"
+        ixz="1.94877931641461E-07"
+        iyy="4.2161331982217E-05"
+        iyz="-2.4136054404023E-07"
+        izz="4.19256804358655E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_palm.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R_palm.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R_palm"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="R_arm4" />
+    <child
+      link="R_palm" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R finger1-1">
+    <inertial>
+      <origin
+        xyz="-2.13717932240343E-15 -0.0115 4.71844785465692E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.00127787614034051" />
+      <inertia
+        ixx="1.18414458975181E-07"
+        ixy="-7.85331679126889E-24"
+        ixz="-9.62151738174198E-24"
+        iyy="2.02553394151494E-08"
+        iyz="-4.30302525876495E-23"
+        izz="1.35262128682756E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger1-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger1-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R finger1-1"
+    type="continuous">
+    <origin
+      xyz="-0.0350000000000064 0 0.14"
+      rpy="-1.5707963267949 0 3.14159265358978" />
+    <parent
+      link="R_palm" />
+    <child
+      link="R finger1-1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R finger1-2">
+    <inertial>
+      <origin
+        xyz="-0.00382076453403931 -0.02979105094627 1.94734034453248E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.00707739738871867" />
+      <inertia
+        ixx="1.51715754069773E-06"
+        ixy="2.43507202052062E-07"
+        ixz="1.59954747662644E-13"
+        iyy="3.21509711618997E-07"
+        iyz="-4.41039124637276E-13"
+        izz="1.72391332503902E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger1-2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger1-2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R finger1-2"
+    type="continuous">
+    <origin
+      xyz="0 -0.023 0"
+      rpy="0 0 0" />
+    <parent
+      link="R finger1-1" />
+    <child
+      link="R finger1-2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="R finger2-1">
+    <inertial>
+      <origin
+        xyz="-1.60982338570648E-15 -0.0115000000000001 2.77555756156289E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.0012778761403405" />
+      <inertia
+        ixx="1.18414458975181E-07"
+        ixy="2.98447462346943E-23"
+        ixz="-1.65436122510606E-23"
+        iyy="2.02553394151493E-08"
+        iyz="1.36074827751018E-23"
+        izz="1.35262128682756E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger2-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger2-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R finger2-1"
+    type="continuous">
+    <origin
+      xyz="0.0303108891324509 0.0174999999999965 0.14"
+      rpy="-1.5707963267949 0 -2.61799387799151" />
+    <parent
+      link="R_palm" />
+    <child
+      link="R finger2-1" />
+    <axis
+      xyz="0 0 1" />
+    <mimic
+      joint=""
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="R finger2-2">
+    <inertial>
+      <origin
+        xyz="0.00382076453403554 -0.02979105094627 -1.94733618119614E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.00707739738871865" />
+      <inertia
+        ixx="1.51715754069772E-06"
+        ixy="-2.43507202052063E-07"
+        ixz="1.59954748004011E-13"
+        iyy="3.21509711618996E-07"
+        iyz="4.41039125275155E-13"
+        izz="1.72391332503902E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger2-2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger2-2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R finger2-2"
+    type="continuous">
+    <origin
+      xyz="0 -0.023 0"
+      rpy="0 0 0" />
+    <parent
+      link="R finger2-1" />
+    <child
+      link="R finger2-2" />
+    <axis
+      xyz="0 0 1" />
+    <mimic
+      joint=""
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="R finger3-1">
+    <inertial>
+      <origin
+        xyz="-2.06779038336435E-15 -0.0115 -7.21644966006352E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.00127787614034051" />
+      <inertia
+        ixx="1.18414458975181E-07"
+        ixy="-3.93103325780048E-23"
+        ixz="9.92616735063633E-24"
+        iyy="2.02553394151494E-08"
+        iyz="-2.41544116547951E-23"
+        izz="1.35262128682756E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger3-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger3-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R finger3-1"
+    type="continuous">
+    <origin
+      xyz="0.0303108891324489 -0.0175000000000004 0.14"
+      rpy="-1.5707963267949 0 2.61799387799149" />
+    <parent
+      link="R_palm" />
+    <child
+      link="R finger3-1" />
+    <axis
+      xyz="0 0 1" />
+    <mimic
+      joint=""
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="R finger3-2">
+    <inertial>
+      <origin
+        xyz="0.00382076453403508 -0.02979105094627 -1.94734367520155E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.00707739738871867" />
+      <inertia
+        ixx="1.51715754069773E-06"
+        ixy="-2.43507202052063E-07"
+        ixz="1.59954747898131E-13"
+        iyy="3.21509711618996E-07"
+        iyz="4.4103912586283E-13"
+        izz="1.72391332503902E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger3-2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R finger3-2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R finger3-2"
+    type="continuous">
+    <origin
+      xyz="0 -0.023 0"
+      rpy="0 0 0" />
+    <parent
+      link="R finger3-1" />
+    <child
+      link="R finger3-2" />
+    <axis
+      xyz="0 0 1" />
+    <mimic
+      joint=""
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="R gripper">
+    <inertial>
+      <origin
+        xyz="5.27355936696949E-16 0.00156504693314396 -1.38777878078145E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.00609127056774437" />
+      <inertia
+        ixx="8.38284437689385E-07"
+        ixy="-3.81263298051143E-21"
+        ixz="1.54888196256803E-22"
+        iyy="3.77175708246467E-07"
+        iyz="3.18167524679755E-22"
+        izz="9.34655494343132E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R gripper.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/R gripper.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="R gripper"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.0430000000002747"
+      rpy="0 0 -1.5707963267949" />
+    <parent
+      link="R_palm" />
+    <child
+      link="R gripper" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0.03"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="L_shoulder">
+    <inertial>
+      <origin
+        xyz="-4.78827689023282E-05 0.0156539518070272 -0.248204682969382"
+        rpy="0 0 0" />
+      <mass
+        value="0.159233792908747" />
+      <inertia
+        ixx="5.90635379080722E-05"
+        ixy="6.76336036224661E-07"
+        ixz="3.93669860263259E-09"
+        iyy="4.06885503332512E-05"
+        iyz="1.24343094959092E-08"
+        izz="7.3658214817E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_shoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_shoulder.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_shoulder"
+    type="continuous">
+    <origin
+      xyz="0 0 0.495"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="trunk_link" />
+    <child
+      link="L_shoulder" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_arm1">
+    <inertial>
+      <origin
+        xyz="-0.133478677155536 -1.33027489931659E-05 -7.69190748465465E-06"
+        rpy="0 0 0" />
+      <mass
+        value="0.189027914267191" />
+      <inertia
+        ixx="5.50086142024178E-05"
+        ixy="-6.05444469004133E-09"
+        ixz="6.76337620776682E-07"
+        iyy="9.02607737592394E-05"
+        iyz="3.93877325850025E-09"
+        izz="6.73964220277781E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_arm1"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.248800000000003"
+      rpy="1.57079632679491 0 1.5707963267949" />
+    <parent
+      link="L_shoulder" />
+    <child
+      link="L_arm1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_arm2">
+    <inertial>
+      <origin
+        xyz="-0.0928720824550887 1.6741366376527E-07 -0.0065196731730373"
+        rpy="0 0 0" />
+      <mass
+        value="0.0759195681603366" />
+      <inertia
+        ixx="2.47922147148805E-05"
+        ixy="2.31861399342253E-11"
+        ixz="1.78932123459048E-07"
+        iyy="2.9226854952603E-05"
+        iyz="2.41603171441539E-11"
+        izz="1.61014820114889E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_arm2"
+    type="continuous">
+    <origin
+      xyz="-0.170499999999999 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="L_arm1" />
+    <child
+      link="L_arm2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_arm3">
+    <inertial>
+      <origin
+        xyz="3.22976181230672E-05 -1.49723623597791E-05 -0.187350702159041"
+        rpy="0 0 0" />
+      <mass
+        value="0.0455132202581582" />
+      <inertia
+        ixx="1.04441289466614E-05"
+        ixy="-1.21363216604618E-12"
+        ixz="-1.81663846805554E-07"
+        iyy="1.24358376004975E-05"
+        iyz="-2.28507494410129E-09"
+        izz="7.82054955180842E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_arm3"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="L_arm2" />
+    <child
+      link="L_arm3" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_arm4">
+    <inertial>
+      <origin
+        xyz="-0.0101576588877213 -0.0474946152588682 -9.22779261512963E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.0493363034804284" />
+      <inertia
+        ixx="9.03991587155391E-06"
+        ixy="1.78932578789152E-07"
+        ixz="2.41603387334261E-11"
+        iyy="1.18657637430998E-05"
+        iyz="6.10913668982301E-11"
+        izz="1.28686059122131E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_arm4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_arm4"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.200300000000001"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="L_arm3" />
+    <child
+      link="L_arm4" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L_palm">
+    <inertial>
+      <origin
+        xyz="-0.0113941026158234 -0.0235199290398571 0.122398988122372"
+        rpy="0 0 0" />
+      <mass
+        value="0.113700877215553" />
+      <inertia
+        ixx="1.37805728265003E-05"
+        ixy="-2.42636851483032E-07"
+        ixz="-5.57775617423553E-07"
+        iyy="4.21613335999602E-05"
+        iyz="2.41305436563682E-07"
+        izz="4.19256814630893E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_palm.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L_palm.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L_palm"
+    type="continuous">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="L_arm4" />
+    <child
+      link="L_palm" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L finger1-1">
+    <inertial>
+      <origin
+        xyz="-6.03683769639929E-16 -0.0115000000000054 -2.22044604925031E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.0012778761403405" />
+      <inertia
+        ixx="1.1841445897518E-07"
+        ixy="-9.38181394200487E-24"
+        ixz="2.97850074703743E-25"
+        iyy="2.02553394151493E-08"
+        iyz="1.13007414170485E-25"
+        izz="1.35262128682755E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger1-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger1-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L finger1-1"
+    type="continuous">
+    <origin
+      xyz="-0.0350000000000003 0 0.14"
+      rpy="-1.5707963267949 0 3.14159265358978" />
+    <parent
+      link="L_palm" />
+    <child
+      link="L finger1-1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L finger1-2">
+    <inertial>
+      <origin
+        xyz="-0.0038207645340403 -0.029791050946266 1.94733756897492E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.00707739738871864" />
+      <inertia
+        ixx="1.51715754069772E-06"
+        ixy="2.4350720205206E-07"
+        ixz="1.59954747983942E-13"
+        iyy="3.21509711618994E-07"
+        iyz="-4.41039125614589E-13"
+        izz="1.72391332503901E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger1-2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger1-2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L finger1-2"
+    type="continuous">
+    <origin
+      xyz="0 -0.023 0"
+      rpy="0 0 0" />
+    <parent
+      link="L finger1-1" />
+    <child
+      link="L finger1-2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L finger2-1">
+    <inertial>
+      <origin
+        xyz="-2.77555756156289E-17 -0.0114999999999964 3.60822483003176E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.00127787614034051" />
+      <inertia
+        ixx="1.18414458975181E-07"
+        ixy="1.18150858625034E-22"
+        ixz="1.32348898008484E-23"
+        iyy="2.02553394151493E-08"
+        iyz="-3.61325138672026E-23"
+        izz="1.35262128682756E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger2-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger2-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L finger2-1"
+    type="continuous">
+    <origin
+      xyz="0.0303108891324555 -0.0174999999999996 0.139999999999999"
+      rpy="-1.5707963267949 0 2.61799387799149" />
+    <parent
+      link="L_palm" />
+    <child
+      link="L finger2-1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L finger2-2">
+    <inertial>
+      <origin
+        xyz="0.00382076453403721 -0.0297910509462663 -1.9473300749695E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.00707739738871868" />
+      <inertia
+        ixx="1.51715754069773E-06"
+        ixy="-2.43507202052062E-07"
+        ixz="1.59954747845192E-13"
+        iyy="3.21509711618997E-07"
+        iyz="4.41039126112171E-13"
+        izz="1.72391332503902E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger2-2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger2-2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L finger2-2"
+    type="continuous">
+    <origin
+      xyz="0 -0.023 0"
+      rpy="0 0 0" />
+    <parent
+      link="L finger2-1" />
+    <child
+      link="L finger2-2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L finger3-1">
+    <inertial>
+      <origin
+        xyz="4.30211422042248E-16 -0.0115000000000039 -2.4980018054066E-16"
+        rpy="0 0 0" />
+      <mass
+        value="0.00127787614034051" />
+      <inertia
+        ixx="1.18414458975181E-07"
+        ixy="3.08425765791635E-23"
+        ixz="3.30872245021211E-24"
+        iyy="2.02553394151494E-08"
+        iyz="5.43201504481505E-23"
+        izz="1.35262128682756E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger3-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger3-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L finger3-1"
+    type="continuous">
+    <origin
+      xyz="0.0303108891324564 0.0174999999999999 0.139999999999999"
+      rpy="-1.5707963267949 0 -2.61799387799151" />
+    <parent
+      link="L_palm" />
+    <child
+      link="L finger3-1" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L finger3-2">
+    <inertial>
+      <origin
+        xyz="0.00382076453403757 -0.0297910509462659 -1.94733840164218E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.00707739738871864" />
+      <inertia
+        ixx="1.51715754069772E-06"
+        ixy="-2.43507202052061E-07"
+        ixz="1.5995474810989E-13"
+        iyy="3.21509711618995E-07"
+        iyz="4.41039125746197E-13"
+        izz="1.72391332503901E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger3-2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L finger3-2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L finger3-2"
+    type="continuous">
+    <origin
+      xyz="0 -0.023 0"
+      rpy="0 0 0" />
+    <parent
+      link="L finger3-1" />
+    <child
+      link="L finger3-2" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+  <link
+    name="L gripper">
+    <inertial>
+      <origin
+        xyz="2.77555756156289E-17 0.00156504693314184 2.23793206188816E-13"
+        rpy="0 0 0" />
+      <mass
+        value="0.00609127056774437" />
+      <inertia
+        ixx="8.38284437689385E-07"
+        ixy="2.29489411535382E-22"
+        ixz="-9.36096758833535E-23"
+        iyy="3.77175708246468E-07"
+        iyz="-3.47760391500848E-22"
+        izz="9.34655494343133E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L gripper.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Roly_1224/meshes/L gripper.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L gripper"
+    type="prismatic">
+    <origin
+      xyz="0 0 0.0430000000029319"
+      rpy="0 0 -1.5707963267949" />
+    <parent
+      link="L_palm" />
+    <child
+      link="L gripper" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="0.03"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>

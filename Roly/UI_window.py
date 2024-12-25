@@ -174,20 +174,16 @@ class mywindow(QtWidgets.QMainWindow):
         print("motor running")
         pass
 
-
     def Stop_all(self):
         if self.camera.is_running == True:
             self.camera_timer.stop()
             self.camera.stop()
             self.camera.is_running = False
-            # self.ui.camera_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
         
         if self.RL_is_running == True:
             self.RL_timer.stop()
             self.RL_is_running = False
-            # self.ui.RL_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
 
         if self.motor_is_running == True:
             self.motor_timer.stop()
             self.motor_is_running = False
-            # self.ui.motor_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
