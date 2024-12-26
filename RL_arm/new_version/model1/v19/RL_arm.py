@@ -190,7 +190,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
+    def render(self, speed=0):
         # print(1000*self.data.time)
         if int(1000*self.data.time+1)%int(450*speed+50) == 0: # 50ms render 一次
         # if self.inf.timestep%5 ==0:
