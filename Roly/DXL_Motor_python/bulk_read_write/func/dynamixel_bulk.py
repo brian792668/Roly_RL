@@ -125,8 +125,8 @@ class DXL_Motor():
     def writeAllMotorPosition(self, TARGET_POSITIONS):
         RESOLUSION = degree2resolution(np.clip(np.array(TARGET_POSITIONS), 0.1, 359.9))
         dxl_comm_result = self.writeAllMotorStatus(RESOLUSION, "GOAL_POSITION")
-        # if dxl_comm_result != COMM_SUCCESS:
-        #     print(f"Write motor position fail : {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+        if dxl_comm_result != COMM_SUCCESS:
+            print(f"Write motor position fail : {self.packetHandler.getTxRxResult(dxl_comm_result)}")
         # else:
         #     print("Successfully write all motor position")
 

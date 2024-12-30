@@ -40,7 +40,7 @@ def initial_pos(motor):
     motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*len(motor.pos_ctrl))
     time.sleep(0.1)
     initial_angles = motor.readAllMotorPosition()
-    final_angles=[-20, -45, 10, 4, 0, 5, 78, 0]
+    final_angles=[-20, -45, 2, 5.5, 0, 0, 92, 0]
 
     # initial
     t=0

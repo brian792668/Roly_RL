@@ -46,7 +46,7 @@ class Robot_system:
         self.depth_colormap = self.head_camera.depth_colormap
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v17-2/model.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v19/model.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
@@ -142,7 +142,7 @@ class Robot_system:
             camera_angle = angles[1]
             with self.lock: 
                 target_exist = self.target_exist
-                d = self.target_depth
+                d = self.target_depth + 0.01
             if target_exist:
                 a = 0.06
                 b = (a**2 + d**2)**0.5
@@ -176,25 +176,28 @@ class Robot_system:
 
             target_to_EE = [object_xyz[0]-hand_xyz[0], object_xyz[1]-hand_xyz[1], object_xyz[2]-hand_xyz[2]]
             distotarget = (target_to_EE[0]**2 + target_to_EE[1]**2 + target_to_EE[2]**2) ** 0.5
-            alpha = 1-0.8*np.exp(-100*distotarget**2)
-            # print(target_to_EE)
+            target_to_EE_norm = [target_to_EE[0]/distotarget*0.02, target_to_EE[1]/distotarget*0.02, target_to_EE[2]/distotarget*0.02]
+            # print(target_to_EE_norm)
+            # alpha = 1-0.8*np.exp(-100*distotarget**2)
+            
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
-            state = np.concatenate([object_xyz.copy(), target_to_EE.copy(), joints[2:4], joints[5:7]]).astype(np.float32)
+            state = np.concatenate([object_xyz.copy(), target_to_EE_norm.copy(), action_old[0:2], action_old[4:5], joints[2:4], joints[5:7]]).astype(np.float32)
             # print(f"{state[0]:.2f}, {state[1]:.2f}, {state[2]:.2f}")
 
             with torch.no_grad():  # 不需要梯度計算，因為只做推論
                 desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
                 desire_joints = np.radians(desire_joints)
-            desire_joints[2] = np.radians(30+30*np.sin(timenow))
-            desire_joints[2] = np.radians(60)
+            # desire_joints[2] = np.radians(45+45*np.sin(timenow*2))
+            desire_joints[2] = np.radians(0)
 
             action, _ = self.RL_model1.predict(state)
-            action_new = [action_old[0]*0.95 + action[0]*0.05,
-                          action_old[1]*0.95 + action[1]*0.05,  
-                          action_old[2]*0.95 + 0, 
-                          action_old[3]*0.95 + 0,
-                          action_old[4]*0.95 + action[2]*0.05,
-                          action_old[5]*0.95 + 0]          
+            # print(action)
+            action_new = [action_old[0]*0.9 + action[0]*0.1,
+                          action_old[1]*0.9 + action[1]*0.1,  
+                          action_old[2]*0.9 + 0, 
+                          action_old[3]*0.9 + 0,
+                          action_old[4]*0.9 + action[2]*0.1,
+                          action_old[5]*0.9 + 0]          
 
             # joints[2] += action_new[0]*0.08*alpha
             # joints[3] += action_new[1]*0.05
@@ -209,12 +212,12 @@ class Robot_system:
             joints[5] = joints[5]*0.9 + desire_joints[2]*0.1
             # joints[6] = joints[6]*0.95 + desire_joints[3]*0.05
 
-            joints[2] += action_new[0]**3 * 0.05
-            joints[3] += action_new[1]**3 * 0.05
-            joints[4] += action_new[2]**3 * 0.05
-            joints[5] += action_new[3]**3 * 0.05
-            joints[6] += action_new[4]**3 * 0.05
-            joints[7] += action_new[5]**3 * 0.05
+            joints[2] += action_new[0]* 0.05
+            joints[3] += action_new[1]* 0.05
+            joints[4] += action_new[2]* 0.05
+            joints[5] += action_new[3]* 0.05
+            joints[6] += action_new[4]* 0.05
+            joints[7] += action_new[5]* 0.05
 
         
             if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
@@ -227,6 +230,7 @@ class Robot_system:
             elif joints[6] < self.limit_low[3] : joints[6] = self.limit_low[3]
 
             joints = [ np.degrees(joints[i]) for i in range(len(joints))]
+            print(joints[2:7])
             
             with self.lock:
                 self.RL_action = action_new.copy()
@@ -360,4 +364,4 @@ class Robot_system:
 if __name__ == "__main__":
 
     Roly = Robot_system()
-    Roly.run(endtime=20)
+    Roly.run(endtime=30)
