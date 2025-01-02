@@ -1,69 +1,11 @@
 import numpy as np
-
-# initPos = [         # radious
-#     0, 0, 0.83,     # 機器人base起始位置 (x,y,z)
-#     -1, 0, 0, 0,
-
-#     0,  # 7 R_hip_yaw    
-#     0,  # 8 R_hip_roll   
-#     0,  # 9 R_hip_pitch  
-#     0,  # 10 R_knee
-#     0,  # 11 R_ankle_pitch
-#     0,  # 12 R_ankle_roll 
-#     0,  # 13 R_knee_driver
-#     0,  # 14 R_knee_linkage
-
-#     0,  # 15 L_hip_yaw     
-#     0,  # 16 L_hip_roll   
-#     0,  # 17 L_hip_pitch 
-#     0,  # 18 L_knee 
-#     0,  # 19 L_ankle_pitch
-#     0,  # 20 L_ankle_roll 
-#     0,  # 21 L_knee_driver
-#     0,  # 22 L_knee_linkage
-
-#     0,  # 23 trunk        
-#     0,  # 24 neck
-#     0,  # 25 camera
-
-#     0,  # 26 R_shoulder
-#     0,  # 27 R_arm1
-#     0,  # 28 R_arm2
-#     0,  # 29 R_arm3
-#     0,  # 30 R_arm4
-#     0,  # 31 R_palm
-#     0,  # 32 R finger1-1
-#     0,  # 33 R finger1-2
-#     0,  # 34 R finger2-1
-#     0,  # 35 R finger2-2
-#     0,  # 36 R finger3-1
-#     0,  # 37 R finger3-2
-#     0,  # 38 R gripper
-
-#     0,  # 39 L_shoulder
-#     0,  # 40 L_arm1
-#     0,  # 41 L_arm2
-#     0,  # 42 L_arm3
-#     0,  # 43 L_arm4
-#     0,  # 44 L_palm
-#     0,  # 45 L finger1-1
-#     0,  # 46 L finger1-2
-#     0,  # 47 L finger2-1
-#     0,  # 48 L finger2-2
-#     0,  # 49 L finger3-1
-#     0,  # 50 L finger3-2
-#     0,  # 51 L gripper
-
-#     0, 0, 0, 1, 0, 0, 0,  # red ball pos & orientation
-#     # 0, 0, 0, 1, 0, 0, 0,  # red box pos & orientation
-# ]
 initPos = [ 
     0, 0, 0.83,     # 機器人base起始位置 (x,y,z)
     -1, 0, 0, 0,
 
     # 0,  # 7  trunk        
-    # 0,  # 8  neck
-    # 0,  # 9  camera
+    0,  # 8  neck
+    0,  # 9  camera
 
     0,  # 10 R_shoulder
     0,  # 11 R_arm1
@@ -96,10 +38,28 @@ initPos = [
     0, 0, 0, 1, 0, 0, 0,  # red ball pos & orientation
     # 0, 0, 0, 1, 0, 0, 0,  # red box pos & orientation
 ]
+initPos = [ 
+    0, 0, 0.83,     # 機器人base起始位置 (x,y,z)
+    -1, 0, 0, 0,
+       
+    0,  # 7  neck
+    0,  # 8  camera
+
+    0,  # 9 R_shoulder
+    0,  # 10 R_arm1
+    0,  # 11 R_arm2
+    0,  # 12 R_arm3
+    0,  # 13 R_arm4
+    0,  # 14 R_palm
+
+    0, 0, 0, 1, 0, 0, 0,  # red ball pos & orientation
+]
+
 initPos[7:] = list(np.pi/180*(np.array(initPos[7:])))
 # controlList = [  7,  8,  9, 
 #                 10, 11, 12, 13, 14, 15]
-controlList = [  7,  8,  9, 10, 11, 12]
+controlList = [  7,  8,  
+                 9, 10, 11, 12, 13, 14]
 
 
 initTarget = [
@@ -118,8 +78,8 @@ initTarget = [
     # 0,  # L_ankle_roll
 
     # 0,  # trunk
-    # 0,  # neck                  
-    # 0,  # camera
+    0,  # neck                  
+    0,  # camera
 
     0,  # R_shoulder
     0,  # R_arm1
@@ -154,15 +114,15 @@ controlParameter = [
     # [1000.0, 1.0, 0.1],      # L_ankle_roll
 
     # [1000.0, 1.0, 0.1],      # trunck
-    # [100.0, 0.05, 0.1],   # neck                  
-    # [100.0, 0.05, 0.1],   # camera
+    [100.0, 0.05, 0.1],   # neck                  
+    [100.0, 0.05, 0.1],   # camera
 
     [500.0, 0.0, 0.1],
     [500.0, 0.0, 0.1],
     [500.0, 0.0, 0.1],
     [500.0, 0.0, 0.1],
     [500.0, 0.0, 0.1],
-    [500.0, 0.0, 0.1],
+    [500.0, 0.0, 0.1]
     # [5000.0, 0.0, 0.1],  # R_gripper
 
     # [500.0, 0.0, 0.5],

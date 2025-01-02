@@ -56,12 +56,13 @@ def initial_pos(motor):
 
 def smooth_transition(t, initial_angles, final_angles, speed=0.001):
 
-    initial_angles = np.array(initial_angles)
-    final_angles = np.array(final_angles)
+    np_initial_angles = np.array(initial_angles)
+    np_final_angles = np.array(final_angles)
 
     progress = min(t, 1)
-    progress = ((1 - np.cos(np.pi * progress)) / 2)**2
-    current_angles = initial_angles*(1-progress) + final_angles*progress
+    progress = ((1 - np.cos(np.pi * progress)) / 2)
+    current_angles = np_initial_angles*(1-progress) + np_final_angles*progress
 
     t_next = t + speed
+    print(t_next)
     return current_angles.tolist(), t_next

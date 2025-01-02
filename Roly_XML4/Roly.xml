@@ -195,12 +195,12 @@
                 <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="trunk_link" /> -->
                 <body name="neck" pos="0.0236 0 0.6049" quat="0.707105 0.707108 0 0">
                     <inertial pos="-0.0115402 -0.00305819 2.74218e-05" quat="0.486136 0.513558 0.513346 0.486216" mass="0.0915993" diaginertia="2.61388e-05 2.1214e-05 1.5184e-05" />
-                    <!-- <joint name="neck" pos="0 0 0" axis="0 1 0" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01"/> -->
+                    <joint name="neck" pos="0 0 0" axis="0 1 0" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="neck" />
                     <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="neck" /> -->
                     <body name="camera" pos="0 0 0">
                         <inertial pos="0.00773068 0.0510545 -0.00119353" quat="0.99992 0.000342776 -0.00769884 0.0100227" mass="0.0742873" diaginertia="4.43958e-05 3.98526e-05 1.53335e-05" />
-                        <!-- <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01"/> -->
+                        <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01"/>
                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera" />
                         <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="camera" /> -->
                         <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
@@ -408,9 +408,9 @@
         <motor joint="L_ankle_pitch" name="L_ankle_pitch"   gear="1" />
         <motor joint="L_ankle_roll"  name="L_ankle_roll"    gear="1"/>
 
-		<motor joint="trunk"  name="trunk"  gear="1" />
+		<motor joint="trunk"  name="trunk"  gear="1" /> -->
         <motor joint="neck"   name="neck"   gear="1" />
-        <motor joint="camera" name="camera" gear="1" /> -->
+        <motor joint="camera" name="camera" gear="1" />
 
         <motor joint="R_shoulder"   name="R_shoulder"   gear="1" />
         <motor joint="R_arm1"       name="R_arm1"       gear="1" />

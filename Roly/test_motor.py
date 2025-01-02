@@ -6,14 +6,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
 from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
 from imports.Camera import *
+from imports.Roly_motor import smooth_transition
 
 
 X_series_info = X_Motor_Info()
 P_series_info = P_Motor_Info()
 
 DEVICENAME = "/dev/ttyUSB0"
-DXL_MODELS = {"id":[1, 2, 10, 11, 12, 13, 14, 15, 20, 21, 22],
-               "model":[X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info]}
+DXL_MODELS = {"id":[1, 2, 10, 11, 12, 13, 14, 15, 16],
+               "model":[X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info, X_series_info]}
 
 motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 motor.changeAllMotorOperatingMode(OP_MODE=3)
@@ -25,37 +26,31 @@ time.sleep(0.1)
 # time.sleep(5) 
 
 if __name__ == '__main__':
-    motor.pos_ctrl = [0]*11
+    # motor.pos_ctrl = [0]*11
     t=0
-    while t<=1:
-        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, -100, 0, 0, 20, 0], speed=0.005 )
+    while t<1:
+        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, -100, 0,  0], speed=0.002 )
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-        print(motor.pos_ctrl[3])
     t=0
-    while t<=1:
-        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0, 0, 20, 0], speed=0.020 )
+    while t<1:
+        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0,  110], speed=0.002 )
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-        print(motor.pos_ctrl[3])
     t=0
-    while t<=1:
-        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0, 0, 20, 0], speed=0.020 )
+    while t<1:
+        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0,  0], speed=0.002 )
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-        print(motor.pos_ctrl[3])
     t=0
-    while t<=1:
-        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0, 0, 20, 0], speed=0.020 )
+    while t<1:
+        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0,  110], speed=0.002 )
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-        print(motor.pos_ctrl[3])
     t=0
-    while t<=1:
-        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0, 0, 20, 0], speed=0.02 )
+    while t<1:
+        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0,  0], speed=0.002 )
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-        print(motor.pos_ctrl[3])
     t=0
-    while t<=1:
-        motor.pos_ctrl, t = motor.smooth_transition(t, motor.pos_ctrl, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], speed=0.005 )
+    while t<1:
+        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [0, 0, 0, 0, 0, 0, 0, 0, 0], speed=0.002 )
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-        print(motor.pos_ctrl[3])
 
 
     # for i in range(150):

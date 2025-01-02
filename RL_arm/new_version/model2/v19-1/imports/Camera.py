@@ -25,8 +25,9 @@ class Camera():
 
     def show(self, rgb = False, depth = False):
         if rgb == True:
-            scaled_image = cv2.resize(self.rgbimg, (640, 480), interpolation=cv2.INTER_LINEAR)
-            cv2.imshow("RGB", cv2.cvtColor(scaled_image, cv2.COLOR_RGB2BGR))
+            # scaled_image = cv2.resize(self.rgbimg, (640, 480), interpolation=cv2.INTER_LINEAR)
+            # cv2.imshow("RGB", cv2.cvtColor(scaled_image, cv2.COLOR_RGB2BGR))
+            cv2.imshow("RGB", cv2.cvtColor(self.rgbimg, cv2.COLOR_RGB2BGR))
         if depth == True:
             cv2.imshow("Depth", cv2.cvtColor(self.depthimg, cv2.COLOR_RGB2BGR))
         cv2.waitKey(1)
@@ -71,7 +72,7 @@ class Camera():
             if depth == True:
                 self.target_depth = float('nan')
             
-    def track(self, ctrlpos, data, speed=1.0):
+    def track(self, ctrlpos, speed=1.0):
         new_pos = ctrlpos.copy()
         if np.abs(self.target[0]) <= 0.01 and np.abs(self.target[1]) <= 0.01:
             self.track_done = True

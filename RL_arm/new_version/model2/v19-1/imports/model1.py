@@ -14,6 +14,6 @@ class RLmodel:
         self.obs_joints = [0, 0, 0, 0]
         
     def predict(self):
-        self.state = np.concatenate([self.obs_target_pos_to_neck.copy(), self.obs_target_pos_to_hand_norm.copy(), self.obs_joints.copy()]).astype(np.float32)
+        self.state = np.concatenate([self.obs_target_pos_to_neck.copy(), self.obs_target_pos_to_hand_norm.copy(), self.action.copy(), self.obs_joints.copy()]).astype(np.float32)
         self.action, _ = self.model.predict(self.state.copy(), deterministic=True)
         return(self.action.copy())
