@@ -64,5 +64,4 @@ def smooth_transition(t, initial_angles, final_angles, speed=0.001):
     current_angles = np_initial_angles*(1-progress) + np_final_angles*progress
 
     t_next = t + speed
-    print(t_next)
     return current_angles.tolist(), t_next

@@ -19,6 +19,7 @@ DXL_MODELS = {"id":[1, 2, 10, 11, 12, 13, 14, 15, 16],
 motor = DXL_Motor(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 motor.changeAllMotorOperatingMode(OP_MODE=3)
 motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200]*len(motor.pos_ctrl))
+motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 200, 200, 200, 200, 200, 200, 100])
 motor.setAllMotorTorqueEnable()
 time.sleep(0.1) 
 
@@ -26,31 +27,31 @@ time.sleep(0.1)
 # time.sleep(5) 
 
 if __name__ == '__main__':
-    # motor.pos_ctrl = [0]*11
     t=0
-    while t<1:
-        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, -100, 0,  0], speed=0.002 )
+    # while t<1:
+    #     motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [0, 0, 0, 0, 0, 0, 0, 0, 0], speed=0.01 )
+    #     motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+    # t=0
+    # while t<1:
+    #     motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, 100, 0,  95], speed=0.001 )
+    #     motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+    # t=0
+    # while t<1:
+    #     motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, 100, 0,  0], speed=0.01 )
+    #     motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+    # t=0
+    # while t<1:
+    #     motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 0, 100, 0,  95], speed=0.01 )
+    #     motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+    # t=0
+    # while t<1:
+    #     motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [0, 0, 0, 0, 0, 0, 0, 0, 0], speed=0.001 )
+    #     motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+    while t < 2*np.pi*2:
+        motor.pos_ctrl[8] = (-np.cos(t)+1)/2*95
         motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-    t=0
-    while t<1:
-        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0,  110], speed=0.002 )
-        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-    t=0
-    while t<1:
-        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0,  0], speed=0.002 )
-        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-    t=0
-    while t<1:
-        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, 10, -100, 0,  110], speed=0.002 )
-        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-    t=0
-    while t<1:
-        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [-30, 0, 45, -20, 0, -10, -100, 0,  0], speed=0.002 )
-        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
-    t=0
-    while t<1:
-        motor.pos_ctrl, t = smooth_transition(t, motor.pos_ctrl, [0, 0, 0, 0, 0, 0, 0, 0, 0], speed=0.002 )
-        motor.writeAllMotorPosition(motor.toRolyctrl(motor.pos_ctrl))
+        t+=0.05
+    
 
 
     # for i in range(150):

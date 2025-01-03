@@ -71,8 +71,8 @@
   <worldbody>
     <light directional="false" diffuse=".8 .8 .8" specular="0.9 0.9 0.9" pos="0.5 0 4" dir="0 0 -1" castshadow="true" />
     <geom name="floor" pos="0 0 0" size="1.5 1.5 0.5" type="plane" material="matplane" margin="0.001" condim="3" friction="1 0.5 0.01" />
-	  <site name="marker1" type="sphere" size="0.005" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
-    <!-- <site name="marker2" type="sphere" size="0.025" pos="0 0.25 1.35" rgba="0 1 0 1"/> -->
+	  <!-- <site name="marker1" type="sphere" size="0.005" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/> -->
+    <site name="pos_target" type="sphere" size="0.01" pos="0.0 0.0 0.0" rgba="0 1 0 0.5"/>
     <!-- <site name="marker3" type="sphere" size="0.025" pos=" 0 0.25 0.92" rgba="0 0 1 1"/> -->
     <!-- <geom name="table"  type="box" pos="0.7 0 0.995" size="0.6 0.7 0.005" rgba="0.8 0.6 0.4 1" material="table_material" friction="1 0.5 0.01"/> -->
     <!-- <geom name="table2" type="box" pos="0.7 0 0.95" size="0.6 0.7 0.04" rgba="1 1 1 0.1"/> -->
@@ -242,40 +242,40 @@
             <joint name="camera" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
             <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="camera"/>
-            <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
+            <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="50"/>
             <site name="neck_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
           </body>
         </body>
         <body name="R_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
           <inertial pos="-4.7883e-05 0.015654 0.24821" quat="0.49075 0.509211 -0.490712 0.50899" mass="0.15923" diaginertia="7.3658e-05 5.90889e-05 4.06641e-05"/>
-          <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+          <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="R_shoulder"/>
           <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="R_shoulder"/>
           <body name="R_arm1" pos="0 0 0.2488" quat="0.5 0.5 0.5 0.5">
             <inertial pos="-0.0833488 1.97169e-05 -7.82531e-06" quat="0.483195 0.516442 0.516157 0.483106" mass="0.185808" diaginertia="8.80008e-05 6.51814e-05 5.49517e-05"/>
-            <joint name="R_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+            <joint name="R_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
             <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
 			      <site name="R_shoulder_marker" type="sphere" size="0.020" pos="0 0 0" rgba="0 1 1 1"/>
             <body name="R_arm2" pos="-0.1105 0 0">
               <inertial pos="-0.0563 1.74831e-07 -0.00680843" quat="0.707087 -0.00578054 -0.00578188 0.707079" mass="0.0726996" diaginertia="2.69669e-05 2.47831e-05 1.38386e-05"/>
-              <joint name="R_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+              <joint name="R_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
               <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm2"/>
               <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm2"/>
               <body name="R_arm3" pos="0 0 0" quat="0.5 0.5 0.5 0.5">
                 <inertial pos="-3.22978e-05 -1.49737e-05 -0.127351" quat="0.706666 -0.0244966 -0.0241464 0.706711" mass="0.0455132" diaginertia="1.24358e-05 1.04566e-05 7.80803e-06"/>
-                <joint name="R_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+                <joint name="R_arm3" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm3"/>
                 <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm3"/>
                 <body name="R_arm4" pos="0 0 -0.1403" quat="0.5 0.5 0.5 0.5">
                   <inertial pos="-0.0101577 -0.0474946 9.27932e-05" quat="0.02226 0.706758 -0.0222695 0.706754" mass="0.0493363" diaginertia="1.28686e-05 1.1877e-05 9.02863e-06"/>
-                  <joint name="R_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+                  <joint name="R_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
                   <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
                   <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
                   <site name="R_elbow_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
                   <body name="R_palm" quat="0.707107 0.707107 0 0">
                     <inertial pos="-0.0114428 0.023578 0.122371" quat="0.615966 0.339362 0.623104 0.342287" mass="0.113422" diaginertia="4.23069e-05 4.17695e-05 1.3767e-05"/>
-                    <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.2" stiffness="0.0" armature="0.01"/>
+                    <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_palm"/>
                     <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_palm"/> -->
                     <body name="R finger1-1" pos="-0.035007 0 0.14" quat="0.0145557 0.0145609 0.706958 -0.706956">
@@ -415,6 +415,9 @@
     <body name="red_ball" > 
       <joint type="free" damping="0.001"/>
       <geom type="sphere" mass="0.0000001" contype="0" conaffinity="0" group="1" pos="0.0 0.0 0.0" size="0.01" rgba="1 0 0 0.8"/> 
+      <site name="obstacle1" type="sphere" size="0.02" pos="-0.1 0.0 0.0" rgba="0 0 0 1"/>
+      <site name="obstacle2" type="sphere" size="0.02" pos="0.0 0.0 0.1" rgba="0 0 0 1"/>
+      <site name="obstacle3" type="box" size="0.02 0.02 0.05" pos="0.0 0.0 0.1" quat="0.183013 -0.183013 0.683013 -0.683013" rgba="0 0 0 1"/>
     </body>
     <body name="fix_box" > 
       <geom type="box" mass="20000" pos="0.020  0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 1"/> 

@@ -77,6 +77,11 @@ class RL_arm(gym.Env):
         else:
             self.inf.timestep += 1
             self.inf.totaltimestep += 1
+            self.inf.action[0] = self.inf.action[0]*0.95 + action[0]*0.05
+            self.inf.action[1] = self.inf.action[1]*0.95 + action[1]*0.05
+            dx, dy, dz = - 0.1*np.cos(np.radians(self.inf.action[1]))*np.cos(np.radians(self.inf.action[0])), 0.1*np.cos(np.radians(self.inf.action[1]))*np.sin(np.radians(self.inf.action[0])), - 0.1*np.sin(np.radians(self.inf.action[1]))
+            self.sys.pos_target = [self.sys.pos_target0[0]+dx, self.sys.pos_target0[1]+dy, self.sys.pos_target0[2]+dz] 
+            print(self.data.xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_BODY, "obstacle1") ])
 
             action_from_model1 = self.model1.predict()
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
@@ -88,13 +93,12 @@ class RL_arm(gym.Env):
                 desire_joints = self.IK(torch.tensor(self.sys.vec_target2neck, dtype=torch.float32)).tolist()
                 desire_joints = np.radians(desire_joints)
 
-            for i in range(int(1/self.sys.Hz/0.005)):
+            for i in range(int(1/self.sys.Hz/0.001)):
                 self.sys.ctrlpos[0] = self.sys.pos[0] + np.tanh(10*(self.sys.neck_target_pos[0] - self.sys.pos[0]))*0.05
-                # self.sys.ctrlpos[1] = self.sys.pos[1] + np.tanh(10*(self.sys.neck_target_pos[1] - self.sys.pos[1]))*0.05
                 self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.sys.joints_increment[0]*0.01
                 self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.sys.joints_increment[1]*0.01
                 self.sys.ctrlpos[4] = 0
-                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]*0.01
+                self.sys.ctrlpos[5] = desire_joints[2] + self.sys.joints_increment[2]*0.01
                 self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01
                 self.control_and_step(render=True)
 
@@ -169,16 +173,15 @@ class RL_arm(gym.Env):
  
     def get_state(self):
         # position of hand, neck, elbow
-        self.sys.pos_target = self.data.qpos[15:18].copy()
         self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
         self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
         self.sys.pos_elbow  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")].copy()
 
         # vectors
-        self.sys.vec_target2neck  = [self.data.qpos[15]  -  self.sys.pos_neck[0], self.data.qpos[16]  -  self.sys.pos_neck[1], self.data.qpos[17]  -  self.sys.pos_neck[2]]
-        self.sys.vec_target2hand  = [self.data.qpos[15]  -  self.sys.pos_hand[0], self.data.qpos[16]  -  self.sys.pos_hand[1], self.data.qpos[17]  -  self.sys.pos_hand[2]]
-        self.sys.vec_target2elbow = [self.data.qpos[15]  - self.sys.pos_elbow[0], self.data.qpos[16]  - self.sys.pos_elbow[1], self.data.qpos[17] -  self.sys.pos_elbow[2]]
-        self.sys.vec_hand2elbow   = [self.sys.pos_hand[0] -self.sys.pos_elbow[0], self.sys.pos_hand[1] -self.sys.pos_elbow[1], self.sys.pos_hand[2] -self.sys.pos_elbow[2]]
+        self.sys.vec_target2neck  = [self.sys.pos_target[0] - self.sys.pos_neck[0],  self.sys.pos_target[1] - self.sys.pos_neck[1],  self.sys.pos_target[2] - self.sys.pos_neck[2]]
+        self.sys.vec_target2hand  = [self.sys.pos_target[0] - self.sys.pos_hand[0],  self.sys.pos_target[1] - self.sys.pos_hand[1],  self.sys.pos_target[2] - self.sys.pos_hand[2]]
+        self.sys.vec_target2elbow = [self.sys.pos_target[0] - self.sys.pos_elbow[0], self.sys.pos_target[1] - self.sys.pos_elbow[1], self.sys.pos_target[2] - self.sys.pos_elbow[2]]
+        self.sys.vec_hand2elbow   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0], self.sys.pos_hand[1]   - self.sys.pos_elbow[1], self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
         
         # model1
         self.model1.obs_target_pos_to_neck = self.sys.vec_target2neck.copy()
@@ -205,6 +208,7 @@ class RL_arm(gym.Env):
 
     def render(self, speed=0):
         if int(1000*self.data.time+1)%int(450*speed+50) == 0: # 50ms render 一次
+            self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"pos_target")] = self.sys.pos_target.copy()
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
 
@@ -212,7 +216,7 @@ class RL_arm(gym.Env):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
         # distoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if distoshoulder >= 0.50 or distoshoulder <= 0.30:
+        if distoshoulder >= 0.45 or distoshoulder <= 0.30:
             return False
         elif (point[0]<0.12 and point[1] > -0.20):
             return False
@@ -231,11 +235,13 @@ class RL_arm(gym.Env):
             self.sys.arm_target_pos[3] = np.radians(90*self.sys.arm_target_pos[3]*np.abs(self.sys.arm_target_pos[3]))
             reachable = False
             while reachable == False:
-                self.sys.pos_target0[0] = random.uniform(-0.05, 0.50)
+                self.sys.pos_target0[0] = random.uniform( 0.10, 0.45)
                 self.sys.pos_target0[1] = random.uniform(-0.75, 0.00)
                 self.sys.pos_target0[2] = random.uniform( 0.90, 1.40)
                 reachable = self.check_reachable(self.sys.pos_target0)
             self.data.qpos[15:18] = self.sys.pos_target0.copy()
+            self.sys.pos_target = self.sys.pos_target0.copy()
+            self.sys.pos_target[0] -= 0.1
 
             self.sys.pos_neck  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
             self.sys.vec_target2neck = [self.data.qpos[15]-self.sys.pos_neck[0], self.data.qpos[16]-self.sys.pos_neck[1], self.data.qpos[17]-self.sys.pos_neck[2]]
@@ -246,7 +252,7 @@ class RL_arm(gym.Env):
             self.sys.hand2target0 = new_dis
             self.sys.neck_target_pos[0] = np.arctan2(self.sys.vec_target2neck[1], self.sys.vec_target2neck[0])
             self.sys.neck_target_pos[1] = np.arctan2(self.sys.vec_target2neck[2], self.sys.vec_target2neck[0])
-            for i in range(100):
+            for i in range(50):
                 self.sys.ctrlpos[0] = self.sys.pos[0] + np.tanh(10*(self.sys.neck_target_pos[0] - self.sys.pos[0]))*0.02
                 self.sys.ctrlpos[1] = self.sys.pos[1] + np.tanh(10*(self.sys.neck_target_pos[1] - self.sys.pos[1]))*0.02
                 self.control_and_step(render=True)
