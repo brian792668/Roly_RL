@@ -23,9 +23,11 @@ class RL_inf():
 class RL_obs():
     def __init__(self):
         self.joint_arm = [0.0, 0.0, 0.0, 0.0]
+        self.feature_points = np.array([1.0]*100)
 
     def reset(self):
         self.joint_arm = [0.0, 0.0, 0.0, 0.0]
+        self.feature_points = np.array([1.0]*100)
 
 class RL_sys():
     def __init__(self, Hz = 50):
@@ -35,7 +37,7 @@ class RL_sys():
         self.vel = [0] * len(controlList)
         self.ctrlpos = initTarget.copy()
         self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)
-        self.limit_high = [ 1.57, 0.25, 1.57, 2.10]
+        self.limit_high = [ 1.57, 1.57, 1.57, 2.10]
         self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
 
         self.pos_target  = [0.0, 0.0, 0.0]
@@ -46,6 +48,7 @@ class RL_sys():
         self.hand2target  = 1.0
         self.vec_target2neck  = [0.0, 0.0, 0.0]
         self.vec_target2hand  = [0.0, 0.0, 0.0]
+        self.vec_target02hand = [0.0, 0.0, 0.0]
         self.vec_hand2elbow   = [0.0, 0.0, 0.0]
         self.vec_target2elbow = [0.0, 0.0, 0.0]
         self.random_arm_pos = [0.0, 0.0, 0.0, 0.0]
@@ -55,7 +58,6 @@ class RL_sys():
         self.joints_increment = [0.0, 0.0, 0.0, 0.0]
         self.obstacle_orientation = [1.0, 0.0, 0.0, 0.0]
         self.obstacle_position = [0.0, 0.0, 0.0]
-        self.reaching_dis = 0.1
         self.obstacle_hand_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
         self.obstacle_table_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
 
@@ -71,6 +73,7 @@ class RL_sys():
         self.hand2target  = 1.0
         self.vec_target2neck  = [0.0, 0.0, 0.0]
         self.vec_target2hand  = [0.0, 0.0, 0.0]
+        self.vec_target02hand = [0.0, 0.0, 0.0]
         self.vec_hand2elbow   = [0.0, 0.0, 0.0]
         self.vec_target2elbow = [0.0, 0.0, 0.0]
         self.random_arm_pos  = [0.0, 0.0, 0.0, 0.0]
@@ -80,6 +83,5 @@ class RL_sys():
         self.joints_increment = [0.0, 0.0, 0.0, 0.0]
         self.obstacle_orientation = [1.0, 0.0, 0.0, 0.0]
         self.obstacle_position = [0.0, 0.0, 0.0]
-        self.reaching_dis = 0.1
         self.obstacle_hand_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
         self.obstacle_table_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]

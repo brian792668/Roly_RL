@@ -11,6 +11,10 @@ class Camera():
         self.target_depth = float('nan')
         self.track_done = False
 
+        self.center_height = 120
+        self.center_width = 120
+        self.feature_points = np.array([1.0]*100)
+
     def get_img(self, data, rgb=True, depth=True):
         if rgb == True:
             self.renderer.disable_depth_rendering()
@@ -82,3 +86,36 @@ class Camera():
                 new_pos[0] += -0.1*self.target[0]*speed
                 new_pos[1] += -0.1*self.target[1]*speed
         return new_pos
+    
+    def depth_feature(self):
+        # 提取中央範圍
+        start_h = (self.depthimg.shape[0] - self.center_height) // 2
+        start_w = (self.depthimg.shape[1] - self.center_width) // 2
+        center_region = self.depthimg[start_h:start_h + self.center_height, start_w:start_w + self.center_width]
+
+        # 均勻選取 10x10 特徵點
+        rows, cols = 10, 10
+        y_indices = np.linspace(0, self.center_height - 1, rows, dtype=int)
+        x_indices = np.linspace(0, self.center_width - 1, cols, dtype=int)
+
+        self.feature_points = center_region[np.ix_(y_indices, x_indices)].flatten()
+        self.feature_points = np.clip(self.feature_points, 0.15, 1.0)
+        # print("特徵點值:", self.feature_points)
+        # print("特徵點數量:", len(self.feature_points))
+
+        # 繪製特徵點在 RGB 圖像上
+        for y in y_indices:
+            for x in x_indices:
+                # 計算該特徵點在深度影像中的值
+                depth_value = center_region[y, x]
+
+                # 決定白色圓形的半徑（1 到 6 像素，越小越大）
+                radius = int(6*np.exp(-2*depth_value**2))  # 深度值越小，半徑越大
+
+                # 轉換到原圖上的座標
+                original_y = y + start_h
+                original_x = x + start_w
+
+                # 繪製白色圓點
+                # cv2.circle(self.rgbimg, (original_x, original_y), radius, (100, 255, 255), -1)  # 白色 (B, G, R)
+                cv2.circle(self.depthimg, (original_x, original_y), radius, 0, -1)  # 黑色 (灰階為 0)
