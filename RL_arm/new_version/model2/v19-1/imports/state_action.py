@@ -3,8 +3,8 @@ import numpy as np
 # act_high = np.array([ 90,  90,  1], dtype=np.float32)   # horizontal angle,  vertical angle,  elbow angle
 # act_low  = np.array([-90, -90, -1], dtype=np.float32)  
 
-act_high = np.array([ 1,  1,  1,  1], dtype=np.float32)   # horizontal angle,  vertical angle,  elbow angle
-act_low  = np.array([-1, -1, -1, -1], dtype=np.float32)  
+act_high = np.array([ 1,  1,  1], dtype=np.float32)   # horizontal angle,  vertical angle,  elbow angle
+act_low  = np.array([-1, -1, -1], dtype=np.float32)  
 
 # obs_high = np.array([   0.50,  0.00,  0.00,                           # target xyz
 #                         1.57,  1.05,  1.57,  2.10], dtype=np.float32) # pos of arm

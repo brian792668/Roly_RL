@@ -68,6 +68,8 @@ class RL_arm(gym.Env):
         if self.viewer.is_running() == False:
             self.close()
         else:
+            self.compensate()
+            self.get_state()
             self.inf.timestep += 1
             self.inf.totaltimestep += 1
             self.inf.truncated = False
@@ -78,25 +80,14 @@ class RL_arm(gym.Env):
             self.inf.action[0] = self.inf.action[0]*0.9 + action[0]*0.1
             self.inf.action[1] = self.inf.action[1]*0.9 + action[1]*0.1
             self.inf.action[2] = self.inf.action[2]*0.9 + action[2]*0.1
-            self.inf.action[3] = self.inf.action[3]*0.9 + action[3]*0.1
-            # dx = - self.sys.reaching_dis*np.cos(np.radians(self.inf.action[1]))*np.cos(np.radians(self.inf.action[0]))
-            # dy = self.sys.reaching_dis*np.cos(np.radians(self.inf.action[1]))*np.sin(np.radians(self.inf.action[0]))
-            # dz = - self.sys.reaching_dis*np.sin(np.radians(self.inf.action[1]))
-            # self.sys.pos_target = [self.sys.pos_target0[0]+dx, self.sys.pos_target0[1]+dy, self.sys.pos_target0[2]+dz] 
-
-            # pos_target_new = [ self.sys.pos_hand[0]+self.inf.action[0]*0.1,
-            #                    self.sys.pos_hand[1]+self.inf.action[1]*0.1,
-            #                    self.sys.pos_hand[2]+self.inf.action[2]*0.1] 
-            pos_target_new = [ self.sys.pos_hand[0]+self.sys.vec_target02hand[0]*0.9,
-                               self.sys.pos_hand[1]+self.sys.vec_target02hand[1]*0.9,
-                               self.sys.pos_hand[2]+self.sys.vec_target02hand[2]*0.9] 
-            if self.check_reachable(pos_target_new) == True:
-                self.sys.pos_target = pos_target_new.copy()     
+            self.sys.target_arm_joints[3] = 1.57*self.inf.action[2]
+   
 
             action_from_model1 = self.model1.predict()
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
-            self.sys.joints_increment[2] = self.inf.action[3]
+            # self.sys.joints_increment[2] = np.tanh(10*(self.sys.target_arm_joints[3] - self.sys.pos[5]))*0.01 
+            self.sys.joints_increment[2] = self.inf.action[2]
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
             # alpha = 1-0.5*np.exp(-300*self.sys.hand2target**2)
 
@@ -110,12 +101,12 @@ class RL_arm(gym.Env):
                 self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.sys.joints_increment[1]*0.01
                 self.sys.ctrlpos[4] = 0
                 self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]*0.01
+                # self.sys.ctrlpos[5] = self.sys.pos[5] + self.sys.joints_increment[2]
                 self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01
                 self.control_and_step()
             self.render()
 
             self.inf.reward = self.get_reward()
-            self.get_state()
             self.observation_space = np.concatenate([self.sys.vec_target2neck, self.obs.joint_arm, self.obs.feature_points]).astype(np.float32)
             self.inf.info = {}
             return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
@@ -135,20 +126,20 @@ class RL_arm(gym.Env):
             self.sys.pos_target0 = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
 
             # dummy_random = np.radians(random.uniform( 0, 1)**2)*60
-            # self.sys.arm_target_pos = [ -dummy_random,
+            # self.sys.target_arm_joints = [ -dummy_random,
             #                             0.0,
             #                             0.0,
             #                             0.0,
             #                             2*dummy_random,
             #                             0.0 ]
             # for i in range(100):
-            #     self.sys.ctrlpos[0] = self.sys.pos[0] + np.tanh(10*(self.sys.neck_target_pos[0] - self.sys.pos[0]))*0.02
-            #     self.sys.ctrlpos[1] = self.sys.pos[1] + np.tanh(10*(self.sys.neck_target_pos[1] - self.sys.pos[1]))*0.02
-            #     self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(10*(self.sys.arm_target_pos[0] - self.sys.pos[2]))*0.01
-            #     self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(10*(self.sys.arm_target_pos[1] - self.sys.pos[3]))*0.01
+            #     self.sys.ctrlpos[0] = self.sys.pos[0] + np.tanh(10*(self.sys.target_neck_joints[0] - self.sys.pos[0]))*0.02
+            #     self.sys.ctrlpos[1] = self.sys.pos[1] + np.tanh(10*(self.sys.target_neck_joints[1] - self.sys.pos[1]))*0.02
+            #     self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(10*(self.sys.target_arm_joints[0] - self.sys.pos[2]))*0.01
+            #     self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(10*(self.sys.target_arm_joints[1] - self.sys.pos[3]))*0.01
             #     self.sys.ctrlpos[4] = 0
-            #     self.sys.ctrlpos[5] = self.sys.pos[5] + np.tanh(10*(self.sys.arm_target_pos[3] - self.sys.pos[5]))*0.01
-            #     self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.arm_target_pos[4] - self.sys.pos[6]))*0.01
+            #     self.sys.ctrlpos[5] = self.sys.pos[5] + np.tanh(10*(self.sys.target_arm_joints[3] - self.sys.pos[5]))*0.01
+            #     self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.target_arm_joints[4] - self.sys.pos[6]))*0.01
             #     self.sys.ctrlpos[7] = 0
             #     self.control_and_step()
             # self.render()
@@ -177,12 +168,14 @@ class RL_arm(gym.Env):
         self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
         self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
         self.sys.pos_elbow  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")].copy()
+        # self.sys.pos_target = [self.sys.pos_hand[0]*0.5 + self.sys.pos_target0[0]*0.5,  self.sys.pos_hand[1]*0.5 + self.sys.pos_target0[1]*0.5,  self.sys.pos_hand[2]*0.5 + self.sys.pos_target0[2]*0.5]
 
         # vectors
-        self.sys.vec_target2neck  = [self.sys.pos_target[0] - self.sys.pos_neck[0],  self.sys.pos_target[1] - self.sys.pos_neck[1],  self.sys.pos_target[2] - self.sys.pos_neck[2]]
-        self.sys.vec_target2hand  = [self.sys.pos_target[0] - self.sys.pos_hand[0],  self.sys.pos_target[1] - self.sys.pos_hand[1],  self.sys.pos_target[2] - self.sys.pos_hand[2]]
-        self.sys.vec_target02hand = [self.sys.pos_target0[0]- self.sys.pos_hand[0],  self.sys.pos_target0[1]- self.sys.pos_hand[1],  self.sys.pos_target0[2]- self.sys.pos_hand[2]]
+        self.sys.vec_target2neck  = [self.sys.pos_target[0] - self.sys.pos_neck[0] , self.sys.pos_target[1] - self.sys.pos_neck[1] , self.sys.pos_target[2] - self.sys.pos_neck[2]]
+        self.sys.vec_target2hand  = [self.sys.pos_target[0] - self.sys.pos_hand[0] , self.sys.pos_target[1] - self.sys.pos_hand[1] , self.sys.pos_target[2] - self.sys.pos_hand[2]]
         self.sys.vec_target2elbow = [self.sys.pos_target[0] - self.sys.pos_elbow[0], self.sys.pos_target[1] - self.sys.pos_elbow[1], self.sys.pos_target[2] - self.sys.pos_elbow[2]]
+        self.sys.vec_target02hand = [self.sys.pos_target0[0]- self.sys.pos_hand[0] , self.sys.pos_target0[1]- self.sys.pos_hand[1] , self.sys.pos_target0[2]- self.sys.pos_hand[2]]
+        self.sys.vec_target02neck = [self.sys.pos_target0[0]- self.sys.pos_neck[0] , self.sys.pos_target0[1]- self.sys.pos_neck[1] , self.sys.pos_target0[2]- self.sys.pos_neck[2]]
         self.sys.vec_hand2elbow   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0], self.sys.pos_hand[1]   - self.sys.pos_elbow[1], self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
 
         # distance
@@ -197,35 +190,37 @@ class RL_arm(gym.Env):
             self.model1.obs_target_pos_to_hand_norm[2] *= 0.02/self.sys.hand2target
         self.model1.obs_joints[0:2] = self.data.qpos[9:11].copy()
         self.model1.obs_joints[2:4] = self.data.qpos[12:14].copy()
+        self.model1.action[0] = self.sys.joints_increment[0]
+        self.model1.action[1] = self.sys.joints_increment[1]
+        self.model1.action[2] = self.sys.joints_increment[3]
 
         # ----------------------------------------------------------------------------------
         # update camera
 
         self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_target.copy()
-        self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle3")] = self.sys.obstacle_orientation.copy()
-        self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle3")] = self.sys.obstacle_position.copy()
+        self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[3:7].copy()
+        self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[0:3].copy()
         self.head_camera.get_img(self.data, rgb=True, depth=True)
         self.head_camera.get_target(depth = False)
         self.head_camera.depth_feature()
         self.obs.feature_points = self.obs.feature_points*0.9 + self.head_camera.feature_points*0.1
         self.head_camera.show(rgb=True, depth=True)
-        # self.sys.ctrlpos[0:2] = self.head_camera.track(self.sys.ctrlpos[0:2])
+        self.sys.ctrlpos[0:2] = self.head_camera.track(self.sys.ctrlpos[0:2])
 
-        if self.inf.timestep%int(5*self.sys.Hz) == 0:
+        if self.inf.timestep%int(3*self.sys.Hz) == 0:
             self.spawn_new_point()
 
     def close(self):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.0):
+    def render(self, speed=1.0):
         if self.inf.timestep%int(49*speed+1) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_target.copy()
-            self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle3")] = self.sys.obstacle_orientation.copy()
-            self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle3")] = self.sys.obstacle_position.copy()
+            self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[3:7].copy()
+            self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[0:3].copy()
             # mujoco.mj_step(self.robot, self.data)
             self.viewer.sync()
-            self.viewer.cam.azimuth += 0.05 
 
     def check_reachable(self, point):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
@@ -241,29 +236,24 @@ class RL_arm(gym.Env):
             return True
         
     def spawn_new_point(self):
-        d1 = (   self.sys.vec_hand2elbow[0]**2 +   self.sys.vec_hand2elbow[1]**2 +   self.sys.vec_hand2elbow[2]**2 ) **0.5
-        d2 = ( self.sys.vec_target2elbow[0]**2 + self.sys.vec_target2elbow[1]**2 + self.sys.vec_target2elbow[2]**2 ) **0.5
-        hand_camera_center = np.degrees(np.arccos(np.dot(self.sys.vec_hand2elbow, self.sys.vec_target2elbow)/(d1*d2)))
-        # print(hand_camera_center)
-
-        if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 5:
+        if self.inf.timestep == 0 or self.sys.hand2target <= 0.05:
             self.sys.pos_target = [0.05, -0.25, -0.40]
-            dummy_random = np.radians(random.uniform( 0, 1)**2)*60
-            self.sys.arm_target_pos = [ -np.radians(30),
+            dummy_random = np.radians(random.uniform( 0, 1))*60
+            self.sys.target_arm_joints = [ -dummy_random,
                                         0.0,
                                         0.0,
                                         0.0,
-                                        np.radians(70),
+                                        2*dummy_random,
                                         0.0 ]
             for i in range(50):
-                self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(10*(self.sys.arm_target_pos[0] - self.sys.pos[2]))*0.05
-                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(10*(self.sys.arm_target_pos[1] - self.sys.pos[3]))*0.05
+                self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(10*(self.sys.target_arm_joints[0] - self.sys.pos[2]))*0.05
+                self.sys.ctrlpos[3] = self.sys.pos[3] + np.tanh(10*(self.sys.target_arm_joints[1] - self.sys.pos[3]))*0.05
                 self.sys.ctrlpos[4] = 0
-                self.sys.ctrlpos[5] = self.sys.pos[5] + np.tanh(10*(self.sys.arm_target_pos[3] - self.sys.pos[5]))*0.05
-                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.arm_target_pos[4] - self.sys.pos[6]))*0.05
+                self.sys.ctrlpos[5] = self.sys.pos[5] + np.tanh(10*(self.sys.target_arm_joints[3] - self.sys.pos[5]))*0.05
+                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.target_arm_joints[4] - self.sys.pos[6]))*0.05
                 self.sys.ctrlpos[7] = 0
-                self.control_and_step(initial_pos=True)
-                self.render()
+                self.control_and_step()
+                # self.render()
 
             can_look_at = False
             while can_look_at == False:
@@ -276,25 +266,26 @@ class RL_arm(gym.Env):
                 self.data.qpos[15:18] = self.sys.pos_target0.copy()
                 self.sys.obstacle_hand_pos_and_quat = self.random_quaternion_and_pos(name="human_hand")
                 self.sys.obstacle_table_pos_and_quat = self.random_quaternion_and_pos(name="table")
+                self.sys.obstacle_human_pos_and_quat = self.random_quaternion_and_pos(name="human")
                 self.data.qpos[22:29] = self.sys.obstacle_hand_pos_and_quat.copy()
                 self.data.qpos[29:36] = self.sys.obstacle_table_pos_and_quat.copy()
+                self.data.qpos[36:43] = self.sys.obstacle_human_pos_and_quat.copy()
+
+                # self.get_state()
 
                 self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
                 self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
                 self.sys.pos_target = self.sys.pos_hand.copy()
-                self.sys.vec_target2neck = [self.data.qpos[15]-self.sys.pos_neck[0], self.data.qpos[16]-self.sys.pos_neck[1], self.data.qpos[17]-self.sys.pos_neck[2]]
-                self.sys.vec_target2hand = [self.data.qpos[15]-self.sys.pos_hand[0], self.data.qpos[16]-self.sys.pos_hand[1], self.data.qpos[17]-self.sys.pos_hand[2]]
-
-                new_dis = (self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 + self.sys.vec_target2hand[2]**2) **0.5
-                self.sys.hand2target  = new_dis
-                self.sys.neck_target_pos[0] = np.arctan2(self.sys.vec_target2neck[1], self.sys.vec_target2neck[0])
-                self.sys.neck_target_pos[1] = np.arctan2(self.sys.vec_target2neck[2], (self.sys.vec_target2neck[0]**2 + self.sys.vec_target2neck[1]**2)**0.5) - np.deg2rad(10)
+                self.sys.vec_target02neck = [self.sys.pos_target0[0]-self.sys.pos_neck[0], self.sys.pos_target0[1]-self.sys.pos_neck[1], self.sys.pos_target0[2]-self.sys.pos_neck[2]]
+                self.sys.vec_target02hand = [self.sys.pos_target0[0]-self.sys.pos_hand[0], self.sys.pos_target0[1]-self.sys.pos_hand[1], self.sys.pos_target0[2]-self.sys.pos_hand[2]]
+                self.sys.target_neck_joints[0] = np.arctan2(self.sys.vec_target02neck[1], self.sys.vec_target02neck[0])
+                self.sys.target_neck_joints[1] = np.arctan2(self.sys.vec_target02neck[2], (self.sys.vec_target02neck[0]**2 + self.sys.vec_target02neck[1]**2)**0.5) - np.deg2rad(10)
                 
                 for i in range(50):
-                    self.sys.ctrlpos[0] = self.sys.pos[0] + np.tanh(10*(self.sys.neck_target_pos[0] - self.sys.pos[0]))*0.1
-                    self.sys.ctrlpos[1] = self.sys.pos[1] + np.tanh(10*(self.sys.neck_target_pos[1] - self.sys.pos[1]))*0.1
-                    self.control_and_step(initial_pos=True)
-                    self.render()
+                    self.sys.ctrlpos[0] = self.sys.pos[0] + np.tanh(10*(self.sys.target_neck_joints[0] - self.sys.pos[0]))*0.1
+                    self.sys.ctrlpos[1] = self.sys.pos[1] + np.tanh(10*(self.sys.target_neck_joints[1] - self.sys.pos[1]))*0.1
+                    self.control_and_step()
+                    # self.render()
 
                 self.head_camera.get_img(self.data, rgb=True, depth=True)
                 self.head_camera.get_target(depth = False)
@@ -305,19 +296,8 @@ class RL_arm(gym.Env):
         else:
             self.reset()
 
-    def control_and_step(self, initial_pos = False):
-        # update arm3 control limits
-        if initial_pos == True:
-            self.sys.limit_low[2] = -np.pi/2
-            self.sys.limit_high[2] = np.pi/2
-        else:
-            shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
-            self.sys.limit_low[2] = np.arctan2(self.sys.pos_hand[1]-shoulder_pos[1],self.sys.pos_hand[0]-shoulder_pos[0])
-            if self.sys.limit_low[2] <= -np.pi/2: self.sys.limit_low[2] = -np.pi/2
-            self.sys.limit_high[2] = self.sys.limit_low[2] + np.pi/2
-            if self.sys.limit_high[2] >= np.pi/2: self.sys.limit_high[2] = np.pi/2
-        
-
+    def control_and_step(self):
+    
         # check motor limits
         if   self.sys.ctrlpos[2] > self.sys.limit_high[0]: self.sys.ctrlpos[2] = self.sys.limit_high[0]
         elif self.sys.ctrlpos[2] < self.sys.limit_low[0] : self.sys.ctrlpos[2] = self.sys.limit_low[0]
@@ -336,6 +316,7 @@ class RL_arm(gym.Env):
         # fix obstacle      
         self.data.qpos[22:29] = self.sys.obstacle_hand_pos_and_quat.copy()
         self.data.qpos[29:36] = self.sys.obstacle_table_pos_and_quat.copy()
+        self.data.qpos[36:43] = self.sys.obstacle_human_pos_and_quat.copy()
 
         # step & render
         mujoco.mj_step(self.robot, self.data)
@@ -345,20 +326,46 @@ class RL_arm(gym.Env):
         quat = np.array([1.0, 0, 0, 0])
         pos = self.data.qpos[15:18].copy()
         if name == "human_hand":
-            euler = np.array([np.pi*random.uniform( 0.0, 1.5), 0, np.pi*random.uniform( -0.25, 1.25)])
+            euler = np.array([np.radians(random.uniform( 0.0, 270)), 0, np.radians(random.uniform( -45, 225))])
             mujoco.mju_euler2Quat(quat, euler, "zyx")
 
         if name == "table":
-            pos[0] += random.uniform( 0.20, 0.70)
+            euler = np.array([np.radians(random.uniform( -30, 30)), 0, 0])
+            mujoco.mju_euler2Quat(quat, euler, "zyx")
+            pos[0] = random.uniform( 0.35, 1.00) - 0.5
             pos[2] -= random.uniform( 0.20, 0.50)
+
+        if name == "human":
+            euler = np.array([np.radians(random.uniform( -90, 90)), 0, 0])
+            mujoco.mju_euler2Quat(quat, euler, "zyx")
+            pos[0] += random.uniform( 0.25, 0.70) -0.5
+            pos[1] += random.uniform( -0.30, 0.30)
+            pos[2] = random.uniform( -0.2, 0.75)
     
         return [pos[0], pos[1], pos[2], quat[0], quat[1], quat[2], quat[3]]
     
     def check_collision(self):
+        id1 = mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, f"R_shoulder")
+        id2 = mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, f"R finger3-2")
         for i, con in enumerate(self.data.contact):
-            geom1_id = con.geom1
-            geom2_id = con.geom2
-            if geom1_id == self.obstacle_hand_ID or geom2_id == self.obstacle_hand_ID or geom1_id == self.obstacle_table_ID or geom2_id == self.obstacle_table_ID:
+            if id1 <= con.geom1 <= id2 or id1 <= con.geom2 <= id2:
+                # print(mujoco.mj_id2name(self.robot, mujoco.mjtObj.mjOBJ_GEOM, con.geom1), mujoco.mj_id2name(self.robot, mujoco.mjtObj.mjOBJ_GEOM, con.geom2))
                 return True
+
         return False
     
+    def compensate(self):
+        self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
+        self.sys.pos_target = [self.sys.pos_hand[0]*0.5 + self.sys.pos_target0[0]*0.5,  self.sys.pos_hand[1]*0.5 + self.sys.pos_target0[1]*0.5,  self.sys.pos_hand[2]*0.5 + self.sys.pos_target0[2]*0.5]
+        self.sys.vec_target2hand  = [self.sys.pos_target[0] - self.sys.pos_hand[0] , self.sys.pos_target[1] - self.sys.pos_hand[1] , self.sys.pos_target[2] - self.sys.pos_hand[2]]
+        self.sys.hand2target = ( self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 + self.sys.vec_target2hand[2]**2 ) ** 0.5
+        self.sys.compensate_angle[0] = np.arctan2(self.sys.vec_target2hand[2], (self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 )**0.5)
+        self.sys.compensate_angle[1] = np.arctan2(self.sys.vec_target2hand[1], self.sys.vec_target2hand[0])
+        self.sys.compensate_angle[0] += self.inf.action[0]*np.pi/2
+        self.sys.compensate_angle[1] += self.inf.action[1]*np.pi/2
+        self.sys.vec_target2hand[0] = self.sys.hand2target*np.cos(self.sys.compensate_angle[0])*np.cos(self.sys.compensate_angle[1])
+        self.sys.vec_target2hand[1] = self.sys.hand2target*np.cos(self.sys.compensate_angle[0])*np.sin(self.sys.compensate_angle[1])
+        self.sys.vec_target2hand[2] = self.sys.hand2target*np.sin(self.sys.compensate_angle[0])
+        self.sys.pos_target[0] = self.sys.pos_hand[0] + self.sys.vec_target2hand[0]
+        self.sys.pos_target[1] = self.sys.pos_hand[1] + self.sys.vec_target2hand[1]
+        self.sys.pos_target[2] = self.sys.pos_hand[2] + self.sys.vec_target2hand[2]

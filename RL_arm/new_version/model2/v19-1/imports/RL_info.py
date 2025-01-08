@@ -13,7 +13,7 @@ class RL_inf():
         self.total_reward = 0.0
     def reset(self):
         self.timestep = 0
-        self.action = [0.0, 0.0, 0.0, 0.0]
+        self.action = [0.0, 0.0, 0.0]
         self.reward = 0.0
         self.done = False
         self.truncated = False
@@ -38,7 +38,7 @@ class RL_sys():
         self.ctrlpos = initTarget.copy()
         self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)
         self.limit_high = [ 1.57, 1.57, 1.57, 2.10]
-        self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
+        self.limit_low  = [-1.57,-1.57,-1.57, 0.00]
 
         self.pos_target  = [0.0, 0.0, 0.0]
         self.pos_target0 = [0.0, 0.0, 0.0]
@@ -48,18 +48,18 @@ class RL_sys():
         self.hand2target  = 1.0
         self.vec_target2neck  = [0.0, 0.0, 0.0]
         self.vec_target2hand  = [0.0, 0.0, 0.0]
+        self.vec_target02neck = [0.0, 0.0, 0.0]
         self.vec_target02hand = [0.0, 0.0, 0.0]
         self.vec_hand2elbow   = [0.0, 0.0, 0.0]
         self.vec_target2elbow = [0.0, 0.0, 0.0]
-        self.random_arm_pos = [0.0, 0.0, 0.0, 0.0]
-        self.arm_target_pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.neck_target_pos  = [0.0, 0.0]
+        self.target_arm_joints  = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.target_neck_joints  = [0.0, 0.0]
 
         self.joints_increment = [0.0, 0.0, 0.0, 0.0]
-        self.obstacle_orientation = [1.0, 0.0, 0.0, 0.0]
-        self.obstacle_position = [0.0, 0.0, 0.0]
         self.obstacle_hand_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
         self.obstacle_table_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
+        self.obstacle_human_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
+        self.compensate_angle = [0, 0]
 
     def reset(self):
         self.pos = [0] * len(controlList)
@@ -73,15 +73,15 @@ class RL_sys():
         self.hand2target  = 1.0
         self.vec_target2neck  = [0.0, 0.0, 0.0]
         self.vec_target2hand  = [0.0, 0.0, 0.0]
+        self.vec_target02neck = [0.0, 0.0, 0.0]
         self.vec_target02hand = [0.0, 0.0, 0.0]
         self.vec_hand2elbow   = [0.0, 0.0, 0.0]
         self.vec_target2elbow = [0.0, 0.0, 0.0]
-        self.random_arm_pos  = [0.0, 0.0, 0.0, 0.0]
-        self.arm_target_pos  = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.neck_target_pos  = [0.0, 0.0]
+        self.target_arm_joints  = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.target_neck_joints  = [0.0, 0.0]
 
         self.joints_increment = [0.0, 0.0, 0.0, 0.0]
-        self.obstacle_orientation = [1.0, 0.0, 0.0, 0.0]
-        self.obstacle_position = [0.0, 0.0, 0.0]
         self.obstacle_hand_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
         self.obstacle_table_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
+        self.obstacle_human_pos_and_quat = [0, 0, 0, 1, 0, 0, 0]
+        self.compensate_angle = [0, 0]
