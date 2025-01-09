@@ -13,13 +13,16 @@ def train(model, env, file_path):
     print(f"Start Training ...")
     epoch_plot = np.array([0])
     step_reward_plot = np.array([0.0])
+    best_avg_step_reward = np.array([0.0])
 
     if os.path.exists(os.path.join(file_path, "array/epoch_plot.npy")):
-        epoch_plot       = np.load(os.path.join(file_path, "array/epoch_plot.npy"))
-        step_reward_plot = np.load(os.path.join(file_path, "array/step_reward_plot.npy"))
+        epoch_plot              = np.load(os.path.join(file_path, "array/epoch_plot.npy"))
+        step_reward_plot        = np.load(os.path.join(file_path, "array/step_reward_plot.npy"))
+        best_avg_step_reward    = np.load(os.path.join(file_path, "array/best_avg_step_reward.npy"))
     else:
         np.save(os.path.join(file_path, "array/epoch_plot.npy"), epoch_plot)
         np.save(os.path.join(file_path, "array/step_reward_plot.npy"), step_reward_plot)
+        np.save(os.path.join(file_path, "array/best_avg_step_reward.npy"), best_avg_step_reward)
 
     epoch = epoch_plot[-1]
     timer0 = time.time()
@@ -34,19 +37,18 @@ def train(model, env, file_path):
         env.inf.totaltimestep = 0
         env.inf.total_reward = 0
 
+        if avg_step_reward >= best_avg_step_reward[0]:
+            best_avg_step_reward[0] = avg_step_reward
+            model.save(os.path.join(file_path, f"best_step/best_step_model_epoch{epoch}.zip"))
+            print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}")
+        else:
+            print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr")
         epoch_plot = np.append(epoch_plot, epoch)
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         smoothed_gau = gaussian_filter1d(step_reward_plot, sigma=epoch/50.0)
-        if step_reward_plot[-1] == np.max(step_reward_plot):
-            model.save(os.path.join(file_path, f"best_step/best_step_model_epoch{epoch}.zip"))
-            print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}")
-        # elif smoothed_gau[-1] == np.max(smoothed_gau):
-        #     model.save(os.path.join(file_path, f"best_step/best_step_model_epoch_gau{epoch}.zip"))
-        #     print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}")
-        else:
-            print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr")
         np.save(os.path.join(file_path, "array/epoch_plot.npy"), epoch_plot)
         np.save(os.path.join(file_path, "array/step_reward_plot.npy"), step_reward_plot)
+        np.save(os.path.join(file_path, "array/best_avg_step_reward.npy"), best_avg_step_reward)
 
         fig = plt.figure(figsize=(15, 10))
         plt.plot(epoch_plot, step_reward_plot, label="Original Data", color='black', alpha=0.2)
@@ -76,14 +78,21 @@ if __name__ == '__main__':
     my_env = RL_arm()
     file_path = os.path.dirname(os.path.abspath(__file__))
     current_model_path = os.path.join(file_path, "current_model.zip")
-    best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch1038.zip")
+    best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch949.zip")
     if os.path.exists(current_model_path):
-        print(f"model file: {current_model_path}")
         RL_model = stable_baselines3.SAC.load(current_model_path, my_env)
     else:
         RL_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0005)
         RL_model.save(current_model_path)
+        print("Create new MLP RL model.")
 
-    # train(RL_model, my_env, file_path)
-    test(RL_model, my_env, current_model_path)
+    if torch.cuda.is_available():
+        RL_model.policy.to("cuda")
+        print("Model 2 : CUDA")
+    else:
+        RL_model.policy.to("cpu")
+        print("Model 2 : CPU")
+
+    train(RL_model, my_env, file_path)
+    # test(RL_model, my_env, current_model_path)
     # test(RL_model, my_env, best_model_path)

@@ -218,7 +218,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
+    def render(self, speed=0):
         if self.inf.timestep%int(49*speed+1) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()
@@ -242,8 +242,7 @@ class RL_arm(gym.Env):
 
         if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 5:
             self.inf.reward += 10
-            # self.sys.arm_target_pos[3] = random.uniform( -1, 1)
-            # self.sys.arm_target_pos[3] = np.radians(90*self.sys.arm_target_pos[3])
+            self.sys.arm_target_pos[3] = np.radians(random.uniform( -90, 90))
             reachable = False
             while reachable == False:
                 self.sys.pos_target0[0] = random.uniform(-0.05, 0.50)
@@ -259,16 +258,6 @@ class RL_arm(gym.Env):
                 self.sys.pos_target0[2] = random.uniform( 0.90, 1.40)
                 reachable = self.check_reachable(self.sys.pos_target0)
             
-            shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
-            horizontal_angle = np.arctan2(self.sys.pos_target0[1]-shoulder_pos[1],self.sys.pos_target0[0]-shoulder_pos[0])
-            lower_bound = np.degrees(horizontal_angle)
-            if lower_bound <= -90: lower_bound = -90
-            upper_bound = lower_bound + 90
-            if upper_bound >= 90:   upper_bound = 90
-            self.sys.arm_target_pos[3] = np.radians(random.uniform( lower_bound, upper_bound))
-
-
-
             neck_xyz = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
             self.obs.obj_to_neck_xyz = [self.data.qpos[15]-neck_xyz[0],          self.data.qpos[16]-neck_xyz[1],          self.data.qpos[17]-neck_xyz[2]]
             self.obs.obj_to_hand_xyz = [self.data.qpos[15]-self.sys.pos_hand[0], self.data.qpos[16]-self.sys.pos_hand[1], self.data.qpos[17]-self.sys.pos_hand[2]]
