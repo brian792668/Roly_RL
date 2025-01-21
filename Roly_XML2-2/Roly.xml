@@ -32,7 +32,8 @@
     <mesh name="R_arm2" file="R_arm2.STL"/>
     <mesh name="R_arm3" file="R_arm3.STL"/>
     <mesh name="R_arm4" file="R_arm4.STL"/>
-    <mesh name="R_palm" file="R_palm.STL"/>
+    <!-- <mesh name="R_palm" file="R_palm.STL"/> -->
+    <mesh name="R_palm" file="R_palm_no_cam.STL"/>
     <mesh name="R finger1-1" file="R finger1-1.STL"/>
     <mesh name="R finger1-2" file="R finger1-2.STL"/>
     <mesh name="R finger2-1" file="R finger2-1.STL"/>
@@ -46,7 +47,8 @@
     <mesh name="L_arm2" file="L_arm2.STL"/>
     <mesh name="L_arm3" file="L_arm3.STL"/>
     <mesh name="L_arm4" file="L_arm4.STL"/>
-    <mesh name="L_palm" file="L_palm.STL"/>
+    <!-- <mesh name="L_palm" file="L_palm.STL"/> -->
+    <mesh name="L_palm" file="L_palm_no_cam.STL"/>
     <mesh name="L finger1-1" file="L finger1-1.STL"/>
     <mesh name="L finger1-2" file="L finger1-2.STL"/>
     <mesh name="L finger2-1" file="L finger2-1.STL"/>
@@ -65,7 +67,7 @@
     <material name="wood_ground" texture="wood_texture" reflectance="0.01"  texrepeat="2 2" />
     <material name="glowing_material" rgba="1 1 0 1" specular="1.0" emission="1.0" shininess="1.0"/>
     
-    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512" />
+    <!-- <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512" /> -->
     <!-- <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" width="512" height= "512" mark="cross" markrgb=".8 .8 .8" /> -->
     <!-- <material name="matplane" reflectance="0.3" texture="texplane" texrepeat="2 2" texuniform="true" /> -->
     <!-- <texture name="wood_texture" type="2d" file="wood_texture.png"/> -->
@@ -227,10 +229,10 @@
 		    <inertial pos="-0.000201063 -0.00171826 0.342962" quat="0.999995 0.00204635 0.000603463 0.00240004" mass="7.20265" diaginertia="0.082079 0.057503 0.025698" />
         <!-- <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.3" stiffness="0.01" armature="0.01"/> -->
         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
-        <!-- <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/> -->
+        <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
 		    <body name="hitbox1" > 
-            <geom name="hitbox1-1" type="box" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.5"/> 
-            <geom name="hitbox1-2" type="box" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/> 
+            <geom name="hitbox1-1" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.5"/> 
+            <geom name="hitbox1-2" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/> 
         </body>
         <body name="neck" pos="0.0236 0 0.525">
           <inertial pos="-0.01154 -2.7422e-05 0.076842" quat="-0.0193906 0.70689 0.0191848 0.706797" mass="0.091599" diaginertia="2.6139e-05 2.12139e-05 1.51841e-05"/>
@@ -421,15 +423,15 @@
     </body>
     <body name="obstacle_hand" > 
       <joint type="free" damping="0.1"/>
-      <geom name="obstacle_hand" type="box" contype="2" conaffinity="4" group="1" mass="1.0" pos="0.0 0.0 10.2" size="0.02 0.02 0.125" rgba="0 0 0 0.5" condim="6" priority="1" class="plastic_collision"/> 
+      <geom name="obstacle_hand" type="box" contype="2" conaffinity="4" group="1" mass="1.0" pos="10.0 0.0 0.2" size="0.02 0.02 0.125" rgba="0 0 0 0.5" condim="6" priority="1" class="plastic_collision"/> 
     </body>
     <body name="obstacle_table" > 
       <joint type="free" damping="0.1"/>
-      <geom name="obstacle_table" type="box" contype="2" conaffinity="4" group="1" mass="1.0" material="wood_table" pos="0.5 0.0 10.0" size="0.3 0.5 0.01" condim="6" priority="1" class="plastic_collision"/> 
+      <geom name="obstacle_table" type="box" contype="2" conaffinity="4" group="1" mass="1.0" pos="10.5 0.0 0.0" size="0.3 0.5 0.01" material="wood_table" condim="6" priority="1" class="plastic_collision"/> 
     </body>
     <body name="obstacle_human" > 
       <joint type="free" damping="0.1"/>
-      <geom name="obstacle_human" type="box" contype="2" conaffinity="4" group="1" mass="1.0" pos="0.5 0.0 10.0" size="0.10 0.20 0.75" rgba="0 0 0 0.5" condim="6" priority="1" class="plastic_collision"/> 
+      <geom name="obstacle_human" type="box" contype="2" conaffinity="4" group="1" mass="1.0" pos="10.5 0.0 0.0" size="0.10 0.20 0.75" rgba="0 0 0 0.5" condim="6" priority="1" class="plastic_collision"/> 
     </body>
     
     <body name="fix_box" > 

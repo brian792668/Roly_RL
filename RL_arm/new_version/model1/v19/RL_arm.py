@@ -72,7 +72,7 @@ class RL_arm(gym.Env):
                 self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
                 
                 mujoco.mj_step(self.robot, self.data)
-                self.render()
+            self.render()
 
             self.inf.reward = self.get_reward()
             self.get_state()
@@ -190,12 +190,12 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0):
+    def render(self, speed=0.1):
         # print(1000*self.data.time)
-        if int(1000*self.data.time+1)%int(450*speed+50) == 0: # 50ms render 一次
-        # if self.inf.timestep%5 ==0:
+        # if int(1000*self.data.time+1)%int(450*speed+50) == 0: # 50ms render 一次
+        if self.inf.timestep%int(48*speed+2) ==0:
             self.viewer.sync()
-            self.viewer.cam.azimuth += 0.05 
+            # self.viewer.cam.azimuth += 0.05 
 
     def check_reachable(self, point):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()

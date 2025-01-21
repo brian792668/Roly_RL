@@ -215,10 +215,11 @@ def lebal_Roly_IK(numberofpoints = 2000):
         # data.ctrl[3:8] = [0]*5
         mujoco.mj_step(model, data)
 
-        if step%5000 == 0:
+        if step%1000 == 0:
             for i in range(len(sorted_targetpoints)):
                 data.site_xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, f"marker{i}")] = sorted_targetpoints[i]
             viewer.sync()
+            viewer.cam.azimuth += 0.1
 
 
     renderer.close() 

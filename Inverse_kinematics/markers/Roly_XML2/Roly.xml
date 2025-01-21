@@ -32,7 +32,8 @@
     <mesh name="R_arm2" file="R_arm2.STL"/>
     <mesh name="R_arm3" file="R_arm3.STL"/>
     <mesh name="R_arm4" file="R_arm4.STL"/>
-    <mesh name="R_palm" file="R_palm.STL"/>
+    <!-- <mesh name="R_palm" file="R_palm.STL"/> -->
+    <mesh name="R_palm" file="R_palm_no_cam.STL"/>
     <mesh name="R finger1-1" file="R finger1-1.STL"/>
     <mesh name="R finger1-2" file="R finger1-2.STL"/>
     <mesh name="R finger2-1" file="R finger2-1.STL"/>
@@ -46,7 +47,8 @@
     <mesh name="L_arm2" file="L_arm2.STL"/>
     <mesh name="L_arm3" file="L_arm3.STL"/>
     <mesh name="L_arm4" file="L_arm4.STL"/>
-    <mesh name="L_palm" file="L_palm.STL"/>
+    <!-- <mesh name="L_palm" file="L_palm.STL"/> -->
+    <mesh name="L_palm" file="L_palm_no_cam.STL"/>
     <mesh name="L finger1-1" file="L finger1-1.STL"/>
     <mesh name="L finger1-2" file="L finger1-2.STL"/>
     <mesh name="L finger2-1" file="L finger2-1.STL"/>
@@ -56,9 +58,12 @@
     <mesh name="L gripper" file="L gripper.STL"/>
 
     <texture name="wood_texture" type="2d" file="wood_texture.png" mark="cross" markrgb="1 1 1" />
-    <texture type="skybox" builtin="gradient" rgb1="0.65 0.75 0.95" rgb2="0.5 0.5 0.5" width="512" height="512" />
-    <texture name="texplane" type="2d" builtin="checker" rgb1=".9 .9 .9" rgb2=".9 .9 .9" width="64" height= "64" mark="cross" markrgb="1 1 1" />
-    <material name="matplane" reflectance="0.1" texture="wood_texture" texrepeat="4 4" />
+    <!-- <texture type="skybox" builtin="gradient" rgb1="0.65 0.75 0.95" rgb2="0.5 0.5 0.5" width="512" height="512" /> -->
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512" />
+    <!-- <texture name="texplane" type="2d" builtin="checker" rgb1=".9 .9 .9" rgb2=".9 .9 .9" width="64" height= "64" mark="cross" markrgb="1 1 1" /> -->
+    <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" width="512" height= "512" mark="cross" markrgb=".8 .8 .8" />
+    <!-- <material name="matplane" reflectance="0.1" texture="wood_texture" texrepeat="4 4" /> -->
+    <material name="matplane" reflectance="0.3" texture="texplane" texrepeat="2 2" texuniform="true" />
     <material name="table_material" texture="wood_texture" specular="0.05" shininess="0.05"/>
     <material name="glowing_material" emission="1.0"/>
     
@@ -71,7 +76,7 @@
 
   <worldbody>
     <light directional="false" diffuse=".8 .8 .8" specular="0.9 0.9 0.9" pos="0.5 0 4" dir="0 0 -1" castshadow="true" />
-    <geom name="floor" pos="0 0 0" size="1.5 1.5 0.5" type="plane" material="matplane" margin="0.001" condim="3" friction="1 0.5 0.01" />
+    <geom name="floor" pos="0 0 0" size="0.5 0.5 0.5" type="plane" material="matplane" margin="0.001" condim="3" friction="1 0.5 0.01" />
 	  <!-- <site name="marker" type="sphere" size="0.005" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/> -->
     <!-- <site name="marker2" type="sphere" size="0.025" pos="0 0.25 1.35" rgba="0 1 0 1"/> -->
     <!-- <site name="marker3" type="sphere" size="0.025" pos=" 0 0.25 0.92" rgba="0 0 1 1"/> -->
@@ -417,10 +422,10 @@
       <geom type="sphere" mass="0.0000001" contype="0" conaffinity="0" group="1" pos="0.0 0.0 0.0" size="0.01" rgba="1 0 0 0.8"/> 
     </body>
     <body name="fix_box" > 
-      <geom type="box" mass="20000" pos="0.020  0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 1"/> 
-      <geom type="box" mass="20000" pos="0.020 -0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 1"/> 
-      <geom type="box" mass="20000" pos="0.365  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 1"/> 
-      <geom type="box" mass="20000" pos="-0.325  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 1"/> 
+      <geom type="box" mass="20000" pos="0.020  0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 0"/> 
+      <geom type="box" mass="20000" pos="0.020 -0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 0"/> 
+      <geom type="box" mass="20000" pos="0.365  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 0"/> 
+      <geom type="box" mass="20000" pos="-0.325  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 0"/> 
     </body>
     <site name="marker0"    type="sphere" size="0.002" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>
     <site name="marker1"    type="sphere" size="0.002" pos="0 0 0" rgba="0.0 0.0 1 1" material="glowing_material"/>

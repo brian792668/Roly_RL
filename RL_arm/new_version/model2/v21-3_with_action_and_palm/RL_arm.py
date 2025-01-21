@@ -82,8 +82,8 @@ class RL_arm(gym.Env):
                 self.inf.reward -= 5
                 self.inf.truncated = True
 
-            self.inf.action[0] = self.inf.action[0]*0.9 + action[0]*0.1
-            self.inf.action[1] = self.inf.action[1]*0.9 + action[1]*0.1
+            self.inf.action[0] = self.inf.action[0]*0.98 + action[0]*0.02
+            self.inf.action[1] = self.inf.action[1]*0.98 + action[1]*0.02
             self.inf.action[2] = self.inf.action[2]*0.9 + action[2]*0.1
             self.inf.action[3] = self.inf.action[3]*0.9 + action[3]*0.1
    
