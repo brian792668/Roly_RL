@@ -173,19 +173,17 @@ class RL_arm(gym.Env):
         if reachable == False:
             self.inf.reward -= 0.5
         
-        self.inf.reward += 1.0*r2*reachable + 0.3*r3 + 0.2*r1
+        self.inf.reward += 1.0*r1*r2*reachable + 0.3*r3
         self.inf.total_reward += self.inf.reward
         
         # 獎勵對應部分的比例長度
-        r2_length = int((1.0*r2) * 20)  # r2 部分長度（最大值 0.5 對應 10）
+        r1r2_length = int((1.0*r2) * 20)  # r2 部分長度（最大值 0.5 對應 10）
         r3_length = int((0.3*r3) * 20)   # r3 部分長度（最大值 0.5 對應 3）
-        r1_length = int((0.2*r1) * 20)   # r1 部分長度（最大值 0.5 對應 2）
-        r2_bar = "." * r2_length + " " * (20 - r2_length)
+        r2_bar = "." * r1r2_length + " " * (20 - r1r2_length)
         r3_bar = "." * r3_length + " " * (6 - r3_length)
-        r1_bar = "." * r1_length + " " * (4 - r1_length)
 
-        status_bar = f"|{r2_bar}{r3_bar}{r1_bar}|"
-        print(f"\r{status_bar}  reward={self.inf.reward:.2f}", end="")
+        status_bar = f"| {r2_bar}{r3_bar}|"
+        print(f"\r{status_bar}  {self.inf.reward:.2f}", end=" ")
 
         return self.inf.reward
  
@@ -349,25 +347,3 @@ class RL_arm(gym.Env):
         if self.check_reachable(point=new_guide) == True:
             self.sys.pos_guide = new_guide.copy()
             self.sys.vec_guide2hand  = [self.sys.pos_guide[0] - self.sys.pos_hand[0] , self.sys.pos_guide[1] - self.sys.pos_hand[1] , self.sys.pos_guide[2] - self.sys.pos_hand[2]]
-
-    def print_reward_bar(rw2, rw3, rw1, total_length=15):
-        """
-        終端顯示獎勵的比例條，按 r2:10, r3:3, r1:2 長度顯示。
-        r2: grasping distance 獎勵
-        r3: hand central 獎勵
-        r1: nature pos 獎勵
-        total_length: 狀態條總長度
-        """
-        # 獎勵對應部分的比例長度
-        r2_length = int((rw2) * 10)  # r2 部分長度（最大值 0.5 對應 10）
-        r3_length = int((rw3) * 3)   # r3 部分長度（最大值 0.5 對應 3）
-        r1_length = int((rw1) * 2)   # r1 部分長度（最大值 0.5 對應 2）
-
-        # 使用等號 `=` 表示進度，空白格補齊
-        r2_bar = "=" * r2_length + " " * (10 - r2_length)
-        r3_bar = "=" * r3_length + " " * (3 - r3_length)
-        r1_bar = "=" * r1_length + " " * (2 - r1_length)
-
-        # 組合狀態條
-        status_bar = f"|{r2_bar}{r3_bar}{r1_bar}|"
-        print(f"\r{status_bar} r2: {rw2:.2f}/0.5, r3: {rw3:.2f}/0.5, r1: {rw1:.2f}/0.5", end="")

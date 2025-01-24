@@ -40,12 +40,12 @@ def train(model, env, file_path, render_speed=1):
         smoothed_gau = gaussian_filter1d(step_reward_plot, sigma=epoch/50.0)
         if step_reward_plot[-1] == np.max(step_reward_plot):
             model.save(os.path.join(file_path, f"best_step/best_step_model_epoch{epoch}.zip"))
-            print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}")
+            print(f"\repoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}                                                   ")
         # elif smoothed_gau[-1] == np.max(smoothed_gau):
         #     model.save(os.path.join(file_path, f"best_step/best_step_model_epoch_gau{epoch}.zip"))
         #     print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}")
         else:
-            print(f"epoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr")
+            print(f"\repoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr                                                              ")
         np.save(os.path.join(file_path, "array/epoch_plot.npy"), epoch_plot)
         np.save(os.path.join(file_path, "array/step_reward_plot.npy"), step_reward_plot)
 
@@ -95,6 +95,6 @@ if __name__ == '__main__':
     #     RL_model.policy.to("cpu")
     #     print("Model 2 : CPU")
 
-    # train(RL_model, my_env, file_path, render_speed = 1)
+    train(RL_model, my_env, file_path, render_speed = 1)
     # test(RL_model, my_env, current_model_path, render_speed = 0)
-    test(RL_model, my_env, best_model_path, render_speed = 0)
+    # test(RL_model, my_env, best_model_path, render_speed = 0)
