@@ -178,6 +178,7 @@ class RL_arm(gym.Env):
         r3 = desire_joints[2] - self.sys.pos[5]
         r3 = np.exp(-2*r3**2)
 
+        # r4: grasping distance
         r4 = (0.1-self.sys.grasping_dis) / 0.1
 
         # distance ratio (1 if close to target0)
