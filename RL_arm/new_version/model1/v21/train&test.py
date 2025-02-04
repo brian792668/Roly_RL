@@ -77,6 +77,7 @@ if __name__ == '__main__':
     file_path = os.path.dirname(os.path.abspath(__file__))
     current_model_path = os.path.join(file_path, "current_model.zip")
     best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch1286.zip")
+    best_model_path = os.path.join(file_path, "best_step/iter30_best.zip")
     if os.path.exists(current_model_path):
         print(f"model file: {current_model_path}")
         RL_model = stable_baselines3.SAC.load(current_model_path, my_env)
