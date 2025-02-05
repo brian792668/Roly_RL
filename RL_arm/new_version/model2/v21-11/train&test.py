@@ -80,7 +80,7 @@ if __name__ == '__main__':
     my_env = RL_arm()
     file_path = os.path.dirname(os.path.abspath(__file__))
     current_model_path = os.path.join(file_path, "current_model.zip")
-    best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch1094.zip")
+    best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch1150.zip")
     if os.path.exists(current_model_path):
         RL_model = stable_baselines3.SAC.load(current_model_path, my_env)
     else:
@@ -95,6 +95,6 @@ if __name__ == '__main__':
     #     RL_model.policy.to("cpu")
     #     print("Model 2 : CPU")
 
-    train(RL_model, my_env, file_path, render_speed = 1)
+    # train(RL_model, my_env, file_path, render_speed = 1)
     # test(RL_model, my_env, current_model_path, render_speed = 0)
-    # test(RL_model, my_env, best_model_path, render_speed = 0)
+    test(RL_model, my_env, best_model_path, render_speed = 0)

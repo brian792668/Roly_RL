@@ -115,7 +115,6 @@ class RL_arm(gym.Env):
 
             self.inf.reward = self.get_reward()
             self.observation_space = np.concatenate([self.sys.vec_target2neck, 
-                                                     self.sys.vec_hand2neck, 
                                                      self.sys.vec_target2guide,
                                                      [self.obs.joint_arm[2]],
                                                      [self.inf.action[2]]]).astype(np.float32)
@@ -135,7 +134,6 @@ class RL_arm(gym.Env):
             self.render()
             self.get_state()
             self.observation_space = np.concatenate([self.sys.vec_target2neck, 
-                                                     self.sys.vec_hand2neck, 
                                                      self.sys.vec_target2guide,
                                                      [self.obs.joint_arm[2]],
                                                      [self.inf.action[2]]]).astype(np.float32)
@@ -178,14 +176,14 @@ class RL_arm(gym.Env):
         self.inf.reward += 1.0*r1*r2*reachable + 0.3*r3
         self.inf.total_reward += self.inf.reward
         
-        # 獎勵對應部分的比例長度
-        r1r2_length = int((1.0*r2) * 20)  # r2 部分長度（最大值 0.5 對應 10）
-        r3_length = int((0.3*r3) * 20)   # r3 部分長度（最大值 0.5 對應 3）
-        r2_bar = "." * r1r2_length + " " * (20 - r1r2_length)
-        r3_bar = "." * r3_length + " " * (6 - r3_length)
+        # # 獎勵對應部分的比例長度
+        # r1r2_length = int((1.0*r2) * 20)  # r2 部分長度（最大值 0.5 對應 10）
+        # r3_length = int((0.3*r3) * 20)   # r3 部分長度（最大值 0.5 對應 3）
+        # r2_bar = "." * r1r2_length + " " * (20 - r1r2_length)
+        # r3_bar = "." * r3_length + " " * (6 - r3_length)
 
-        status_bar = f"| {r2_bar}{r3_bar}|"
-        print(f"\r{status_bar}  {self.inf.reward:.2f}", end=" ")
+        # status_bar = f"| {r2_bar}{r3_bar}|"
+        # print(f"\r{status_bar}  {self.inf.reward:.2f}", end=" ")
 
         return self.inf.reward
  
