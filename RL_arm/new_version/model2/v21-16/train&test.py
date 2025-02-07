@@ -27,7 +27,7 @@ def train(model, env, file_path, render_speed=1):
 
     while True:
         model.learn(total_timesteps = 2048)
-        model.save(os.path.join(file_path, "current_model.zip"))
+        model.save(os.path.join(file_path, "model_last.zip"))
         epoch += 1
 
         avg_step_reward = env.inf.total_reward / env.inf.totaltimestep
@@ -39,7 +39,7 @@ def train(model, env, file_path, render_speed=1):
         step_reward_plot = np.append(step_reward_plot, avg_step_reward)
         smoothed_gau = gaussian_filter1d(step_reward_plot, sigma=epoch/100.0)
         if step_reward_plot[-1] == np.max(step_reward_plot):
-            model.save(os.path.join(file_path, f"best_step/best_step_model_epoch{epoch}.zip"))
+            model.save(os.path.join(file_path, f"model_best.zip"))
             print(f"\repoch = {epoch}   { round((time.time()-timer0)/3600, 2) } hr  ||  best avg step reward = {round(avg_step_reward,3)}                                                   ")
         # elif smoothed_gau[-1] == np.max(smoothed_gau):
         #     model.save(os.path.join(file_path, f"best_step/best_step_model_epoch_gau{epoch}.zip"))
@@ -79,13 +79,13 @@ def test(model, env, model_path, render_speed=0):
 if __name__ == '__main__':
     my_env = RL_arm()
     file_path = os.path.dirname(os.path.abspath(__file__))
-    current_model_path = os.path.join(file_path, "current_model.zip")
-    best_model_path = os.path.join(file_path, "best_step/best_step_model_epoch1740.zip")
-    if os.path.exists(current_model_path):
-        RL_model = stable_baselines3.SAC.load(current_model_path, my_env)
+    model_last_path = os.path.join(file_path, "model_last.zip")
+    model_best_path = os.path.join(file_path, "model_best.zip")
+    if os.path.exists(model_last_path):
+        RL_model = stable_baselines3.SAC.load(model_last_path, my_env)
     else:
         RL_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0003)
-        RL_model.save(current_model_path)
+        RL_model.save(model_last_path)
         print("Create new MLP RL model.")
     
     # if torch.cuda.is_available():
@@ -95,6 +95,6 @@ if __name__ == '__main__':
     #     RL_model.policy.to("cpu")
     #     print("Model 2 : CPU")
 
-    # train(RL_model, my_env, file_path, render_speed = 1)
-    # test(RL_model, my_env, current_model_path, render_speed = 0)
-    test(RL_model, my_env, best_model_path, render_speed = 0)
+    train(RL_model, my_env, file_path, render_speed = 0)
+    # test(RL_model, my_env, model_last_path, render_speed = 0)
+    # test(RL_model, my_env, model_best_path, render_speed = 0)
