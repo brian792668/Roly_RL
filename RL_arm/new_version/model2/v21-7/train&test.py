@@ -93,6 +93,6 @@ if __name__ == '__main__':
     #     RL_model.policy.to("cpu")
     #     print("Model 2 : CPU")
 
-    train(RL_model, my_env, file_path)
+    # train(RL_model, my_env, file_path)
     # test(RL_model, my_env, current_model_path)
-    # test(RL_model, my_env, best_model_path)
+    test(RL_model, my_env, best_model_path)

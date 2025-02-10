@@ -46,7 +46,7 @@ class Robot_system:
         self.depth_colormap = self.head_camera.depth_colormap
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v19/model.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v21-30/model.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
         self.RL_action  = [0] * 6
@@ -188,7 +188,7 @@ class Robot_system:
                 desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
                 desire_joints = np.radians(desire_joints)
             # desire_joints[2] = np.radians(45+45*np.sin(timenow*2))
-            desire_joints[2] = np.radians(0)
+            desire_joints[2] = np.radians(20)
 
             action, _ = self.RL_model1.predict(state)
             # print(action)
@@ -212,12 +212,12 @@ class Robot_system:
             joints[5] = joints[5]*0.9 + desire_joints[2]*0.1
             # joints[6] = joints[6]*0.95 + desire_joints[3]*0.05
 
-            joints[2] += action_new[0]* 0.05
-            joints[3] += action_new[1]* 0.05
-            joints[4] += action_new[2]* 0.05
-            joints[5] += action_new[3]* 0.05
-            joints[6] += action_new[4]* 0.05
-            joints[7] += action_new[5]* 0.05
+            joints[2] += action_new[0]* 0.03
+            joints[3] += action_new[1]* 0.03
+            joints[4] += action_new[2]* 0.03
+            joints[5] += action_new[3]* 0.03
+            joints[6] += action_new[4]* 0.03
+            joints[7] += action_new[5]* 0.03
 
         
             if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
