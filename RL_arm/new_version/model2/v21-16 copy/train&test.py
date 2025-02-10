@@ -26,7 +26,7 @@ def train(model, env, file_path, render_speed=1):
     env.render_speed = render_speed
 
     while True:
-        model.learn(total_timesteps = 2048)
+        model.learn(total_timesteps = 4096)
         model.save(os.path.join(file_path, "model_last.zip"))
         epoch += 1
 
