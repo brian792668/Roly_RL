@@ -41,7 +41,7 @@ class Roly():
         self.viewer.cam.lookat = [0.3, 0.0, 1.0]
         self.viewer.cam.elevation = -60
         self.viewer.cam.azimuth = 200
-        self.render_speed = 0.5
+        self.render_speed = 1.0
         self.inf = RL_inf()
         self.sys = RL_sys(Hz=50)
         self.obs = RL_obs()
@@ -157,9 +157,10 @@ class Roly():
         self.sys.pos = [self.data.qpos[i] for i in controlList]
         self.sys.vel = [self.data.qvel[i-1] for i in controlList]
         self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
-        self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3]) + abs(self.data.ctrl[5]) + abs(self.data.ctrl[6])
-        self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3])
-        # self.torque = abs(self.data.ctrl[5])
+        # self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3]) + abs(self.data.ctrl[5]) + abs(self.data.ctrl[6])
+        # self.torque = abs(self.data.ctrl[2])/10 + abs(self.data.ctrl[3])/10 + abs(self.data.ctrl[5])/5
+        self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3]) + abs(self.data.ctrl[5])
+        # self.torque = abs(self.data.ctrl[3]) + abs(self.data.ctrl[5])
 
         # step & render
         mujoco.mj_step(self.robot, self.data)
@@ -213,7 +214,6 @@ if __name__ == '__main__':
     Robot.spawn_new_point()
     while Robot.viewer.is_running() == True:
         if Robot.inf.timestep%int(33*Robot.sys.Hz) == 0:
-            Robot.spawn_new_point()
             fig = plt.figure(figsize=(15, 10))
             plt.title("Torque vs Elbow_yaw")
             plt.xlabel("Elbow yaw (degree)")
@@ -225,9 +225,11 @@ if __name__ == '__main__':
             with torch.no_grad():  # 不需要梯度計算，因為只做推論
                 desire_joints = Robot.IK(torch.tensor(Robot.sys.vec_guide2neck, dtype=torch.float32)).tolist()
             plt.axvline(x=desire_joints[2], color='red', linestyle='--', linewidth=2)
+            plt.axvline(x=desire_joints[2], color='red', linestyle='-', linewidth=100, alpha=0.1)
             plt.savefig(os.path.join(Robot.file_path, "Torque_vs_Elbow_yaw.png"))
             plt.close()
             Robot.torque = 0
             Robot.plt_degree = np.array([])
             Robot.plt_torque = np.array([])
+            Robot.spawn_new_point()
         Robot.step()
