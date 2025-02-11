@@ -229,7 +229,7 @@ class RL_arm(gym.Env):
         self.sys.hand2target = ( self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 + self.sys.vec_target2hand[2]**2 ) ** 0.5
         
         # model1
-        self.model1.obs_guide_to_neck_to_neck = self.sys.vec_guide2neck.copy()
+        self.model1.obs_guide_to_neck = self.sys.vec_guide2neck.copy()
         self.model1.obs_guide_to_hand_norm = self.sys.vec_guide2hand.copy()
         if self.sys.hand2guide > 0.02:
             self.model1.obs_guide_to_hand_norm[0] *= 0.02/self.sys.hand2guide

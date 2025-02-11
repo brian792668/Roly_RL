@@ -326,7 +326,7 @@
                     <!-- <site name="R_gripper" pos = "0 0 0.203" type="sphere" rgba="1 0 0 1" size="0.01 0 0"/> -->
                     <camera name="R_hand_camera" mode="fixed" pos="-0.01 0.05 0.15" zaxis="0 0.5 -1" fovy="-85"/>
 					          <camera name="R hand camera central" mode="fixed" pos="0.0 0.0 0.15" zaxis="0 0 -1" fovy="-120"/>
-                    <site name="R_hand_marker" type="sphere" size="0.02" pos="0 0 0.22" rgba="1 1 1 0.1" material="glowing_material"/>
+                    <site name="R_hand_marker" type="sphere" size="0.01" pos="0 0 0.22" rgba="1 1 1 0.1"/>
                     <!-- <light name="R_hand_light" directional="false" pos="0 0 0.22" diffuse="1 1 1" specular="1 1 1" attenuation="1 0.1 0.01"/> -->
                   </body>
                 </body>
@@ -419,7 +419,7 @@
     <body name="red_ball" > 
       <joint type="free" damping="0.1"/>
       <!-- <geom name="red_ball" type="sphere" material="glowing_material" contype="1" conaffinity="1" group="1" mass="0.0000001" pos="0.0 0.0 0.0" size="0.02" rgba="1 0 0 1.0"/> -->
-      <geom name="red_ball" type="sphere" material="glowing_material" contype="0" conaffinity="0" group="1" mass="0.0000001" pos="0.0 0.0 0.0" size="0.02" rgba="1 0 0 1.0"/>  
+      <geom name="red_ball" type="sphere" material="glowing_material" contype="0" conaffinity="0" group="1" mass="0.0000001" pos="0.0 0.0 0.0" size="0.01" rgba="1 0 0 1.0"/>  
       <!-- <light name="R_hand_light" directional="false" pos="0 0 0" dir="0 0 -1" diffuse="1 1 1" specular="1 1 1" attenuation="1 0.1 0.0"/> -->
     </body>
     <body name="obstacle_hand" > 

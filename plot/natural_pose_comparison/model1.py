@@ -18,11 +18,11 @@ class RLmodel:
         self.state = [0]*13
         self.action = [0]*3
 
-        self.obs_guide_to_neck = [0, 0, 0]
+        self.obs_guide_to_neck_to_neck = [0, 0, 0]
         self.obs_guide_to_hand_norm = [0, 0, 0]
         self.obs_joints = [0, 0, 0, 0]
         
     def predict(self):
-        self.state = np.concatenate([self.obs_guide_to_neck.copy(), self.obs_guide_to_hand_norm.copy(), self.action.copy(), self.obs_joints.copy()]).astype(np.float32)
+        self.state = np.concatenate([self.obs_guide_to_neck_to_neck.copy(), self.obs_guide_to_hand_norm.copy(), self.action.copy(), self.obs_joints.copy()]).astype(np.float32)
         self.action, _ = self.model.predict(self.state.copy(), deterministic=True)
         return(self.action.copy())
