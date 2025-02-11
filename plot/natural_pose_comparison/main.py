@@ -2,6 +2,8 @@ import mujoco
 import mujoco.viewer
 import numpy as np
 import random
+import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter1d
 
 import sys
 import os
@@ -10,6 +12,24 @@ from imports.model1 import RLmodel
 from imports.Settings import *
 from imports.Controller import *
 from imports.RL_info import *
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+class IKMLP(nn.Module):
+    def __init__(self):
+        super(IKMLP, self).__init__()
+        self.fc1 = nn.Linear(3, 64)  # 輸入3維，隱藏層64
+        self.fc2 = nn.Linear(64, 16)
+        self.fc3 = nn.Linear(16, 8)
+        self.fc4 = nn.Linear(8, 4)  # 輸出4維（4個關節角度）
+    
+    def forward(self, x):
+        x = F.relu(self.fc1(x))  # 第1層用 ReLU
+        x = F.relu(self.fc2(x))  # 第2層用 ReLU
+        x = F.relu(self.fc3(x))  # 第2層用 ReLU
+        x = self.fc4(x)          # 最後一層直接輸出
+        return x
 
 class Roly():
     def __init__(self):
@@ -21,13 +41,23 @@ class Roly():
         self.viewer.cam.lookat = [0.3, 0.0, 1.0]
         self.viewer.cam.elevation = -60
         self.viewer.cam.azimuth = 200
-        self.render_speed = 0
+        self.render_speed = 0.5
         self.inf = RL_inf()
         self.sys = RL_sys(Hz=50)
         self.obs = RL_obs()
         self.model1 = RLmodel()
+        self.IK = IKMLP()
+        self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "imports/IKmodel_v9.pth"), weights_only=True))
+        self.IK.eval()
         self.is_running = True
         self.reset()
+
+        self.torque = 0
+        self.plt_degree = np.array([])
+        self.plt_torque = np.array([])
+        self.plt_degree_nature = np.array([])
+        self.plt_torque_nature = np.array([])
+        self.file_path = os.path.dirname(os.path.abspath(__file__))
     
     def step(self): 
         if self.viewer.is_running() == False:
@@ -47,10 +77,16 @@ class Roly():
                 self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.sys.joints_increment[0]*0.01*alpha
                 self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.sys.joints_increment[1]*0.01*alpha
                 self.sys.ctrlpos[4] = 0
-                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]*0.01
                 self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01*alpha
-                self.sys.ctrlpos[7] = self.sys.ctrlpos[7] + self.sys.joints_increment[4]*0.01
+                self.sys.ctrlpos[7] = 0
+                if (self.inf.timestep%(33*Robot.sys.Hz)) <= (3*Robot.sys.Hz):
+                    self.sys.ctrlpos[5] += np.tanh(-np.pi/2-self.sys.ctrlpos[5])*0.01
+                else:
+                    self.sys.ctrlpos[5] += np.pi/(30*Robot.sys.Hz*4)
                 self.control_and_step()
+                if self.torque <= 10 and (self.inf.timestep%(33*Robot.sys.Hz)) > (3*Robot.sys.Hz):
+                    self.plt_degree = np.append(self.plt_degree, np.degrees(self.sys.ctrlpos[5]))
+                    self.plt_torque = np.append(self.plt_torque, self.torque)
 
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_guide.copy()
             if self.inf.timestep%int(48*self.render_speed+2) ==0:
@@ -121,6 +157,9 @@ class Roly():
         self.sys.pos = [self.data.qpos[i] for i in controlList]
         self.sys.vel = [self.data.qvel[i-1] for i in controlList]
         self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+        self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3]) + abs(self.data.ctrl[5]) + abs(self.data.ctrl[6])
+        self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3])
+        # self.torque = abs(self.data.ctrl[5])
 
         # step & render
         mujoco.mj_step(self.robot, self.data)
@@ -133,6 +172,7 @@ class Roly():
             self.inf.reset()
             self.sys.reset()
             self.obs.reset()
+            self.inf.timestep = 1
             # self.head_camera.track_done = False
 
             self.control_and_step()
@@ -150,13 +190,9 @@ class Roly():
             reachable = self.check_reachable(self.sys.pos_target.copy())
         self.data.qpos[15:18] = self.sys.pos_target.copy()
         self.sys.pos_guide = self.sys.pos_target.copy()
+        self.sys.ctrlpos[5] = 0
+        self.spawn_phase = 0
         self.get_state()
-
-        # self.sys.pos_neck = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
-        # self.sys.vec_target2neck = [self.sys.pos_target[0]-self.sys.pos_neck[0], self.sys.pos_target[1]-self.sys.pos_neck[1], self.sys.pos_target[2]-self.sys.pos_neck[2]]
-        # self.sys.vec_target2hand = [self.sys.pos_target[0]-self.sys.pos_hand[0], self.sys.pos_target[1]-self.sys.pos_hand[1], self.sys.pos_target[2]-self.sys.pos_hand[2]]
-        # self.sys.hand2target = ( self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 + self.sys.vec_target2hand[2]**2 ) ** 0.5
-
         mujoco.mj_step(self.robot, self.data)         
 
     def check_reachable(self, point):
@@ -172,10 +208,26 @@ class Roly():
         else:
             return True
         
-
 if __name__ == '__main__':
     Robot = Roly()
+    Robot.spawn_new_point()
     while Robot.viewer.is_running() == True:
-        if Robot.inf.timestep%int(3*Robot.sys.Hz) == 0:
+        if Robot.inf.timestep%int(33*Robot.sys.Hz) == 0:
             Robot.spawn_new_point()
+            fig = plt.figure(figsize=(15, 10))
+            plt.title("Torque vs Elbow_yaw")
+            plt.xlabel("Elbow yaw (degree)")
+            plt.ylabel("Arm total torque (Nm)")
+            plt.plot(Robot.plt_degree, Robot.plt_torque, color='black', alpha=0.1)
+            Robot.plt_torque = gaussian_filter1d(Robot.plt_torque, sigma=50.0)
+            plt.plot(Robot.plt_degree, Robot.plt_torque, color='black', alpha=1.0)
+
+            with torch.no_grad():  # 不需要梯度計算，因為只做推論
+                desire_joints = Robot.IK(torch.tensor(Robot.sys.vec_guide2neck, dtype=torch.float32)).tolist()
+            plt.axvline(x=desire_joints[2], color='red', linestyle='--', linewidth=2)
+            plt.savefig(os.path.join(Robot.file_path, "Torque_vs_Elbow_yaw.png"))
+            plt.close()
+            Robot.torque = 0
+            Robot.plt_degree = np.array([])
+            Robot.plt_torque = np.array([])
         Robot.step()
