@@ -37,14 +37,15 @@ class RL_sys():
         self.vel = [0] * len(controlList)
         self.ctrlpos = initTarget.copy()
         self.PIDctrl = PIDcontroller(controlParameter, self.ctrlpos)
-        self.limit_high = [ 1.57, 1.57, 1.57, 2.10, 3.14]
-        self.limit_low  = [-1.57,-1.57,-1.57, 0.00, 0.00]
+        self.limit_high = [ 1.57, 1.95, 1.57, 1.95, 3.14]
+        self.limit_low  = [-1.57,-1.95,-1.57, 0.00, 0.00]
 
         self.pos_guide  = [0.0, 0.0, 0.0]
         self.pos_target = [0.0, 0.0, 0.0]
         self.pos_hand    = [0.0, 0.0, 0.0]
         self.pos_neck    = [0.0, 0.0, 0.0]
         self.pos_elbow   = [0.0, 0.0, 0.0]
+        self.pos_origin  = [0.0, 0.0, 0.0]
         self.hand2guide  = 1.0
         self.hand2target = 1.0
         self.vec_guide2neck    = [0.0, 0.0, 0.0]
@@ -52,7 +53,8 @@ class RL_sys():
         self.vec_target2neck   = [0.0, 0.0, 0.0]
         self.vec_target2hand   = [0.0, 0.0, 0.0]
         self.vec_target2elbow  = [0.0, 0.0, 0.0]
-        self.vec_target2guide = [0.0, 0.0, 0.0]
+        self.vec_target2guide  = [0.0, 0.0, 0.0]
+        self.vec_target2origin = [0.0, 0.0, 0.0]
         self.vec_hand2neck      = [0.0, 0.0, 0.0]
         self.vec_hand2elbow     = [0.0, 0.0, 0.0]
         self.vec_guide2elbow   = [0.0, 0.0, 0.0]

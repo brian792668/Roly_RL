@@ -12,6 +12,7 @@ from imports.model1 import RLmodel
 from imports.Settings import *
 from imports.Controller import *
 from imports.RL_info import *
+from imports.IK import *
 
 import torch
 import torch.nn as nn
@@ -37,10 +38,10 @@ class Roly():
         self.data = mujoco.MjData(self.robot)
         self.renderer = mujoco.Renderer(self.robot)
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
-        self.viewer.cam.distance = 2.0
-        self.viewer.cam.lookat = [0.3, 0.0, 1.0]
-        self.viewer.cam.elevation = -60
-        self.viewer.cam.azimuth = 200
+        self.viewer.cam.distance = 1.5
+        self.viewer.cam.lookat = [0.0, -0.25, 1.0]
+        self.viewer.cam.elevation = -45
+        self.viewer.cam.azimuth = 180
         self.render_speed = 1.0
         self.inf = RL_inf()
         self.sys = RL_sys(Hz=50)
@@ -67,6 +68,8 @@ class Roly():
             self.inf.timestep += 1
             self.get_state()
             action_from_model1 = self.model1.predict()
+            ikkkk = [Robot.sys.vec_target2origin[0], Robot.sys.vec_target2origin[1]+0.2488, Robot.sys.vec_target2origin[2]]
+            t3 = IK(ikkkk, 0)
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
             self.sys.joints_increment[2] = 0
@@ -77,7 +80,8 @@ class Roly():
                 self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.sys.joints_increment[0]*0.01*alpha
                 self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.sys.joints_increment[1]*0.01*alpha
                 self.sys.ctrlpos[4] = 0
-                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01*alpha
+                # self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01*alpha
+                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + np.tanh(10*(t3[3]-self.sys.ctrlpos[6]))*0.01
                 self.sys.ctrlpos[7] = 0
                 if (self.inf.timestep%(33*Robot.sys.Hz)) <= (3*Robot.sys.Hz):
                     self.sys.ctrlpos[5] += np.tanh(-np.pi/2-self.sys.ctrlpos[5])*0.01
@@ -97,8 +101,10 @@ class Roly():
         self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
         self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
         self.sys.pos_elbow  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")].copy()
+        self.sys.pos_origin  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
+        
         # self.sys.pos_guide = [self.sys.pos_hand[0]*0.5 + self.sys.pos_target[0]*0.5,  self.sys.pos_hand[1]*0.5 + self.sys.pos_target[1]*0.5,  self.sys.pos_hand[2]*0.5 + self.sys.pos_target[2]*0.5]
-
+        
         # vectors
         self.sys.vec_guide2neck   = [self.sys.pos_guide[0] - self.sys.pos_neck[0] ,   self.sys.pos_guide[1] - self.sys.pos_neck[1] ,  self.sys.pos_guide[2] - self.sys.pos_neck[2]]
         self.sys.vec_guide2hand   = [self.sys.pos_guide[0] - self.sys.pos_hand[0] ,   self.sys.pos_guide[1] - self.sys.pos_hand[1] ,  self.sys.pos_guide[2] - self.sys.pos_hand[2]]
@@ -107,6 +113,7 @@ class Roly():
         self.sys.vec_target2neck  = [self.sys.pos_target[0]- self.sys.pos_neck[0] ,   self.sys.pos_target[1]- self.sys.pos_neck[1] ,  self.sys.pos_target[2]- self.sys.pos_neck[2]]
         self.sys.vec_target2elbow = [self.sys.pos_target[0]- self.sys.pos_elbow[0],   self.sys.pos_target[1]- self.sys.pos_elbow[1],  self.sys.pos_target[2]- self.sys.pos_elbow[2]]
         self.sys.vec_target2guide = [self.sys.pos_target[0]- self.sys.pos_guide[0],  self.sys.pos_target[1]- self.sys.pos_guide[1], self.sys.pos_target[2]- self.sys.pos_guide[2]]
+        self.sys.vec_target2origin= [self.sys.pos_target[0]- self.sys.pos_origin[0],   self.sys.pos_target[1]- self.sys.pos_origin[1],  self.sys.pos_target[2]- self.sys.pos_origin[2]]
         self.sys.vec_hand2neck    = [self.sys.pos_hand[0]   - self.sys.pos_neck[0] ,   self.sys.pos_hand[1]   - self.sys.pos_neck[1],   self.sys.pos_hand[2]   - self.sys.pos_neck[2]]
         self.sys.vec_hand2elbow   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0],   self.sys.pos_hand[1]   - self.sys.pos_elbow[1],  self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
 
@@ -214,10 +221,13 @@ if __name__ == '__main__':
     Robot.spawn_new_point()
     while Robot.viewer.is_running() == True:
         if Robot.inf.timestep%int(33*Robot.sys.Hz) == 0:
+            
             fig = plt.figure(figsize=(15, 10))
             plt.title("Torque vs Elbow_yaw")
             plt.xlabel("Elbow yaw (degree)")
             plt.ylabel("Arm total torque (Nm)")
+            plt.xlim(-85, 85)
+            plt.ylim(0, 2)
             plt.plot(Robot.plt_degree, Robot.plt_torque, color='black', alpha=0.1)
             Robot.plt_torque = gaussian_filter1d(Robot.plt_torque, sigma=50.0)
             plt.plot(Robot.plt_degree, Robot.plt_torque, color='black', alpha=1.0)
@@ -232,4 +242,6 @@ if __name__ == '__main__':
             Robot.plt_degree = np.array([])
             Robot.plt_torque = np.array([])
             Robot.spawn_new_point()
+
+            
         Robot.step()
