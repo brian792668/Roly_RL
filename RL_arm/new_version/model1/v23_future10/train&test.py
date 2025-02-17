@@ -60,6 +60,7 @@ def train(model, env, file_path):
         plt.title("Average Step Reward")
         plt.xlabel("Epoch")
         plt.ylabel("Step Reward")
+        plt.ylim(0, 1.5)
         plt.legend()
 
         plt.savefig(os.path.join(file_path, "epoch_vs_reward.png"))

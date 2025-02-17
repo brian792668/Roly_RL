@@ -56,10 +56,11 @@ def train(model, env, file_path):
         fig = plt.figure(figsize=(15, 10))
         plt.plot(epoch_array, step_reward_array_standard, label="Step Reward (Standard Original Data)", color='black', alpha=0.2)
         plt.plot(epoch_array, smoothed_standard, label="Step Reward (Standard)", color='red', alpha=1)
-        plt.plot(epoch_array, smoothed_future_state, label="Step Reward (Training, Future State)", color='red', alpha=0.2)
+        # plt.plot(epoch_array, smoothed_future_state, label="Step Reward (Training, Future State)", color='red', alpha=0.2)
         plt.title("Average Step Reward")
         plt.xlabel("Epoch")
         plt.ylabel("Step Reward")
+        plt.ylim(0, 1.5)
         plt.legend()
 
         plt.savefig(os.path.join(file_path, "epoch_vs_reward.png"))
@@ -90,6 +91,6 @@ if __name__ == '__main__':
         RL_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0005)
         RL_model.save(current_model_path)
 
-    train(RL_model, my_env, file_path)
+    # train(RL_model, my_env, file_path)
     # test(RL_model, my_env, current_model_path)
-    # test(RL_model, my_env, best_model_path)
+    test(RL_model, my_env, best_model_path)

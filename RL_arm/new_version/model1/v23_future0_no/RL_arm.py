@@ -194,8 +194,8 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=1):
-        if self.inf.timestep%int(49*speed+1) ==0:
+    def render(self, speed=0):
+        if self.inf.timestep%int(48*speed+2) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()
             self.viewer.cam.azimuth += 0.05 
