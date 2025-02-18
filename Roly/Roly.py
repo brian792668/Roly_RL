@@ -129,7 +129,7 @@ class Robot_system:
             with self.lock: angles=self.joints.copy()
             angles = [ np.radians(angles[i]) for i in range(len(angles))]
             elbow_pos = self.DH_table_elbow.forward2(angles=angles[2:6].copy())
-            hand_pos = self.DH_table_R.forward(angles=angles[2:8].copy())
+            hand_pos = self.DH_table_R.forward(angles=angles[2:7].copy())
             # print(f"{hand_pos[0]:.2f}, {hand_pos[1]:.2f}, {hand_pos[2]:.2f}")
 
             # Farward Kinematics of target position

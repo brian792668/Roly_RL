@@ -9,6 +9,7 @@ from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
 from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
 from imports.Camera import *
 from imports.Roly_motor import *
+from imports.Forward_kinematics import *
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 class mywindow(QtWidgets.QMainWindow):
@@ -47,9 +48,21 @@ class mywindow(QtWidgets.QMainWindow):
         self.torque_is_on = False
         self.motor_timer = QtCore.QTimer(self)
         self.motor_timer.timeout.connect(self.Motor_update)
-        self.xyz_target = [0, 0, 0]
-        self.xyz_shoulder = [0, 0, 0]
-        self.xyz_hand = [0, 0, 0]
+
+        # Robot_info
+        self.robot_info = QtCore.QTimer(self)
+        self.robot_info.timeout.connect(self.Info_update)
+        self.robot_info.start(10)
+        self.pos_target = [0, 0, 0]
+        self.pos_hand = [0, 0, 0]
+        self.shoulder_pos = [-0.02, -0.2488, -0.104]
+        self.DH_table_R = DHtable([[    0.0, np.pi/2,   -0.02,  -0.104],
+                                   [np.pi/2, np.pi/2,     0.0,  0.2488],
+                                   [    0.0,     0.0, -0.1105,     0.0],
+                                   [np.pi/2, np.pi/2,     0.0,     0.0],
+                                   [np.pi/2, np.pi/2,     0.0, -0.1403],
+                                   [    0.0, np.pi/2,     0.0,     0.0],
+                                   [    0.0, np.pi/2,     0.0,  0.1803]])
 
     def setup_button(self):
         self.ui.camera_start.clicked.connect(self.Camera_start)
@@ -66,6 +79,7 @@ class mywindow(QtWidgets.QMainWindow):
 
         self.ui.stop_all.clicked.connect(self.Stop_all)
 
+    # System
     def System_update(self):
         # camera status
         if self.camera.is_running == True: self.ui.camera_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
@@ -83,6 +97,39 @@ class mywindow(QtWidgets.QMainWindow):
         if self.torque_is_on == True: self.ui.torque_status_light.setStyleSheet("""background-color: red;  border-radius: 5px;  border: 1px solid white; """)
         else: self.ui.torque_status_light.setStyleSheet("""background-color: gray;  border-radius: 5px;  border: 2px solid white; """)
 
+    # Info
+    def Info_update(self):
+        joints = self.joints.copy()
+        joints = [ np.radians(joints[i]) for i in range(len(joints))]
+
+        # hand pos
+        self.pos_hand = self.DH_table_R.forward(angles=joints[2:7].copy())
+        self.ui.hand_pos.setText(f"Hand     {self.pos_hand[0]:.2f} {self.pos_hand[1]:.2f} {self.pos_hand[2]:.2f} ")
+
+        # target pos
+        neck_angle = joints[0]
+        camera_angle = joints[1]
+        d = self.target_depth + 0.01
+        if self.target_exist:
+            a = 0.06
+            b = (a**2 + d**2)**0.5
+            beta = np.arctan2(d, a)
+            gamma = np.pi/2 + camera_angle-beta
+            d2 = b*np.cos(gamma)
+            z = b*np.sin(gamma)
+            x = d2*np.cos(neck_angle)
+            y = d2*np.sin(neck_angle)
+            if self.reachable([x,y,z]) == True: 
+                self.pos_target = [x, y, z] 
+                self.ui.target_pos.setText(f"Target  {self.pos_target[0]:.2f} {self.pos_target[1]:.2f} {self.pos_target[2]:.2f} ")
+
+    def reachable(self, xyz):
+        shoulder_pos = self.shoulder_pos.copy()
+        distoshoulder = ( (xyz[0]-shoulder_pos[0])**2 + (xyz[1]-shoulder_pos[1])**2 + (xyz[2]-shoulder_pos[2])**2 ) **0.5
+        if distoshoulder >= 0.45 or distoshoulder <= 0.25:
+            return False
+        else:
+            return True
 
     # Camera
     def Camera_start(self):
@@ -122,9 +169,9 @@ class mywindow(QtWidgets.QMainWindow):
             self.RL_is_running = False
 
     def RL_update(self):
-        xyz_target_to_hand = np.array(self.xyz_target.copy()) - np.array(self.xyz_hand.copy())
+        pos_target_to_hand = np.array(self.pos_target.copy()) - np.array(self.pos_hand.copy())
         joints = np.radians(self.joints.copy())
-        state = np.concatenate([self.xyz_target.copy(), xyz_target_to_hand.copy(), joints[2:4], joints[5:7]]).astype(np.float32)
+        state = np.concatenate([self.pos_target.copy(), pos_target_to_hand.copy(), joints[2:4], joints[5:7]]).astype(np.float32)
         action, _ = self.RL_model1.predict(state)
         action_new = [self.RL_action[0]*0.9 + action[0]*0.1,
                       self.RL_action[1]*0.9 + action[1]*0.1,  
@@ -133,12 +180,12 @@ class mywindow(QtWidgets.QMainWindow):
                       self.RL_action[4]*0.9 + action[2]*0.1,
                       self.RL_action[5]*0.9 + 0]
         
-        joints[2] += action_new[0] * 0.03
-        joints[3] += action_new[1] * 0.03
-        joints[4] += action_new[2] * 0.03
-        joints[5] += action_new[3] * 0.03
-        joints[6] += action_new[4] * 0.03
-        joints[7] += action_new[5] * 0.03
+        joints[2] += action_new[0] * 0.01
+        joints[3] += action_new[1] * 0.01
+        joints[4] += action_new[2] * 0.01
+        joints[5] += action_new[3] * 0.01
+        joints[6] += action_new[4] * 0.01
+        joints[7] += action_new[5] * 0.01
         self.joints = np.degrees(joints).copy()
         self.RL_action = action_new.copy()
         print("RL running")

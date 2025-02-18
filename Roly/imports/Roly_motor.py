@@ -19,19 +19,6 @@ def init_motor():
     motor.changeAllMotorOperatingMode(OP_MODE=3)
     motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*len(motor.pos_ctrl))
     time.sleep(0.1)
-    # initial_angles = motor.readAllMotorPosition()
-    # final_angles=[-20, -45, 10, 4, 0, 5, 78, 0]
-
-    # # initial
-    # t=0
-    # while t <= 1.0:
-    #     joints, t = smooth_transition(t, initial_angles=initial_angles.copy(), final_angles=final_angles.copy(), speed=0.005)
-    #     motor.writeAllMotorPosition(motor.toRolyctrl(joints.copy()))
-    #     time.sleep(0.01)
-    # motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50])
-    # time.sleep(0.1)
-    
-    # return motor, final_angles.copy()
     return motor
 
 def initial_pos(motor):
@@ -40,12 +27,12 @@ def initial_pos(motor):
     motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*len(motor.pos_ctrl))
     time.sleep(0.1)
     initial_angles = motor.readAllMotorPosition()
-    final_angles=[-20, -45, 2, -20, 0, 0, 92, 0]
+    final_angles=[-20, -45, 2, -20, 0, 40, 92, 0]
 
     # initial
     t=0
     while t <= 1.0:
-        joints, t = smooth_transition(t, initial_angles=initial_angles.copy(), final_angles=final_angles.copy(), speed=0.005)
+        joints, t = smooth_transition(t, initial_angles=initial_angles, final_angles=final_angles.copy(), speed=0.005)
         motor.writeAllMotorPosition(motor.toRolyctrl(joints.copy()))
         time.sleep(0.01)
     motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50])
