@@ -266,7 +266,7 @@ class RL_arm(gym.Env):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
         # distoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if distoshoulder >= 0.45 or distoshoulder <= 0.30:
+        if distoshoulder >= 0.5 or distoshoulder <= 0.30:
             return False
         elif (point[0]< 0 or point[1]> 0 or point[2]>shoulder_pos[2]) :
             return False
