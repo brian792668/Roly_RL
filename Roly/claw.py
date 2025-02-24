@@ -23,8 +23,8 @@ time.sleep(0.1)
 
 if __name__ == '__main__':
     for i in range(50):
-        motor.writeAllMotorPosition([0])
-        # motor.writeAllMotorProfileVelocity([100])
+        motor.writeAllMotorPosition([181+0])  # open
+        motor.writeAllMotorPosition([181+95]) # close
         time.sleep(0.02) 
         print(i)
         

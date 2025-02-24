@@ -46,10 +46,10 @@ class Robot_system:
         self.depth_colormap = self.head_camera.depth_colormap
 
         # Initial RL
-        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v21-30/model.zip")
+        RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v23-future2/model.zip")
         self.RL_model1  = SAC.load(RL_path1)
         self.RL_state   = [0] * 7
-        self.RL_action  = [0] * 6
+        self.RL_action  = [0] * 3
 
         self.IK = IKMLP()
         self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v7.pth"), weights_only=True))
@@ -87,9 +87,6 @@ class Robot_system:
                                        [    0.0,     0.0, -0.1105,     0.0],
                                        [np.pi/2, np.pi/2,     0.0,     0.0],
                                        [np.pi/2, np.pi/2,     0.0, -0.1403]])
-        
-        self.blue_line_points = [0, 1, 2, 3, 4]  # 藍線連接 point1 ~ point5
-        self.red_line_points = [4, 5]  # 紅線連接 point5 ~ point6
 
     def camera_thread(self):
         self.head_camera.start()
@@ -176,49 +173,30 @@ class Robot_system:
 
             target_to_EE = [object_xyz[0]-hand_xyz[0], object_xyz[1]-hand_xyz[1], object_xyz[2]-hand_xyz[2]]
             distotarget = (target_to_EE[0]**2 + target_to_EE[1]**2 + target_to_EE[2]**2) ** 0.5
-            target_to_EE_norm = [target_to_EE[0]/distotarget*0.02, target_to_EE[1]/distotarget*0.02, target_to_EE[2]/distotarget*0.02]
-            # print(target_to_EE_norm)
-            # alpha = 1-0.8*np.exp(-100*distotarget**2)
+            target_to_EE_norm = target_to_EE.copy()
+            if distotarget >= 0.02:
+                target_to_EE_norm = [target_to_EE[0]/distotarget*0.02, target_to_EE[1]/distotarget*0.02, target_to_EE[2]/distotarget*0.02]
+            
+            alpha = 1-0.8*np.exp(-100*distotarget**2)
             
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
-            state = np.concatenate([object_xyz.copy(), target_to_EE_norm.copy(), action_old[0:2], action_old[4:5], joints[2:4], joints[5:7]]).astype(np.float32)
-            # print(f"{state[0]:.2f}, {state[1]:.2f}, {state[2]:.2f}")
+            state = np.concatenate([object_xyz.copy(), target_to_EE_norm.copy(), action_old[0:3], joints[2:4], joints[5:7]]).astype(np.float32)
 
             with torch.no_grad():  # 不需要梯度計算，因為只做推論
                 desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
+                desire_joints[2] += 40
                 desire_joints = np.radians(desire_joints)
-            # desire_joints[2] = np.radians(45+45*np.sin(timenow*2))
-            desire_joints[2] = np.radians(20)
 
             action, _ = self.RL_model1.predict(state)
-            # print(action)
             action_new = [action_old[0]*0.9 + action[0]*0.1,
-                          action_old[1]*0.9 + action[1]*0.1,  
-                          action_old[2]*0.9 + 0, 
-                          action_old[3]*0.9 + 0,
-                          action_old[4]*0.9 + action[2]*0.1,
-                          action_old[5]*0.9 + 0]          
+                          action_old[1]*0.9 + action[1]*0.1,
+                          action_old[2]*0.9 + action[2]*0.1]          
 
-            # joints[2] += action_new[0]*0.08*alpha
-            # joints[3] += action_new[1]*0.05
-            # joints[3] = joints[3]*0.95+ desire_joints[1]*0.05
-            # joints[4] += action_new[2]*0.08*alpha
-            # joints[5] += action_new[3]*0.08*alpha
-            # joints[6] += action_new[4]*0.08*alpha
-            # joints[7] += action_new[5]*0.05*alpha
-
-            # joints[2] = joints[2]*0.95 + desire_joints[0]*0.05
-            # joints[3] = joints[3]*0.95 + desire_joints[1]*0.05
             joints[5] = joints[5]*0.9 + desire_joints[2]*0.1
-            # joints[6] = joints[6]*0.95 + desire_joints[3]*0.05
 
-            joints[2] += action_new[0]* 0.03
-            joints[3] += action_new[1]* 0.03
-            joints[4] += action_new[2]* 0.03
-            joints[5] += action_new[3]* 0.03
-            joints[6] += action_new[4]* 0.03
-            joints[7] += action_new[5]* 0.03
-
+            joints[2] += action_new[0]* 0.03*alpha
+            joints[3] += action_new[1]* 0.03*alpha
+            joints[6] += action_new[2]* 0.03*alpha
         
             if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
             elif joints[2] < self.limit_low[0] : joints[2] = self.limit_low[0]
@@ -230,7 +208,6 @@ class Robot_system:
             elif joints[6] < self.limit_low[3] : joints[6] = self.limit_low[3]
 
             joints = [ np.degrees(joints[i]) for i in range(len(joints))]
-            print(joints[2:7])
             
             with self.lock:
                 self.RL_action = action_new.copy()
@@ -256,14 +233,14 @@ class Robot_system:
         with self.lock: joints = self.joints.copy()
         t=0
         while t <= 1.0:
-            joints, t = smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.002)
+            joints, t = smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.001)
             self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
             time.sleep(0.01)
 
         self.motor.setAllMotorTorqurDisable()
         self.motor.portHandler.closePort()
 
-    def run(self, endtime = 10):     
+    def run(self, endtime = 10):
         threads = [
                 threading.Thread(target=self.motor_thread),
                 threading.Thread(target=self.system_thread),
@@ -289,55 +266,6 @@ class Robot_system:
 
         print("Program Done.\n")
 
-    def plot(self):
-        # plt.clf()
-        # plt.close('all')
-
-        with self.lock:
-            points_x = self.points_x.copy()
-            points_y = self.points_y.copy()
-            points_z = self.points_z.copy()
-        # 創建三維繪圖
-        fig = plt.figure(figsize=(6, 6))
-        ax = fig.add_subplot(111, projection='3d')
-
-        # 繪製藍線連接點1~點5
-        ax.plot(
-            [points_x[j] for j in self.blue_line_points],
-            [points_y[j] for j in self.blue_line_points],
-            [points_z[j] for j in self.blue_line_points],
-            color='blue',
-            label='Line Point1-Point5'
-        )
-
-        # 繪製紅線連接點5~點6
-        ax.plot(
-            [points_x[j] for j in self.red_line_points],
-            [points_y[j] for j in self.red_line_points],
-            [points_z[j] for j in self.red_line_points],
-            color='red',
-            label='Line Point5-Point6'
-        )
-
-        # 繪製所有點
-        ax.scatter(points_x, points_y, points_z, color='black', label='Points')
-
-        # 設置視角
-        ax.view_init(elev=30, azim=-30)
-        ax.set_xlabel('X Label')
-        ax.set_ylabel('Y Label')
-        ax.set_zlabel('Z Label')
-        ax.set_title('Default View (30, 30)')
-
-        # # 儲存圖形為檔案
-        save_path = "3d_plot.png"
-        plt.savefig(save_path)  # 設定解析度 dpi
-        plt.close()  # 關閉 Matplotlib 圖形，節省記憶體
-        # time.sleep(0.01)
-
-        plt.clf()
-        plt.close('all')
-
     def reachable(self, target):
         with self.lock:
             shoulder_pos = self.shoulder_pos.copy()
@@ -348,18 +276,6 @@ class Robot_system:
             return False
         else:
             return True
-
-    # def smooth_transition(self, t, initial_angles, final_angles, speed=0.001):
-
-        initial_angles = np.array(initial_angles)
-        final_angles = np.array(final_angles)
-
-        progress = min(t, 1)
-        progress = ((1 - np.cos(np.pi * progress)) / 2)**2
-        current_angles = initial_angles*(1-progress) + final_angles*progress
-
-        t_next = t + speed
-        return current_angles.tolist(), t_next
 
 if __name__ == "__main__":
 

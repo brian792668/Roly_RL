@@ -182,20 +182,20 @@ class RL_arm(gym.Env):
         self.inf.total_reward += self.inf.reward
         
         # # 獎勵對應部分的比例長度
-        # r0_length = int((0.5*r1) * 40)  # r0 部分長度
-        # r1_length = int((0.1*r1) * 40)  # r1 部分長度
-        # r2_length = int((0.2*r2) * 40)  # r2 部分長度
-        # r3_length = int((0.7*r3) * 40)  # r3 部分長度
+        r0_length = int((0.5*r1) * 40)  # r0 部分長度
+        r1_length = int((0.1*r1) * 40)  # r1 部分長度
+        r2_length = int((0.2*r2) * 40)  # r2 部分長度
+        r3_length = int((0.7*r3) * 40)  # r3 部分長度
 
-        # r0_bar = "." * r0_length + " " * int(0.5*40 - r0_length)
-        # r1_bar = "." * r1_length + " " * int(0.1*40 - r1_length)
-        # r2_bar = "." * r2_length + " " * int(0.2*40 - r2_length)
-        # r3_bar = "." * r3_length + " " * int(0.7*40 - r3_length)
+        r0_bar = "." * r0_length + " " * int(0.5*40 - r0_length)
+        r1_bar = "." * r1_length + " " * int(0.1*40 - r1_length)
+        r2_bar = "." * r2_length + " " * int(0.2*40 - r2_length)
+        r3_bar = "." * r3_length + " " * int(0.7*40 - r3_length)
 
-        r0_bar = "." * int(0.5*40*r0) + " " * int(0.5*40*(1-r0))
-        r1_bar = "." * int(0.1*40*r1) + " " * int(0.5*40*(1-r1))
-        r2_bar = "." * int(0.2*40*r2) + " " * int(0.5*40*(1-r2))
-        r3_bar = "." * int(0.7*40*r3) + " " * int(0.5*40*(1-r3))
+        # r0_bar = "." * int(0.5*40*r0) + " " * int(0.5*40*(1-r0))
+        # r1_bar = "." * int(0.1*40*r1) + " " * int(0.5*40*(1-r1))
+        # r2_bar = "." * int(0.2*40*r2) + " " * int(0.5*40*(1-r2))
+        # r3_bar = "." * int(0.7*40*r3) + " " * int(0.5*40*(1-r3))
 
         status_bar = f"| {r2_bar}{r3_bar}{r1_bar}{r0_bar}|"
         print(f"\r{status_bar}  {self.inf.reward:.2f}", end=" ")
