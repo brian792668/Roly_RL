@@ -42,8 +42,6 @@ class Robot_system:
         self.target_exist = self.head_camera.target_exist
         self.target_depth = self.head_camera.target_depth
         self.target_pixel_norm = self.head_camera.target_norm
-        self.color_img = self.head_camera.color_img
-        self.depth_colormap = self.head_camera.depth_colormap
 
         # Initial RL
         RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v23-future2/model.zip")
@@ -56,17 +54,18 @@ class Robot_system:
         self.IK.eval()
 
         # Initial motors
-        self.joints = [0] * 8
-        self.motor = init_motor()
-        self.joints = initial_pos(self.motor)
-        self.limit_high = [ 1.57, 0.12, 1.57, 1.90]
-        self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
+        # self.joints = [0] * 8
+        # self.joints_increment = [0] * 8
+        # self.motor = init_motor()
+        # self.motor.joints = initial_pos(self.motor)
+        self.motor = Roly_motor()
+        self.motor.to_pose(pose="initial")
 
         # Initial mechanism
-        self.target_pos   = [0.19, -0.22, -0.36]
-        self.hand_pos     = [0.19, -0.22, -0.36]
-        self.shoulder_pos = [-0.02, -0.2488, -0.104]
-        self.elbow_pos    = [-0.02, -0.2488, -0.35]
+        self.pos_target   = [0.19, -0.22, -0.36]
+        self.pos_hand     = [0.19, -0.22, -0.36]
+        self.pos_shoulder = [-0.02, -0.2488, -0.104]
+        self.pos_elbow    = [-0.02, -0.2488, -0.35]
         self.arm_target_joints = [0.0, 0.0, 0.0, 0.0, 0.0]
         self.DH_table_R = DHtable([[    0.0, np.pi/2,   -0.02,  -0.104],
                                    [np.pi/2, np.pi/2,     0.0,  0.2488],
@@ -82,58 +81,47 @@ class Robot_system:
                                    [np.pi/2, np.pi/2,     0.0, -0.1403],
                                    [    0.0, np.pi/2,     0.0,     0.0],
                                    [    0.0, np.pi/2,     0.0,  0.1803]])
-        self.DH_table_elbow = DHtable([[    0.0, np.pi/2,   -0.02,  -0.104],
-                                       [np.pi/2, np.pi/2,     0.0,  0.2488],
-                                       [    0.0,     0.0, -0.1105,     0.0],
-                                       [np.pi/2, np.pi/2,     0.0,     0.0],
-                                       [np.pi/2, np.pi/2,     0.0, -0.1403]])
 
-    def camera_thread(self):
+    def thread_camera(self):
         self.head_camera.start()
         while not self.stop_event.is_set():
-            # 50 Hz
+            # 100 Hz
             time.sleep(0.01)
 
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
-            # self.head_camera.show(rgb=True, depth=True)
-            with self.lock:
-                self.color_img = self.head_camera.color_img
-                self.depth_colormap = self.head_camera.depth_colormap
-            cv2.imshow("Realsense D435i RGB", self.color_img)
-            cv2.imshow("Realsense D435i Depth with color", self.depth_colormap)
-            cv2.waitKey(1)
+            self.head_camera.show(rgb=True, depth=False)
 
             if self.head_camera.target_exist == True:
                 with self.lock:
                     self.target_exist = True
                     self.target_pixel_norm = self.head_camera.target_norm
-                if np.abs(self.head_camera.target_norm[0]) <= 0.1 and np.abs(self.head_camera.target_norm[1]) <= 0.1 :
+                    self.motor.joints_increment[0] = -2.0*self.head_camera.target_norm[0]
+                    self.motor.joints_increment[1] = -2.0*self.head_camera.target_norm[1]
+                if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
                     with self.lock:
                         self.target_depth = self.head_camera.target_depth
             else:
                 with self.lock:
                     self.target_exist = False
+                    self.motor.joints_increment[0] = 0
+                    self.motor.joints_increment[1] = 0
         
         self.head_camera.stop()
 
-    def system_thread(self):
+    def thread_system(self):
         while not self.stop_event.is_set():
             # 100 Hz
-            time.sleep(0.02)
+            time.sleep(0.01)
 
             # Farward Kinematics of EE position
-            with self.lock: angles=self.joints.copy()
+            with self.lock: angles=self.motor.joints.copy()
             angles = [ np.radians(angles[i]) for i in range(len(angles))]
-            elbow_pos = self.DH_table_elbow.forward2(angles=angles[2:6].copy())
-            hand_pos = self.DH_table_R.forward(angles=angles[2:7].copy())
-            # print(f"{hand_pos[0]:.2f}, {hand_pos[1]:.2f}, {hand_pos[2]:.2f}")
+            pos_hand = self.DH_table_R.forward(angles=angles[2:7].copy())
 
             # Farward Kinematics of target position
             with self.lock:
-                target_pos = self.target_pos.copy()
-                self.hand_pos = hand_pos.copy()
-                shoulder_pos = self.shoulder_pos.copy()
+                self.pos_hand = pos_hand.copy()
                 
             neck_angle = angles[0]
             camera_angle = angles[1]
@@ -150,134 +138,105 @@ class Robot_system:
                 x = d2*np.cos(neck_angle)
                 y = d2*np.sin(neck_angle)
                 if self.reachable([x,y,z].copy()) == True: 
-                    target_pos = [x, y, z] 
-                # print(f"{target_pos[0]:.2f}, {target_pos[1]:.2f}, {target_pos[2]:.2f}")
+                    with self.lock:
+                        self.pos_target = [x,y,z].copy()
 
-            # Farward Kinematics of target elbow
-            elbow_pos = self.DH_table_elbow.forward2(angles=angles[2:6].copy())
-            # print(f"{elbow_pos[0]:.2f}, {elbow_pos[1]:.2f}, {elbow_pos[2]:.2f}")
-            with self.lock:
-                self.elbow_pos = elbow_pos.copy()
-                self.target_pos = target_pos.copy()
-
-    def RL_thread(self):
+    def thread_RL1(self):
         while not self.stop_event.is_set():
             # 100 Hz
-            time.sleep(0.01)
+            time.sleep(0.02)
             with self.lock:
-                joints = self.joints.copy()
-                object_xyz = self.target_pos.copy()
-                hand_xyz = self.hand_pos.copy()
+                joints = self.motor.joints.copy()
+                joints_increment = self.motor.joints_increment.copy()
+                object_xyz = self.pos_target.copy()
+                hand_xyz = self.pos_hand.copy()
                 action_old = self.RL_action.copy()
                 timenow = time.time() - self.time_start
 
+            # RL model1: shoulder + elbow pitch
             target_to_EE = [object_xyz[0]-hand_xyz[0], object_xyz[1]-hand_xyz[1], object_xyz[2]-hand_xyz[2]]
             distotarget = (target_to_EE[0]**2 + target_to_EE[1]**2 + target_to_EE[2]**2) ** 0.5
             target_to_EE_norm = target_to_EE.copy()
             if distotarget >= 0.02:
                 target_to_EE_norm = [target_to_EE[0]/distotarget*0.02, target_to_EE[1]/distotarget*0.02, target_to_EE[2]/distotarget*0.02]
             
-            alpha = 1-0.8*np.exp(-100*distotarget**2)
-            
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
             state = np.concatenate([object_xyz.copy(), target_to_EE_norm.copy(), action_old[0:3], joints[2:4], joints[5:7]]).astype(np.float32)
-
-            with torch.no_grad():  # 不需要梯度計算，因為只做推論
-                desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
-                desire_joints[2] += 40
-                desire_joints = np.radians(desire_joints)
-
             action, _ = self.RL_model1.predict(state)
             action_new = [action_old[0]*0.9 + action[0]*0.1,
                           action_old[1]*0.9 + action[1]*0.1,
-                          action_old[2]*0.9 + action[2]*0.1]          
-
-            joints[5] = joints[5]*0.9 + desire_joints[2]*0.1
-
-            joints[2] += action_new[0]* 0.03*alpha
-            joints[3] += action_new[1]* 0.03*alpha
-            joints[6] += action_new[2]* 0.03*alpha
-        
-            if   joints[2] > self.limit_high[0]: joints[2] = self.limit_high[0]
-            elif joints[2] < self.limit_low[0] : joints[2] = self.limit_low[0]
-            if   joints[3] > self.limit_high[1]: joints[3] = self.limit_high[1]
-            elif joints[3] < self.limit_low[1] : joints[3] = self.limit_low[1]
-            if   joints[5] > self.limit_high[2]: joints[5] = self.limit_high[2]
-            elif joints[5] < self.limit_low[2] : joints[5] = self.limit_low[2]
-            if   joints[6] > self.limit_high[3]: joints[6] = self.limit_high[3]
-            elif joints[6] < self.limit_low[3] : joints[6] = self.limit_low[3]
-
-            joints = [ np.degrees(joints[i]) for i in range(len(joints))]
+                          action_old[2]*0.9 + action[2]*0.1]   
+                 
+            alpha = 1-0.8*np.exp(-100*distotarget**2)
+            joints_increment[2] = np.degrees( action_new[0]* 0.05*alpha ) # shoulder pitch
+            joints_increment[3] = np.degrees( action_new[1]* 0.05*alpha ) # shoulder roll
+            joints_increment[6] = np.degrees( action_new[2]* 0.05*alpha ) # elbow pitch
             
+            # elbow yaw
+            with torch.no_grad():  # 不需要梯度計算，因為只做推論
+                desire_joints = self.IK(torch.tensor(object_xyz.copy(), dtype=torch.float32)).tolist()
+            desire_joints[2] += 40
+            desire_joints = np.radians(desire_joints)
+            joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_joints[2]*0.1 ) - joints[5] ) # elbow yaw
+
             with self.lock:
                 self.RL_action = action_new.copy()
-                self.joints = joints.copy()
+                self.motor.joints_increment = joints_increment.copy()
 
-    def motor_thread(self):
-        # with self.lock:
-        #     self.joints = self.motor.readAllMotorPosition()
+    def thread_motor(self):
         while not self.stop_event.is_set():
-            # 100 Hz
-            time.sleep(0.01)
+            time.sleep(0.01) # 100 Hz
             with self.lock: 
-                joints = self.joints.copy()
-                pixel_norm = self.target_pixel_norm.copy()
-                target_exist = self.target_exist
-
-            joints[0] += -3.0*pixel_norm[0]*target_exist
-            joints[1] += -3.0*pixel_norm[1]*target_exist
-            with self.lock: self.joints = joints.copy()
+                joints = self.motor.joints.copy()
+                joints_increment = self.motor.joints_increment.copy()
+            joints[0] += joints_increment[0]
+            joints[1] += joints_increment[1]
+            joints[2] += joints_increment[2]
+            joints[3] += joints_increment[3]
+            joints[5] += joints_increment[5]
+            joints[6] += joints_increment[6]
+            with self.lock: 
+                self.motor.joints = joints.copy()
             self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
-        
-        self.motor.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100]*8)
-        with self.lock: joints = self.joints.copy()
-        t=0
-        while t <= 1.0:
-            joints, t = smooth_transition(t, initial_angles=joints.copy(), final_angles=[0]*8, speed=0.001)
-            self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
-            time.sleep(0.01)
-
+            
+        self.motor.to_pose(pose="shut down")
         self.motor.setAllMotorTorqurDisable()
         self.motor.portHandler.closePort()
 
     def run(self, endtime = 10):
-        threads = [
-                threading.Thread(target=self.motor_thread),
-                threading.Thread(target=self.system_thread),
-                threading.Thread(target=self.camera_thread),
-                threading.Thread(target=self.RL_thread)
-            ]
+        print("Robot Start.\n")
+        time0 = self.time_start
 
+        threads = [ threading.Thread(target=self.thread_motor),
+                    threading.Thread(target=self.thread_system),
+                    threading.Thread(target=self.thread_camera),
+                    threading.Thread(target=self.thread_RL1) ]
         for t in threads:
             t.start()
 
-        with self.lock: 
-            time0 = self.time_start
         while not self.stop_event.is_set():
+            time.sleep(0.1)  # 減少CPU負擔
             if time.time() - time0 >= endtime:  # 執行 10 秒後結束
                 self.stop_event.set()
-            time.sleep(0.02)  # 減少CPU負擔
 
         for t in threads:
             t.join()
+            print("join")
 
         cv2.destroyAllWindows()
-        # plt.close()
-
-        print("Program Done.\n")
+        print("Robot Stop.\n")
 
     def reachable(self, target):
         with self.lock:
-            shoulder_pos = self.shoulder_pos.copy()
-        target_pos = target.copy()
-        distoshoulder = ( (target_pos[0]-shoulder_pos[0])**2 + (target_pos[1]-shoulder_pos[1])**2 + (target_pos[2]-shoulder_pos[2])**2 ) **0.5
-        # distoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if distoshoulder >= 0.45 or distoshoulder <= 0.25:
+            pos_shoulder = self.pos_shoulder.copy()
+        pos_target = target.copy()
+        dis_hand2shoulder = ( (pos_target[0]-pos_shoulder[0])**2 + (pos_target[1]-pos_shoulder[1])**2 + (pos_target[2]-pos_shoulder[2])**2 ) **0.5
+        # dis_hand2shoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
+        if dis_hand2shoulder >= 0.45 or dis_hand2shoulder <= 0.25:
             return False
         else:
             return True
 
 if __name__ == "__main__":
-
     Roly = Robot_system()
-    Roly.run(endtime=30)
+    Roly.run(endtime=10)

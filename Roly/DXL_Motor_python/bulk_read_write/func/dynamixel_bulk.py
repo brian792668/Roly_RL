@@ -13,10 +13,10 @@ class DXL_Motor():
         self.portHandler = PortHandler(self.DEVICENAME)
         self.packetHandler = PacketHandler(2.0)
         self.checkPortAndBaudRate(BAUDRATE)
-        self.pos_bias = [180.0, 180.0, 180.0, 178.0, 180.0, 180.0, 180.0, 180.0]
-        self.pos_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1]
-        self.pos_ctrl = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.vel = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+        # self.pos_bias = [180.0, 180.0, 180.0, 178.0, 180.0, 180.0, 180.0, 180.0]
+        # self.pos_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1]
+        # self.pos_ctrl = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        # self.vel = [1, 1, 1, 1, 1, 1, 1, 1, 1]
 
     def checkPortAndBaudRate(self, BAUDRATE=115200):
         if not self.portHandler.openPort():
@@ -112,13 +112,14 @@ class DXL_Motor():
 
     def readAllMotorPosition(self):
         present_resolution, dxl_comm_result = self.readAllMotorStatus("PRESENT_POSITION")
-        pos_read = [(resolution2degree(present_resolution[i])-self.pos_bias[i])*self.pos_axis[i] for i in range(len(present_resolution))]
+        # pos_read = [(resolution2degree(present_resolution[i])-self.pos_bias[i])*self.pos_axis[i] for i in range(len(present_resolution))]
         
         if dxl_comm_result != COMM_SUCCESS:
             pass
             print(f"Read motor position fail : {self.packetHandler.getTxRxResult(dxl_comm_result)}")
         else:
-            return pos_read
+            # return pos_read
+            return present_resolution
             # for i, dxl_id in enumerate(self.DXL_MODELS["id"]):
             #     print(f"motor {dxl_id}'s position is {present_degree[i]}") # 關
 
@@ -158,23 +159,5 @@ class DXL_Motor():
         self.writeOperatingMode(OP_MODE)
         self.setAllMotorTorqueEnable()
 
-    def move(self, target_pos, speed=0.5):
-        TARGET_POSITIONS = self.toRolyctrl(target_pos)
-        # self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[int(25*speed)]*8)
-        
-        # present_resolution, _ = self.readAllMotorStatus("PRESENT_POSITION")
-        # present_velocity, _ = self.readAllMotorStatus("PRESENT_VELOCITY")
-        # present_degree = [resolution2degree(present_resolution[i]) for i in range(len(present_resolution))]
-        
-        new_pos_ctrl = [ 5*speed*np.tanh(0.02*(TARGET_POSITIONS[i]-self.pos_ctrl[i])) for i in range(len(self.pos_ctrl))]
-        self.vel = [int(np.abs(new_pos_ctrl[i])*50*0.2 + self.vel[i]*0.8)+1 for i in range(len(self.pos_ctrl))]
-        self.writeAllMotorProfileVelocity(self.vel)
-        self.pos_ctrl = [ (self.pos_ctrl[i] + new_pos_ctrl[i]) for i in range(len(self.pos_ctrl))]
-        self.writeAllMotorPosition(self.pos_ctrl)
-        # self.readAllMotorPosition()
-        # print(f"{self.pos_read[3]-self.pos_ctrl[3]+self.pos_bias[3]:.2f}")
-        # print(new_pos_ctrl)
-        # time.sleep(0.001) 
-
-    def toRolyctrl(self, ctrlpos):
-        return [(ctrlpos[i]*self.pos_axis[i]+self.pos_bias[i]) for i in range(len(self.pos_bias))]
+    # def toRolyctrl(self, ctrlpos):
+    #     return [(ctrlpos[i]*self.pos_axis[i]+self.pos_bias[i]) for i in range(len(self.pos_bias))]
