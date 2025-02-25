@@ -221,7 +221,6 @@ class Robot_system:
 
         for t in threads:
             t.join()
-            print("join")
 
         cv2.destroyAllWindows()
         print("Robot Stop.\n")

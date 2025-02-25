@@ -13,10 +13,6 @@ class DXL_Motor():
         self.portHandler = PortHandler(self.DEVICENAME)
         self.packetHandler = PacketHandler(2.0)
         self.checkPortAndBaudRate(BAUDRATE)
-        # self.pos_bias = [180.0, 180.0, 180.0, 178.0, 180.0, 180.0, 180.0, 180.0]
-        # self.pos_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1]
-        # self.pos_ctrl = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        # self.vel = [1, 1, 1, 1, 1, 1, 1, 1, 1]
 
     def checkPortAndBaudRate(self, BAUDRATE=115200):
         if not self.portHandler.openPort():
@@ -158,6 +154,3 @@ class DXL_Motor():
         self.setAllMotorTorqurDisable()
         self.writeOperatingMode(OP_MODE)
         self.setAllMotorTorqueEnable()
-
-    # def toRolyctrl(self, ctrlpos):
-    #     return [(ctrlpos[i]*self.pos_axis[i]+self.pos_bias[i]) for i in range(len(self.pos_bias))]
