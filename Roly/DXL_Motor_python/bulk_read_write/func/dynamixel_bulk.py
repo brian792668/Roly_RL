@@ -108,7 +108,6 @@ class DXL_Motor():
 
     def readAllMotorPosition(self):
         present_resolution, dxl_comm_result = self.readAllMotorStatus("PRESENT_POSITION")
-        # pos_read = [(resolution2degree(present_resolution[i])-self.pos_bias[i])*self.pos_axis[i] for i in range(len(present_resolution))]
         
         if dxl_comm_result != COMM_SUCCESS:
             pass

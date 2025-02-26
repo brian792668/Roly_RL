@@ -65,7 +65,7 @@ class Camera():
     def get_target(self, depth=False):
         # 定義紅色的RGB範圍
         lower_red = np.array([0, 10, 180], dtype=np.uint8)
-        upper_red = np.array([50, 100, 255], dtype=np.uint8)
+        upper_red = np.array([100, 200, 255], dtype=np.uint8)
         # 創建紅色遮罩
         mask = cv2.inRange(self.color_img, lower_red, upper_red)
         self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
@@ -73,9 +73,6 @@ class Camera():
         # 將原圖與遮罩層進行混合
         alpha = 0.5  # 透明度
         self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1-alpha, 0)
-
-        # cv2.imshow("Masked Image", self.color_mask)
-        # cv2.waitKey(1)
 
         # 確保在圖像中有紅色物體
         if np.any(mask):
@@ -113,19 +110,7 @@ class Camera():
 
         else:
             self.target_exist = False
-        pass
 
-    #     new_pos = ctrlpos.copy()
-    #     if np.abs(self.target[0]) <= 0.05 and np.abs(self.target[1]) <= 0.05:
-    #         self.track_done = True
-    #     else:
-    #         self.track_done = False
-    #         if np.isnan(self.target[0]) == False:
-    #             new_pos[0] += -0.1*self.target[0]*speed
-    #             new_pos[1] += -0.1*self.target[1]*speed
-    #     return new_pos
-        pass
-    
     def start(self):
         self.pipeline.start(self.config)  # start pipeline with config
         self.is_running = True

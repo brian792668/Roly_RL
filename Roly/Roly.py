@@ -3,15 +3,12 @@ import os
 import threading
 import numpy as np
 import time
-import matplotlib.pyplot as plt
 from stable_baselines3 import SAC  
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
-from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
 from imports.Camera import *
 from imports.Forward_kinematics import *
 from imports.Roly_motor import *
@@ -31,6 +28,7 @@ class IKMLP(nn.Module):
 
 class Robot_system:
     def __init__(self):
+        print("[ Status ] Initializing system ...")
         # Initial system
         self.system_running = True
         self.lock = threading.Lock()
@@ -54,12 +52,9 @@ class Robot_system:
         self.IK.eval()
 
         # Initial motors
-        # self.joints = [0] * 8
-        # self.joints_increment = [0] * 8
-        # self.motor = init_motor()
-        # self.motor.joints = initial_pos(self.motor)
         self.motor = Roly_motor()
-        self.motor.to_pose(pose="initial")
+        self.motor.to_pose(pose="initial", speed=0.5)
+        print("[ Status ] To initial pose ...")
 
         # Initial mechanism
         self.pos_target   = [0.19, -0.22, -0.36]
@@ -85,8 +80,8 @@ class Robot_system:
     def thread_camera(self):
         self.head_camera.start()
         while not self.stop_event.is_set():
-            # 100 Hz
-            time.sleep(0.01)
+            # 50 Hz
+            time.sleep(0.02)
 
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
@@ -96,8 +91,8 @@ class Robot_system:
                 with self.lock:
                     self.target_exist = True
                     self.target_pixel_norm = self.head_camera.target_norm
-                    self.motor.joints_increment[0] = -2.0*self.head_camera.target_norm[0]
-                    self.motor.joints_increment[1] = -2.0*self.head_camera.target_norm[1]
+                    self.motor.joints_increment[0] = -1.2*self.head_camera.target_norm[0]
+                    self.motor.joints_increment[1] = -1.2*self.head_camera.target_norm[1]
                 if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
                     with self.lock:
                         self.target_depth = self.head_camera.target_depth
@@ -134,12 +129,10 @@ class Robot_system:
                 beta = np.arctan2(d, a)
                 gamma = np.pi/2 + camera_angle-beta
                 d2 = b*np.cos(gamma)
-                z = b*np.sin(gamma)
-                x = d2*np.cos(neck_angle)
-                y = d2*np.sin(neck_angle)
-                if self.reachable([x,y,z].copy()) == True: 
+                target_xyz = [d2*np.cos(neck_angle), d2*np.sin(neck_angle), b*np.sin(gamma)]
+                if self.reachable(target_xyz.copy()) == True: 
                     with self.lock:
-                        self.pos_target = [x,y,z].copy()
+                        self.pos_target = target_xyz.copy()
 
     def thread_RL1(self):
         while not self.stop_event.is_set():
@@ -189,22 +182,19 @@ class Robot_system:
             with self.lock: 
                 joints = self.motor.joints.copy()
                 joints_increment = self.motor.joints_increment.copy()
-            joints[0] += joints_increment[0]
-            joints[1] += joints_increment[1]
-            joints[2] += joints_increment[2]
-            joints[3] += joints_increment[3]
-            joints[5] += joints_increment[5]
-            joints[6] += joints_increment[6]
+            for i in range(len(joints)):
+                joints[i] += joints_increment[i]
             with self.lock: 
                 self.motor.joints = joints.copy()
             self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
             
-        self.motor.to_pose(pose="shut down")
+        self.motor.to_pose(pose="shut down", speed=0.2)
+        print("[ Status ] To shut down pose ...")
         self.motor.setAllMotorTorqurDisable()
         self.motor.portHandler.closePort()
 
     def run(self, endtime = 10):
-        print("Robot Start.\n")
+        print("[ Status ] Start.")
         time0 = self.time_start
 
         threads = [ threading.Thread(target=self.thread_motor),
@@ -223,7 +213,7 @@ class Robot_system:
             t.join()
 
         cv2.destroyAllWindows()
-        print("Robot Stop.\n")
+        print("[ Status ] Stop.")
 
     def reachable(self, target):
         with self.lock:
