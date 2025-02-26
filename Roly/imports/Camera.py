@@ -22,6 +22,7 @@ class Camera():
         self.target_exist = False
         self.target_pixel = [320, 240]
         self.target_norm = [0.0, 0.0]
+        self.target_vel  = [0.0, 0.0]
         self.target_depth = 1.0
 
         self.colorizer = rs.colorizer()        
@@ -106,6 +107,8 @@ class Camera():
             # 將像素座標轉換至[-1, 1]區間
             norm_x = (center_x / self.color_img.shape[1]) * 2 - 1
             norm_y = (center_y / self.color_img.shape[0]) * 2 - 1
+
+            self.target_vel = [norm_x-self.target_norm[0], norm_y-self.target_norm[1]]
             self.target_norm = [norm_x, norm_y]
 
         else:
