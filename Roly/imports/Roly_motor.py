@@ -9,20 +9,20 @@ class Roly_motor(DXL_Motor):
     def __init__(self):
         X_series_info = X_Motor_Info()
         DEVICENAME = "/dev/ttyUSB0"
-        DXL_MODELS = {  "id": [1, 2, 10, 11, 12, 13, 14, 15], 
-                        "model": [X_series_info] * 8 }
+        DXL_MODELS = {  "id": [1, 2, 10, 11, 12, 13, 14, 15, 16], 
+                        "model": [X_series_info] * 9 }
         super().__init__(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 
-        self.joints_bias = [180.0] * 8
-        self.joints_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1]
-        self.joints = [0] * 8
-        self.joints_increment = [0] * 8
-        self.initial_pos = [-20, -45, 2, -20, 0, 40, 92, 0]
+        self.joints_bias = [180.0] * 9
+        self.joints_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1,  1]
+        self.joints = [0] * 9
+        self.joints_increment = [0] * 9
+        self.initial_pos = [-20, -45, 2, -20, 0, 40, 92, 0, 0]
         self.limit_high = [ 1.57, 0.12, 1.57, 1.90]
         self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
 
         self.changeAllMotorOperatingMode(OP_MODE=3)
-        self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50])
+        self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50, 200])
         time.sleep(0.1)
 
     def to_pose(self, pose, speed=0.5):
@@ -33,7 +33,9 @@ class Roly_motor(DXL_Motor):
         # Set final joint angles.
         final_angles = current_angles
         if   pose == "initial":   final_angles = self.initial_pos.copy()
-        elif pose == "shut down": final_angles = [0]*8
+        elif pose == "shut down": 
+            final_angles = [0]*9
+            final_angles[8] = 95
 
         # Generate smoot motion from cosine function.
         t=0

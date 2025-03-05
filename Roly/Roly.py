@@ -42,7 +42,7 @@ class Robot_system:
         self.target_pixel_norm = self.head_camera.target_norm
         self.track_done = False
 
-        # Initial RL moving policy
+        # Initial RL policy
         RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v23-future2/model.zip")
         self.RL_moving_policy = SAC.load(RL_path1)
         self.RL_moving_action = [0] * 3
@@ -83,7 +83,8 @@ class Robot_system:
         self.pos_shoulder = [-0.02, -0.2488, -0.104]
         self.pos_elbow    = [-0.02, -0.2488, -0.35]
         
-        # Initial Grasp policy
+        # Initial Status
+        self.status = "waiting" # grasping, carrying, placing
         self.grasping = False
 
     def thread_camera(self):
@@ -227,15 +228,27 @@ class Robot_system:
                 target2hand = [object_xyz[0] - hand_xyz[0], object_xyz[1] - hand_xyz[1], object_xyz[2] - hand_xyz[2]]
                 dis2target = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
                 if dis2target <= 0.11:
-                    grasp_dis *= 0.95
+                    grasp_dis *= 0.9
                 else:
                     grasp_dis = 0.1
 
+                # calculate grasping increment
+                joints_increment[8] = 0
+                if dis2target <= 0.03:
+                    joints_increment[8] = (np.radians(95)*0.8 + joints[8]*0.2) - joints[8]
+                    # if joints[8] < np.radians(95):
+                    #     joints_increment[8] = 0.5
+                else:
+                    joints_increment[8] = (0*0.9 + joints[8]*0.10) - joints[8]
+                    # if joints[8] > np.radians(0):
+                    #     joints_increment[8] = -1
+                print(dis2target)
                 
                 with self.lock:
                     self.pos_guide = new_guide.copy()
                     self.grasping_dis = grasp_dis
                     self.motor.joints_increment[5] = joints_increment[5]
+                    self.motor.joints_increment[8] = joints_increment[8]
 
     def thread_motor(self):
         while not self.stop_event.is_set():
@@ -289,4 +302,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=20)
+    Roly.run(endtime=30)
