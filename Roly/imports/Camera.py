@@ -66,7 +66,7 @@ class Camera():
     def get_target(self, depth=False):
         # 定義紅色的RGB範圍
         lower_red = np.array([0, 10, 180], dtype=np.uint8)
-        upper_red = np.array([100, 200, 255], dtype=np.uint8)
+        upper_red = np.array([100, 100, 255], dtype=np.uint8)
         # 創建紅色遮罩
         mask = cv2.inRange(self.color_img, lower_red, upper_red)
         self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)

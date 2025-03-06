@@ -28,14 +28,20 @@ class Roly_motor(DXL_Motor):
     def to_pose(self, pose, speed=0.5):
         # Get current joint angles.
         current_angles = self.readAllMotorPosition()
+        while current_angles ==  None:
+            print("failed to read motor position. Retry...")
+            current_angles = self.readAllMotorPosition()
         current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(current_angles))]
 
         # Set final joint angles.
         final_angles = current_angles
-        if   pose == "initial":   final_angles = self.initial_pos.copy()
+        if   pose == "initial":   
+            final_angles = self.initial_pos.copy()
+            print("\n\033[1;33m[ Motor  ]\033[0m To INITIAL pose ...")
         elif pose == "shut down": 
             final_angles = [0]*9
             final_angles[8] = 95
+            print("\n\033[1;33m[ Motor  ]\033[0m To SHUT DOWN pose ...")
 
         # Generate smoot motion from cosine function.
         t=0
