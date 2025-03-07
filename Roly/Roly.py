@@ -79,9 +79,9 @@ class Robot_system:
         self.pos_hand     = self.DH_table_R.forward(angles=np.radians(self.motor.joints[2:7].copy()))
         self.pos_target   = self.pos_hand.copy()
         self.pos_guide    = self.pos_hand.copy()
-        self.pos_grasppnt = [ 0.25, -0.2488, -0.250]
-        self.pos_placepnt = [ 0.35, -0.2488, -0.150]
-        self.pos_initpnt  = [ 0.00, -0.2488, -0.350]
+        self.pos_grasppnt = [ 0.0, 0.0, 0.0]
+        self.pos_placepnt = [ 0.35, -0.1000, -0.150]
+        self.pos_initpnt  = [ 0.15, -0.2488, -0.350]
         self.pos_shoulder = [-0.02, -0.2488, -0.104]
         self.pos_elbow    = [-0.02, -0.2488, -0.350]
         
@@ -145,28 +145,47 @@ class Robot_system:
                 gamma = np.pi/2 + camera_angle-beta
                 d2 = b*np.cos(gamma)
                 grasp_point = [d2*np.cos(neck_angle), d2*np.sin(neck_angle), b*np.sin(gamma)]
-                if self.reachable(grasp_point.copy()) == True: 
-                    with self.lock:
-                        self.pos_grasppnt = grasp_point.copy()
+                # if self.reachable(grasp_point.copy()) == True: 
+                #     with self.lock:
+                #         self.pos_grasppnt = grasp_point.copy()
+                with self.lock:
+                    self.pos_grasppnt = grasp_point.copy()
 
             # Update status
             with self.lock:
                 status = self.status
+                pos_grasppnt = self.pos_grasppnt.copy()
+            reachable = self.reachable(pos_grasppnt.copy())
             if status == "waiting":
-                if track_done:
+                if track_done and reachable:
                     with self.lock:
                         self.status = "grasping"
-                        self.pos_target = self.pos_grasppnt.copy()
+                        self.pos_target = pos_grasppnt.copy()
             elif status == "grasping":
-                if angles[8] >= np.radians(94.0):
+                if track_done and reachable:
                     with self.lock:
-                        self.status = "carrying"
-                        self.pos_target = self.pos_placepnt.copy()
+                        self.pos_target = pos_grasppnt.copy()
+                    if angles[8] >= np.radians(94.0):
+                        with self.lock:
+                            self.status = "carrying"
+                            self.pos_target = self.pos_placepnt.copy()
+                else:
+                    with self.lock:
+                        self.status = "waiting"
+                        self.pos_target = self.pos_initpnt.copy()
             elif status == "carrying":
                 if angles[8] <= np.radians(1.0):
                     with self.lock:
                         self.status = "waiting"
                         self.pos_target = self.pos_initpnt.copy()
+
+                # with self.lock:
+                #     pos_grasppnt = self.pos_grasppnt.copy()
+                #     pos_hand = self.pos_hand.copy()
+                # dis2hand = ( (pos_grasppnt[0]-pos_hand[0])**2 + (pos_grasppnt[1]-pos_hand[1])**2 + (pos_grasppnt[2]-pos_hand[2])**2 ) **0.5
+                # if dis2hand >= 0.10:
+                #     with self.lock:
+                #         self.status = "grasping"
 
             sys.stdout.write(f"\rstatus: {status}")
             sys.stdout.flush()
@@ -246,7 +265,7 @@ class Robot_system:
                 action_new = [action_old[0]*0.9 + action[0]*0.1,
                               action_old[1]*0.9 + action[1]*0.1,
                               action_old[2]*0.9 + action[2]*0.1]
-                joints_increment[5] = np.degrees( action_new[2]* 0.10 ) # elbow yaw
+                joints_increment[5] = np.degrees( action_new[2]* 0.05 ) # elbow yaw
 
                 # calculate new grasp distance
                 target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
@@ -329,4 +348,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=30)
+    Roly.run(endtime=60)
