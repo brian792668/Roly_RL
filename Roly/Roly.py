@@ -93,10 +93,11 @@ class Robot_system:
         self.head_camera.start()
         while not self.stop_event.is_set():
             # 50 Hz
-            time.sleep(0.02)
+            time.sleep(0.01)
 
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
+            self.head_camera.get_hand()
             self.head_camera.show(rgb=True, depth=False)
 
             if self.head_camera.target_exist == True:
@@ -239,7 +240,7 @@ class Robot_system:
     def thread_RL_grasp(self):
         while not self.stop_event.is_set():
             # 100 Hz
-            time.sleep(0.01)
+            time.sleep(0.02)
             with self.lock:
                 joints = self.motor.joints.copy()
                 joints_increment = self.motor.joints_increment.copy()
@@ -348,4 +349,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=60)
+    Roly.run(endtime=40)

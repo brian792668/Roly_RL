@@ -1,9 +1,7 @@
 import cv2
 import pyrealsense2 as rs
 import numpy as np
-import threading
-import time
-
+import mediapipe as mp
 class Camera():
     def __init__(self):
         self.pipeline = rs.pipeline()
@@ -37,6 +35,14 @@ class Camera():
 
         self.pipeline.stop()
         self.is_running = False
+
+        self.hand_center = None
+        mp_hands = mp.solutions.hands
+        self.hands = mp_hands.Hands(
+            static_image_mode=False, # 不會一直偵測
+            max_num_hands=1,
+            min_detection_confidence=0.9
+        )
 
     def get_img(self, rgb=True, depth=True):
         frames = self.pipeline.wait_for_frames()
@@ -72,7 +78,7 @@ class Camera():
         self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
         
         # 將原圖與遮罩層進行混合
-        alpha = 0.5  # 透明度
+        alpha = 0.7  # 透明度
         self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1-alpha, 0)
 
         # 確保在圖像中有紅色物體
@@ -113,6 +119,35 @@ class Camera():
 
         else:
             self.target_exist = False
+
+    def get_hand(self):
+        color_img = self.color_img
+        self.hand_center = None
+        img_rgb = cv2.cvtColor(color_img, cv2.COLOR_BGR2RGB)  # Mediapipe 需要 RGB 格式
+        results = self.hands.process(img_rgb)
+
+        if results.multi_hand_landmarks:
+            hand_landmarks = results.multi_hand_landmarks[0]  # 只取第一隻手
+            lmList = []
+            h, w, _ = color_img.shape
+            for id, lm in enumerate(hand_landmarks.landmark):
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                lmList.append((cx, cy))
+
+            # 手部中心點取 0, 5, 17 號關節的平均
+            cx, cy = int((lmList[0][0] + lmList[5][0] + lmList[17][0]) / 3), \
+                     int((lmList[0][1] + lmList[5][1] + lmList[17][1]) / 3)
+            self.hand_center = (cx, cy)
+
+
+            # 在圖片上畫標記
+            cv2.circle(color_img, self.hand_center, 8, (255, 255, 255), -1)
+            cv2.circle(color_img, lmList[4],  4, (150, 150, 150), -1)
+            cv2.circle(color_img, lmList[8],  4, (150, 150, 150), -1)
+            cv2.circle(color_img, lmList[12], 4, (150, 150, 150), -1)
+            cv2.circle(color_img, lmList[16], 4, (150, 150, 150), -1)
+            cv2.circle(color_img, lmList[20], 4, (150, 150, 150), -1)
+            self.color_img = color_img
 
     def start(self):
         self.pipeline.start(self.config)  # start pipeline with config
