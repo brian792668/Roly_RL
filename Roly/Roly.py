@@ -79,7 +79,7 @@ class Robot_system:
         self.pos_hand     = self.DH_table_R.forward(angles=np.radians(self.motor.joints[2:7].copy()))
         self.pos_target   = self.pos_hand.copy()
         self.pos_guide    = self.pos_hand.copy()
-        self.pos_grasppnt = [ 0.0, 0.0, 0.0]
+        self.pos_grasppnt = [-0.02, -0.2488, -0.104]
         self.pos_placepnt = [ 0.35, -0.1000, -0.150]
         self.pos_initpnt  = [ 0.15, -0.2488, -0.350]
         self.pos_shoulder = [-0.02, -0.2488, -0.104]
@@ -97,26 +97,49 @@ class Robot_system:
 
             self.head_camera.get_img(rgb=True, depth=True)
             self.head_camera.get_target(depth=True)
-            self.head_camera.get_hand()
+            self.head_camera.get_hand(depth=True)
             self.head_camera.show(rgb=True, depth=False)
 
-            if self.head_camera.target_exist == True:
-                with self.lock:
-                    self.target_exist = True
-                    self.track_done = False
-                    self.target_pixel_norm = self.head_camera.target_norm
-                    self.motor.joints_increment[0] = -3.0*self.head_camera.target_norm[0] - 0.5*self.head_camera.target_vel[0] - 0.7*self.motor.joints_increment[0]
-                    self.motor.joints_increment[1] = -3.0*self.head_camera.target_norm[1] - 0.5*self.head_camera.target_vel[0] - 0.7*self.motor.joints_increment[1]
-                if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
+            with self.lock:
+                status = self.status
+            
+            if status == "waiting" or status == "grasping":
+                if self.head_camera.target_exist == True:
                     with self.lock:
-                        self.target_depth = self.head_camera.target_depth
-                        self.track_done = True
-            else:
-                with self.lock:
-                    self.target_exist = False
-                    self.track_done = False
-                    self.motor.joints_increment[0] = 0
-                    self.motor.joints_increment[1] = 0
+                        self.target_exist = True
+                        self.track_done = False
+                        # self.target_pixel_norm = self.head_camera.target_norm
+                        self.motor.joints_increment[0] = -3.0*self.head_camera.target_norm[0] - 0.5*self.head_camera.target_vel[0] - 0.7*self.motor.joints_increment[0]
+                        self.motor.joints_increment[1] = -3.0*self.head_camera.target_norm[1] - 0.5*self.head_camera.target_vel[0] - 0.7*self.motor.joints_increment[1]
+                    if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
+                        with self.lock:
+                            self.target_depth = self.head_camera.target_depth
+                            self.track_done = True
+                else:
+                    with self.lock:
+                        self.target_exist = False
+                        self.track_done = False
+                        self.motor.joints_increment[0] = 0
+                        self.motor.joints_increment[1] = 0
+
+            elif status == "carrying":
+                if self.head_camera.hand_exist == True:
+                    with self.lock:
+                        self.target_exist = True
+                        self.track_done = False
+                        # self.target_pixel_norm = self.head_camera.hand_norm
+                        self.motor.joints_increment[0] = -3.0*self.head_camera.hand_norm[0] - 0.5*self.head_camera.hand_vel[0] - 0.7*self.motor.joints_increment[0]
+                        self.motor.joints_increment[1] = -3.0*self.head_camera.hand_norm[1] - 0.5*self.head_camera.hand_vel[0] - 0.7*self.motor.joints_increment[1]
+                    if np.abs(self.head_camera.hand_norm[0]) <= 0.05 and np.abs(self.head_camera.hand_norm[1]) <= 0.05 :
+                        with self.lock:
+                            self.target_depth = self.head_camera.hand_depth
+                            self.track_done = True
+                else:
+                    with self.lock:
+                        self.target_exist = False
+                        self.track_done = False
+                        self.motor.joints_increment[0] = 0
+                        self.motor.joints_increment[1] = 0
         
         self.head_camera.stop()
 
@@ -139,46 +162,71 @@ class Robot_system:
             with self.lock: 
                 track_done = self.track_done
                 d = self.target_depth + 0.02
+                status = self.status
             if track_done:
                 a = 0.062
                 b = (a**2 + d**2)**0.5
                 beta = np.arctan2(d, a)
                 gamma = np.pi/2 + camera_angle-beta
                 d2 = b*np.cos(gamma)
-                grasp_point = [d2*np.cos(neck_angle), d2*np.sin(neck_angle), b*np.sin(gamma)]
+                camera_point = [d2*np.cos(neck_angle), d2*np.sin(neck_angle), b*np.sin(gamma)]
                 # if self.reachable(grasp_point.copy()) == True: 
                 #     with self.lock:
                 #         self.pos_grasppnt = grasp_point.copy()
-                with self.lock:
-                    self.pos_grasppnt = grasp_point.copy()
+                # with self.lock:
+                #     self.pos_grasppnt = camera_point.copy()
+
+                if status == "waiting" or status == "grasping":
+                    with self.lock:
+                        self.pos_grasppnt = camera_point.copy()
+                        # self.pos_target = camera_point.copy()
+                elif status == "carrying":
+                    camera_point[2] += 0.10
+                    with self.lock:
+                        self.pos_placepnt = camera_point.copy()
+                        # self.pos_target = camera_point.copy()
 
             # Update status
             with self.lock:
                 status = self.status
                 pos_grasppnt = self.pos_grasppnt.copy()
-            reachable = self.reachable(pos_grasppnt.copy())
+                pos_placepnt = self.pos_placepnt.copy()
+
             if status == "waiting":
+                with self.lock:
+                    self.pos_target = self.pos_initpnt.copy()
+                reachable = self.reachable(pos_grasppnt.copy())
                 if track_done and reachable:
                     with self.lock:
                         self.status = "grasping"
-                        self.pos_target = pos_grasppnt.copy()
+                        
             elif status == "grasping":
+                reachable = self.reachable(pos_grasppnt.copy())
                 if track_done and reachable:
                     with self.lock:
                         self.pos_target = pos_grasppnt.copy()
-                    if angles[8] >= np.radians(94.0):
+                    if angles[8] >= np.radians(93.5):
                         with self.lock:
                             self.status = "carrying"
-                            self.pos_target = self.pos_placepnt.copy()
                 else:
                     with self.lock:
-                        self.status = "waiting"
                         self.pos_target = self.pos_initpnt.copy()
+
             elif status == "carrying":
-                if angles[8] <= np.radians(1.0):
+                reachable = self.reachable(pos_placepnt.copy())
+                if track_done and reachable:
                     with self.lock:
-                        self.status = "waiting"
+                        self.pos_target = pos_placepnt.copy()
+                    if angles[8] <= np.radians(1.5):
+                        with self.lock:
+                            self.status = "waiting"
+                            self.pos_target = self.pos_initpnt.copy()
+                else:
+                    with self.lock:
                         self.pos_target = self.pos_initpnt.copy()
+
+
+                
 
                 # with self.lock:
                 #     pos_grasppnt = self.pos_grasppnt.copy()
@@ -281,12 +329,12 @@ class Robot_system:
                     status = self.status
                 joints_increment[8] = 0
                 if status == "grasping":
-                    if dis2target <= 0.03:
+                    if dis2target <= 0.08:
                         joints_increment[8] = (np.radians(95)*0.98 + joints[8]*0.02) - joints[8]
                     else:
                         joints_increment[8] = (0*0.9 + joints[8]*0.10) - joints[8]
                 elif status == "carrying":
-                    if dis2target <= 0.03:
+                    if dis2target <= 0.08:
                         joints_increment[8] = (0*0.98 + joints[8]*0.02) - joints[8]
                     else:
                         joints_increment[8] = (np.radians(95)*0.9 + joints[8]*0.1) - joints[8]
@@ -349,4 +397,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=40)
+    Roly.run(endtime=30)

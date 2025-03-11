@@ -39,10 +39,14 @@ class Camera():
         self.hand_center = None
         mp_hands = mp.solutions.hands
         self.hands = mp_hands.Hands(
-            static_image_mode=False, # 不會一直偵測
+            static_image_mode=False,
             max_num_hands=1,
             min_detection_confidence=0.9
         )
+        self.hand_exist = False
+        self.hand_norm = [0.0, 0.0]
+        self.hand_vel  = [0.0, 0.0]
+        self.hand_depth = 1.0
 
     def get_img(self, rgb=True, depth=True):
         frames = self.pipeline.wait_for_frames()
@@ -120,7 +124,7 @@ class Camera():
         else:
             self.target_exist = False
 
-    def get_hand(self):
+    def get_hand(self, depth=False):
         color_img = self.color_img
         self.hand_center = None
         img_rgb = cv2.cvtColor(color_img, cv2.COLOR_BGR2RGB)  # Mediapipe 需要 RGB 格式
@@ -134,11 +138,15 @@ class Camera():
                 cx, cy = int(lm.x * w), int(lm.y * h)
                 lmList.append((cx, cy))
 
-            # 手部中心點取 0, 5, 17 號關節的平均
-            cx, cy = int((lmList[0][0] + lmList[5][0] + lmList[17][0]) / 3), \
-                     int((lmList[0][1] + lmList[5][1] + lmList[17][1]) / 3)
-            self.hand_center = (cx, cy)
-
+            # 手部中心點取 5, 17 號關節的平均
+            cx, cy = int((lmList[5][0] + lmList[17][0]) / 2), \
+                     int((lmList[5][1] + lmList[17][1]) / 2)
+            self.hand_center = [cx, cy]
+            norm_x = (cx / w) * 2 - 1
+            norm_y = (cy / h) * 2 - 1
+            self.hand_vel = [norm_x-self.hand_norm[0], norm_y-self.hand_norm[1]]
+            self.hand_norm = [norm_x, norm_y]
+            self.hand_exist = True
 
             # 在圖片上畫標記
             cv2.circle(color_img, self.hand_center, 8, (255, 255, 255), -1)
@@ -148,6 +156,15 @@ class Camera():
             cv2.circle(color_img, lmList[16], 4, (150, 150, 150), -1)
             cv2.circle(color_img, lmList[20], 4, (150, 150, 150), -1)
             self.color_img = color_img
+
+            if depth == True:
+                self.target_depth = self.depth_img[int(cy), int(cx)]*0.001  # m
+                cv2.putText(self.color_img, f"{self.target_depth:.3f} m", (int(cx) + 30, int(cy)), cv2.FONT_HERSHEY_SIMPLEX, 
+                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                
+        else:
+            self.hand_exist = False
+        
 
     def start(self):
         self.pipeline.start(self.config)  # start pipeline with config
