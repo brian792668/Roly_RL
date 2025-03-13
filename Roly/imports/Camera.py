@@ -76,7 +76,7 @@ class Camera():
     def get_target(self, depth=False):
         # 定義紅色的RGB範圍
         lower_red = np.array([0, 10, 180], dtype=np.uint8)
-        upper_red = np.array([100, 100, 255], dtype=np.uint8)
+        upper_red = np.array([100, 200, 255], dtype=np.uint8)
         # 創建紅色遮罩
         mask = cv2.inRange(self.color_img, lower_red, upper_red)
         self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
@@ -141,7 +141,7 @@ class Camera():
             # 手部中心點取 5, 17 號關節的平均
             cx, cy = int((lmList[5][0] + lmList[17][0]) / 2), \
                      int((lmList[5][1] + lmList[17][1]) / 2)
-            self.hand_center = [cx, cy]
+            self.hand_center = (cx, cy)
             norm_x = (cx / w) * 2 - 1
             norm_y = (cy / h) * 2 - 1
             self.hand_vel = [norm_x-self.hand_norm[0], norm_y-self.hand_norm[1]]
@@ -158,8 +158,8 @@ class Camera():
             self.color_img = color_img
 
             if depth == True:
-                self.target_depth = self.depth_img[int(cy), int(cx)]*0.001  # m
-                cv2.putText(self.color_img, f"{self.target_depth:.3f} m", (int(cx) + 30, int(cy)), cv2.FONT_HERSHEY_SIMPLEX, 
+                self.hand_depth = self.depth_img[int(cy), int(cx)]*0.001  # m
+                cv2.putText(self.color_img, f"{self.hand_depth:.3f} m", (int(cx) + 30, int(cy)), cv2.FONT_HERSHEY_SIMPLEX, 
                         0.5, (255, 255, 255), 1, cv2.LINE_AA)
                 
         else:

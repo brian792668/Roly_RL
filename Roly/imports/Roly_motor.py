@@ -17,7 +17,7 @@ class Roly_motor(DXL_Motor):
         self.joints_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1,  1]
         self.joints = [0] * 9
         self.joints_increment = [0] * 9
-        self.initial_pos = [-20, -45, 2, -20, 0, 40, 92, 90, 0]
+        self.initial_pos = [-20, -45, 2, -20, 0, 40, 92, 0, 0]
         self.limit_high = [ 1.57, 0.12, 1.57, 1.90]
         self.limit_low  = [-1.05,-1.57,-1.57, 0.00]
 
