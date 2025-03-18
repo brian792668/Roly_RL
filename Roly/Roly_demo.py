@@ -55,7 +55,7 @@ class Robot_system:
         self.IK = IKMLP()
         self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v7.pth"), weights_only=True))
         self.IK.eval()
- 
+
         # Initial motors
         self.motor = Roly_motor()
         self.motor.to_pose(pose="initial", speed=0.5)
