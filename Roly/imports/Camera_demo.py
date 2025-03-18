@@ -40,7 +40,7 @@ class Camera():
         mp_hands = mp.solutions.hands
         self.hands = mp_hands.Hands(
             static_image_mode=False,
-            max_num_hands=1,
+            max_num_hands=2,
             min_detection_confidence=0.9
         )
         self.hand_exist = False
@@ -130,37 +130,38 @@ class Camera():
         img_rgb = cv2.cvtColor(color_img, cv2.COLOR_BGR2RGB)  # Mediapipe 需要 RGB 格式
         results = self.hands.process(img_rgb)
 
-        if results.multi_hand_landmarks:
-            hand_landmarks = results.multi_hand_landmarks[0]  # 只取第一隻手
-            lmList = []
-            h, w, _ = color_img.shape
-            for id, lm in enumerate(hand_landmarks.landmark):
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                lmList.append((cx, cy))
+        if results.multi_hand_landmarks and results.multi_handedness:
+            for idx, handedness in enumerate(results.multi_handedness):
+                if handedness.classification[0].label == "Right":  # 只處理左手
+                    hand_landmarks = results.multi_hand_landmarks[idx]
+                    lmList = []
+                    h, w, _ = color_img.shape
+                    for id, lm in enumerate(hand_landmarks.landmark):
+                        cx, cy = int(lm.x * w), int(lm.y * h)
+                        lmList.append((cx, cy))
 
-            # 手部中心點取 5, 17 號關節的平均
-            cx, cy = int((lmList[5][0] + lmList[17][0]) / 2), \
-                     int((lmList[5][1] + lmList[17][1]) / 2)
-            self.hand_center = (cx, cy)
-            norm_x = (cx / w) * 2 - 1
-            norm_y = (cy / h) * 2 - 1
-            self.hand_vel = [norm_x-self.hand_norm[0], norm_y-self.hand_norm[1]]
-            self.hand_norm = [norm_x, norm_y]
-            self.hand_exist = True
+                    # 手部中心點取 5, 17 號關節的平均
+                    cx, cy = int((lmList[5][0] + lmList[17][0]) / 2), \
+                             int((lmList[5][1] + lmList[17][1]) / 2)
+                    self.hand_center = (cx, cy)
+                    norm_x = (cx / w) * 2 - 1
+                    norm_y = (cy / h) * 2 - 1
+                    self.hand_vel = [norm_x - self.hand_norm[0], norm_y - self.hand_norm[1]]
+                    self.hand_norm = [norm_x, norm_y]
+                    self.hand_exist = True
 
-            # 在圖片上畫標記
-            cv2.circle(color_img, self.hand_center, 8, (255, 255, 255), -1)
-            cv2.circle(color_img, lmList[4],  4, (150, 150, 150), -1)
-            cv2.circle(color_img, lmList[8],  4, (150, 150, 150), -1)
-            cv2.circle(color_img, lmList[12], 4, (150, 150, 150), -1)
-            cv2.circle(color_img, lmList[16], 4, (150, 150, 150), -1)
-            cv2.circle(color_img, lmList[20], 4, (150, 150, 150), -1)
-            self.color_img = color_img
+                    # 在圖片上畫標記
+                    cv2.circle(color_img, self.hand_center, 8, (255, 255, 255), -1)
+                    for i in [4, 8, 12, 16, 20]:
+                        cv2.circle(color_img, lmList[i], 4, (150, 150, 150), -1)
 
-            if depth == True:
-                self.hand_depth = self.depth_img[int(cy), int(cx)]*0.001  # m
-                cv2.putText(self.color_img, f"{self.hand_depth:.3f} m", (int(cx) + 30, int(cy)), cv2.FONT_HERSHEY_SIMPLEX, 
-                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                    self.color_img = color_img
+
+                    if depth:
+                        self.hand_depth = self.depth_img[int(cy), int(cx)] * 0.001  # m
+                        cv2.putText(self.color_img, f"{self.hand_depth:.3f} m", (int(cx) + 30, int(cy)), 
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                    return  # 找到左手就結束
                 
         else:
             self.hand_exist = False
