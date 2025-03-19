@@ -249,6 +249,16 @@ class RL_arm(gym.Env):
         if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 5:
             self.inf.reward += 10
             self.sys.arm_target_pos[3] = np.radians(random.uniform( -90, 90))
+
+            # new hand length
+            self.obs.hand_length = random.uniform(0.0, 0.15)
+            self.obs.hand_length = 0.0
+            self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.22 + self.obs.hand_length
+            mujoco.mj_forward(self.robot, self.data)
+            self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
+            self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
+
+            # new target position
             reachable = False
             while reachable == False:
                 self.sys.pos_target0[0] = random.uniform(-0.05, 0.50)
@@ -263,14 +273,6 @@ class RL_arm(gym.Env):
                 self.sys.pos_target0[1] = random.uniform(-0.75, 0.00)
                 self.sys.pos_target0[2] = random.uniform( 0.90, 1.40)
                 reachable = self.check_reachable(self.sys.pos_target0)
-            
-            # new hand length
-            self.obs.hand_length = random.uniform(0.0, 0.15)
-            self.obs.hand_length = 0.0
-            self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.22 + self.obs.hand_length
-            mujoco.mj_forward(self.robot, self.data)
-            self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
-            self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
             
             # new neck position
             neck_xyz = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
