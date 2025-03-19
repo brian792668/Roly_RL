@@ -17,21 +17,23 @@ class Roly_motor(DXL_Motor):
         self.joints_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1,  1]
         self.joints = [0] * 9
         self.joints_increment = [0] * 9
-        self.initial_pos = [-20, -45, 2, -20, 0, 40, 92, 0, 95]
+        self.initial_pos = [-20, -45, 21, -31, 0, 67, 92, 0, 95]
         self.limit_high = [ 1.57, 0.00, 1.57, 1.90]
         self.limit_low  = [-1.57,-1.57,-1.57, 0.00]
 
-        self.changeAllMotorOperatingMode(OP_MODE=3)
         self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50, 200])
+        self.changeAllMotorOperatingMode(OP_MODE=3)
         time.sleep(0.1)
 
     def to_pose(self, pose, speed=0.5):
         # Get current joint angles.
         current_angles = self.readAllMotorPosition()
         while current_angles ==  None:
+            time.sleep(0.1)
             print("failed to read motor position. Retry...")
             current_angles = self.readAllMotorPosition()
-        current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(current_angles))]
+
+        current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(self.joints))]
 
         # Set final joint angles.
         final_angles = current_angles
@@ -54,11 +56,7 @@ class Roly_motor(DXL_Motor):
             self.writeAllMotorPosition(self.toRolyctrl(ctrlpos.copy()))
             time.sleep(0.001)
 
-        # Get final actual joint angles
-        current_angles = self.readAllMotorPosition()
-        current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(current_angles))]
-        self.joints = current_angles.copy()
-        time.sleep(0.1)
+        self.joints = final_angles.copy()
 
     def toRolyctrl(self, ctrlpos):
         return [(ctrlpos[i]*self.joints_axis[i]+self.joints_bias[i]) for i in range(len(self.joints_bias))]
