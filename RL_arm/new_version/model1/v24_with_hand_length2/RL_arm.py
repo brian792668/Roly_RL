@@ -143,10 +143,10 @@ class RL_arm(gym.Env):
         # ----------------------------------
         # reward using predicted EE position
         joints_in_5_steps = self.data.qpos[9:15].copy()
-        gamma = (1-0.9**2)/0.1
-        joints_in_5_steps[0] += (self.inf.action[0]*gamma + self.inf.action_new[0]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
-        joints_in_5_steps[1] += (self.inf.action[1]*gamma + self.inf.action_new[1]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
-        joints_in_5_steps[4] += (self.inf.action[2]*gamma + self.inf.action_new[2]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        # gamma = (1-0.9**2)/0.1
+        # joints_in_5_steps[0] += (self.inf.action[0]*gamma + self.inf.action_new[0]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        # joints_in_5_steps[1] += (self.inf.action[1]*gamma + self.inf.action_new[1]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        # joints_in_5_steps[4] += (self.inf.action[2]*gamma + self.inf.action_new[2]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
 
         self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
         self.sys.pos_EE_predict = self.DH_R.forward(angles=joints_in_5_steps.copy())
