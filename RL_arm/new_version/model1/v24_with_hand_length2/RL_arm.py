@@ -233,7 +233,7 @@ class RL_arm(gym.Env):
     def check_reachable(self, point):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
-        if distoshoulder >= 0.50 or distoshoulder <= 0.20:
+        if distoshoulder >= (0.47+self.obs.hand_length) or distoshoulder <= abs((0.03-self.obs.hand_length)):
             return False
         elif (point[0]<0.12 and point[1] > -0.20):
             return False

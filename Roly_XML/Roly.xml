@@ -244,19 +244,19 @@
                                         <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_palm" /> -->
                                         <body name="R_finger2" pos="0.028343 -0.019846 0.12875" quat="0.62721 -0.326505 0.627213 0.326506">
                                             <inertial pos="-0.0445566 0.0133763 -2.00831e-10" quat="0.580505 0.580505 0.403749 0.403749" mass="0.0078541" diaginertia="4.08422e-06 4.0541e-06 1.6249e-07" />
-                                            <joint name="R_finger2" pos="0 0 0" axis="0 0 -1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" />
+                                            <!-- <joint name="R_finger2" pos="0 0 0" axis="0 0 -1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" /> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="R_finger2" />
                                             <!-- <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="R_finger2" /> -->
                                         </body>
                                         <body name="R_finger3" pos="0.0283427 0.0198457 0.12875" quat="0.326506 -0.627211 0.326506 0.627211">
                                             <inertial pos="-0.0445566 0.0133763 8.22281e-10" quat="0.580505 0.580505 0.403749 0.403749" mass="0.0078541" diaginertia="4.08422e-06 4.0541e-06 1.6249e-07" />
-                                            <joint name="R_finger3" pos="0 0 0" axis="0 0 -1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" />
+                                            <!-- <joint name="R_finger3" pos="0 0 0" axis="0 0 -1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" /> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.792157 0.819608 0.933333 1" mesh="R_finger3" />
                                             <!-- <geom type="mesh" rgba="0.792157 0.819608 0.933333 1" mesh="R_finger3" /> -->
                                         </body>
                                         <body name="R_finger1" pos="-0.0346 0 0.12875" quat="0.499998 0.5 0.5 -0.500002">
                                             <inertial pos="-0.044557 0.013376 1.1889e-09" quat="0.580506 0.580506 0.403748 0.403748" mass="0.0078541" diaginertia="4.0842e-06 4.0541e-06 1.62477e-07" />
-                                            <joint name="R_finger1" pos="0 0 0" axis="0 0 -1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" />
+                                            <!-- <joint name="R_finger1" pos="0 0 0" axis="0 0 -1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" /> -->
                                             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.79216 0.81961 0.93333 1" mesh="R_finger1" />
                                             <!-- <geom type="mesh" rgba="0.79216 0.81961 0.93333 1" mesh="R_finger1" /> -->
                                         </body>

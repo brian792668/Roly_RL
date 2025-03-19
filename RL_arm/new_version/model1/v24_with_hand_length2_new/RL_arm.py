@@ -35,7 +35,7 @@ class RL_arm(gym.Env):
                    [np.pi/2, np.pi/2,     0.0,  0.2488],
                    [    0.0,     0.0, -0.1705,     0.0], # -0.1105
                    [np.pi/2, np.pi/2,     0.0,     0.0],
-                   [np.pi/2, np.pi/2,     0.0, -0.18735],
+                   [np.pi/2, np.pi/2,     0.0, -0.2003],
                    [    0.0, np.pi/2,     0.0,     0.0],
                    [    0.0, np.pi/2,     0.0,  0.17]] # 0.1803
         self.DH_R = DHtable(tableR)
@@ -143,10 +143,10 @@ class RL_arm(gym.Env):
         # ----------------------------------
         # reward using predicted EE position
         joints_in_5_steps = self.data.qpos[9:15].copy()
-        # gamma = (1-0.9**2)/0.1
-        # joints_in_5_steps[0] += (self.inf.action[0]*gamma + self.inf.action_new[0]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
-        # joints_in_5_steps[1] += (self.inf.action[1]*gamma + self.inf.action_new[1]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
-        # joints_in_5_steps[4] += (self.inf.action[2]*gamma + self.inf.action_new[2]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        gamma = (1-0.9**2)/0.1
+        joints_in_5_steps[0] += (self.inf.action[0]*gamma + self.inf.action_new[0]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        joints_in_5_steps[1] += (self.inf.action[1]*gamma + self.inf.action_new[1]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        joints_in_5_steps[4] += (self.inf.action[2]*gamma + self.inf.action_new[2]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
 
         self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
         self.sys.pos_EE_predict = self.DH_R.forward(angles=joints_in_5_steps.copy())
@@ -224,7 +224,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0):
+    def render(self, speed=1):
         if self.inf.timestep%int(48*speed+2) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()
@@ -233,7 +233,7 @@ class RL_arm(gym.Env):
     def check_reachable(self, point):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
-        if distoshoulder >= 0.50 or distoshoulder <= 0.20:
+        if distoshoulder >= (0.5408+self.obs.hand_length) or distoshoulder <= (0.2008-self.obs.hand_length):
             return False
         elif (point[0]<0.12 and point[1] > -0.20):
             return False
@@ -266,7 +266,7 @@ class RL_arm(gym.Env):
             
             # new hand length
             self.obs.hand_length = random.uniform(0.0, 0.15)
-            self.obs.hand_length = 0.0
+            # self.obs.hand_length = 0.0
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.17 + self.obs.hand_length
             mujoco.mj_forward(self.robot, self.data)
             self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()

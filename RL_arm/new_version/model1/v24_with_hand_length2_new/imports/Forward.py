@@ -5,7 +5,7 @@ class DHtable():
         self.table = table
 
     def update_hand_length(self, hand_length):
-        self.table[-1][3] = 0.22 + hand_length
+        self.table[-1][3] = 0.17 + hand_length
 
     def Tans_Matrix(self, link_number, angle):
         [theta, alpha, a, d] = self.table[link_number]
