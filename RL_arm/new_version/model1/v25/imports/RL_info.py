@@ -28,12 +28,14 @@ class RL_obs():
         self.obj_to_neck_xyz = [0.0, 0.0, 0.0]
         self.obj_to_hand_xyz = [0.0, 0.0, 0.0]
         self.obj_to_hand_xyz_norm = [0.0, 0.0, 0.0]
+        self.hand_length = 0.0
 
     def reset(self):
         self.joint_arm = [0.0, 0.0, 0.0, 0.0]
         self.obj_to_neck_xyz = [0.0, 0.0, 0.0]
         self.obj_to_hand_xyz = [0.0, 0.0, 0.0]
         self.obj_to_hand_xyz_norm = [0.0, 0.0, 0.0]
+        self.hand_length = 0.0
 
 class RL_sys():
     def __init__(self, Hz = 50):
@@ -49,8 +51,8 @@ class RL_sys():
         self.hand2target0 = 1.0
         self.elbow_to_hand = [0.0, 0.0, 0.0]
         self.elbow_to_target = [0.0, 0.0, 0.0]
-        self.limit_high = [ 1.57, 1.95, 1.57, 1.95]
-        self.limit_low  = [-1.57,-1.95,-1.57, 0.00]
+        self.limit_high = [ 1.95, 1.95, 1.57, 3.05]
+        self.limit_low  = [-1.95,-1.95,-1.57, 0.00]
         self.arm_target_pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.pos_EE_predict = [0.0, 0.0, 0.0]
 
