@@ -91,18 +91,13 @@ class RL_arm(gym.Env):
                 self.inf.reward -= 10
                 self.inf.truncated = True
 
-            self.inf.action[0] = self.inf.action[0]*0.9 + action[0]*0.1
-            self.inf.action[1] = self.inf.action[1]*0.9 + action[1]*0.1
+            self.inf.action[0] = action[0]
+            self.inf.action[1] = action[1]
             
-            with torch.no_grad():  # 不需要梯度計算，因為只做推論
-                desire_joints = self.IK(torch.tensor(self.sys.vec_target2neck, dtype=torch.float32)).tolist()
-                desire_joints[2] += 20
-                desire_joints = np.radians(desire_joints)
-
             action_from_model1 = self.model1.predict()
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
-            self.sys.joints_increment[2] = np.tanh(desire_joints[2] - self.sys.pos[5])*0.01
+            self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
             self.sys.joints_increment[4] = 0
             alpha = 1-0.8*np.exp(-300*self.sys.hand2guide**2)
@@ -110,16 +105,14 @@ class RL_arm(gym.Env):
                 self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.sys.joints_increment[0]*0.01*alpha
                 self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.sys.joints_increment[1]*0.01*alpha
                 self.sys.ctrlpos[4] = 0
-                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]
+                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]*0.01
                 self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01*alpha
                 self.sys.ctrlpos[7] = self.sys.ctrlpos[7] + self.sys.joints_increment[4]*0.01
                 self.control_and_step()
             self.render()
 
             self.inf.reward = self.get_reward()
-            self.observation_space = np.concatenate([self.sys.vec_target2neck, 
-                                                     self.sys.vec_target2guide,
-                                                     [self.obs.joint_arm[2]]]).astype(np.float32)
+            self.observation_space = np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) 
             return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
     
     def reset(self, seed=None, **kwargs): 
@@ -135,73 +128,60 @@ class RL_arm(gym.Env):
             self.control_and_step()
             self.render()
             self.get_state()
-            self.observation_space = np.concatenate([self.sys.vec_target2neck, 
-                                                     self.sys.vec_target2guide,
-                                                     [self.obs.joint_arm[2]]]).astype(np.float32)
+            self.observation_space = np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) 
             self.inf.done = False
             self.inf.truncated = False
             self.inf.info = {}
             return self.observation_space, self.inf.info
 
     def get_reward(self):
-        # # r0: nature pos
-        # with torch.no_grad():  # 不需要梯度計算，因為只做推論
-        #     desire_joints = self.IK(torch.tensor(self.sys.vec_target2neck, dtype=torch.float32)).tolist()
-        #     desire_joints[2] += 20
-        #     desire_joints = np.radians(desire_joints)
-        # r0 = desire_joints[2] - self.sys.pos[5]
-        # r0 = np.exp(-50*r0**2)
-        r0 = 0
+        r0 = np.exp(-2*self.inf.action[0])
 
         # r1: grasping distance
-        r1 = (0.1-self.sys.grasping_dis) / 0.1
+        pos_elbow = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")].copy()
+        pos_arm1  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker1")].copy()
+        pos_arm2  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker2")].copy()
+        pos_arm3  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker3")].copy()
+        pos_arm4  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker4")].copy()
+        pos_arm5  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker5")].copy()
+        pos_arm6  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker6")].copy()
+        pos_arm7  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker7")].copy()
+        pos_arm8  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker8")].copy()
+        pos_arm9  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker9")].copy()
+        pos_arm10 = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker10")].copy()
+        pos_arm11 = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_arm_marker11")].copy()
+        collision = 1.0
+        collision *= 1 - ((-np.tanh(500 * (pos_elbow[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_elbow[1] + 0.20)) + 1) / 2) #0.08, 0.17
+        collision *= 1 - ((-np.tanh(500 * (pos_arm1[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm1[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm2[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm2[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm3[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm3[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm4[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm4[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm5[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm5[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm6[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm6[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm7[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm7[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm8[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm8[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm9[0]  - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm9[1]  + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm10[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm10[1] + 0.20)) + 1) / 2)
+        collision *= 1 - ((-np.tanh(500 * (pos_arm11[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm11[1] + 0.20)) + 1) / 2)
 
-        # r2, r3: hand central
-        v1 = ( self.sys.vec_hand2elbow[0] ** 2 + self.sys.vec_hand2elbow[1] ** 2 + self.sys.vec_hand2elbow[2] ** 2 ) ** 0.5
-        v2 = ( self.sys.vec_target2elbow[0]**2 + self.sys.vec_target2elbow[1]**2 + self.sys.vec_target2elbow[2]**2 ) ** 0.5
-        cosine = np.dot(self.sys.vec_hand2elbow, self.sys.vec_target2elbow)/(v1*v2)
-        theta = np.arccos(cosine)
-        if np.degrees(theta) <= 10 and v1 < v2:
-            self.sys.grasping_dis*= 0.95
-        else: 
-            self.sys.grasping_dis = 0.1
-        r2 = np.exp(-3*theta**2)
-        r3 = np.exp(-20*theta**2)
+        # boundary function
+        x = self.sys.pos[5]
+        boundary_value = (x-self.inf.action[0])*(x-self.inf.action[1])
+        normalized = 1/(1+np.exp(-1000*boundary_value))
 
-        if self.inf.timestep%int(3*self.sys.Hz) == 0 and np.degrees(theta) >= 15:
-            self.inf.truncated = True
-
-        # reachable
-        reachable = self.check_reachable(self.sys.pos_guide.copy())
-        if reachable == False:
-            self.inf.reward += -0.5
-        else:
-            self.inf.reward += 0.5*r0 + 0.1*r1 + 0.2*r2*reachable + 0.7*r3
+        # reward
+        error = abs(collision-normalized)
+        self.inf.reward = 0.9*np.exp(-20*error) + 0.1*np.exp(-5*error)
+        if self.inf.action[0] < self.inf.action[1]:
+            self.inf.reward = 0
         self.inf.total_reward += self.inf.reward
-        
-        # # 獎勵對應部分的比例長度
-        r0_length = int((0.5*r1) * 40)  # r0 部分長度
-        r1_length = int((0.1*r1) * 40)  # r1 部分長度
-        r2_length = int((0.2*r2) * 40)  # r2 部分長度
-        r3_length = int((0.7*r3) * 40)  # r3 部分長度
+        # self.print_scale(self.inf.action[0], self.inf.action[1], self.sys.pos[5], collision, self.inf.reward)
 
-        r0_bar = "." * r0_length + " " * int(0.5*40 - r0_length)
-        r1_bar = "." * r1_length + " " * int(0.1*40 - r1_length)
-        r2_bar = "." * r2_length + " " * int(0.2*40 - r2_length)
-        r3_bar = "." * r3_length + " " * int(0.7*40 - r3_length)
-
-        # r0_bar = "." * int(0.5*40*r0) + " " * int(0.5*40*(1-r0))
-        # r1_bar = "." * int(0.1*40*r1) + " " * int(0.5*40*(1-r1))
-        # r2_bar = "." * int(0.2*40*r2) + " " * int(0.5*40*(1-r2))
-        # r3_bar = "." * int(0.7*40*r3) + " " * int(0.5*40*(1-r3))
-
-        status_bar = f"| {r2_bar}{r3_bar}{r1_bar}{r0_bar}|"
-        print(f"\r{status_bar}  {self.inf.reward:.2f}", end=" ")
 
         return self.inf.reward
  
     def get_state(self):
-        if self.inf.timestep%int(3*self.sys.Hz) == 0:
+        if self.inf.timestep%int(2*self.sys.Hz) == 0:
             self.spawn_new_point()
 
         # position of hand, neck, elbow
@@ -236,10 +216,6 @@ class RL_arm(gym.Env):
         self.model1.obs_joints[0:2] = self.data.qpos[9:11].copy()
         self.model1.obs_joints[2:4] = self.data.qpos[12:14].copy()
 
-        if self.sys.hand2target <= 0.03:
-            self.model1.obs_hand_dis = 0.0
-        self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.22 + self.model1.obs_hand_dis
-        mujoco.mj_forward(self.robot, self.data)
         self.model1.action[0] = self.sys.joints_increment[0]
         self.model1.action[1] = self.sys.joints_increment[1]
         self.model1.action[2] = self.sys.joints_increment[3]
@@ -283,15 +259,17 @@ class RL_arm(gym.Env):
         if self.inf.timestep == 0 or self.sys.hand2guide <= 0.05:
             reachable = False
             while reachable == False:
-                self.sys.pos_target[0] = random.uniform(-0.05, 0.50)
-                self.sys.pos_target[1] = random.uniform(-0.75, 0.00)
+                self.sys.pos_target[0] = random.uniform( -0.05, 0.50) # -0.05~0.50
+                self.sys.pos_target[1] = -0.75*random.uniform(0.0, 1.0)**2      # -0.75~0.0
                 self.sys.pos_target[2] = random.uniform( 0.90, 1.40)
                 reachable = self.check_reachable(self.sys.pos_target.copy())
             self.data.qpos[15:18] = self.sys.pos_target.copy()
             # self.sys.guide_arm_joints[3] = np.radians(random.uniform( -90, 90))
-            self.model1.obs_hand_dis = 0.1
+            self.model1.obs_hand_dis = 0.0
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.22 + self.model1.obs_hand_dis
             mujoco.mj_forward(self.robot, self.data)
+
+            self.sys.guide_arm_joints[3] = np.radians(-90 + 180*random.uniform( 0.0, 1.0)**2)
 
             self.sys.pos_neck = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
             self.sys.vec_target2neck = [self.sys.pos_target[0]-self.sys.pos_neck[0], self.sys.pos_target[1]-self.sys.pos_neck[1], self.sys.pos_target[2]-self.sys.pos_neck[2]]
@@ -377,3 +355,30 @@ class RL_arm(gym.Env):
         #     self.sys.pos_guide = self.sys.pos_hand.copy()
         #     self.sys.vec_guide2hand  = [self.sys.pos_guide[0] - self.sys.pos_hand[0] , self.sys.pos_guide[1] - self.sys.pos_hand[1] , self.sys.pos_guide[2] - self.sys.pos_hand[2]]
 
+    def print_scale(self, a, b, c, collision, reward):
+        a *= 180/np.pi
+        b *= 180/np.pi  
+        c *= 180/np.pi
+
+        if a > b:  # 確保 a 在 b 的左邊
+            a, b = b, a
+
+        total_length = 50  # 總長度
+        start = -95
+        end = 95
+
+        pos_a = round((a - start) / (end - start) * total_length)
+        pos_b = round((b - start) / (end - start) * total_length)
+        pos_c = round((c - start) / (end - start) * total_length)
+
+        output = ['-'] * total_length
+        output[pos_c+1:pos_a] = ['-'] * (pos_a - pos_c - 1)
+        output[pos_a] = f' {a:.0f} '
+        output[pos_a+1:pos_b] = ['='] * (pos_b - pos_a - 1)
+        output[pos_b] = f' {b:.0f} '
+        if collision <= 0.1:
+            output[pos_c] = f' \033[93m{c:.0f}\033[0m '
+        else:
+            output[pos_c] = f' {c:.0f} '
+
+        print(''.join(output), f"{reward:.1f}")

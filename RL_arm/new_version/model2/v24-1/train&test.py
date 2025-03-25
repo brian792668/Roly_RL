@@ -25,7 +25,8 @@ def train(model, env, file_path, render_speed=1):
     timer0 = time.time()
     env.render_speed = render_speed
 
-    while True:
+    # while True:
+    for i in range(400):
         env.reset()
         env.inf.totaltimestep = 0
         env.inf.total_reward = 0
@@ -58,7 +59,7 @@ def train(model, env, file_path, render_speed=1):
        
 def test(model, env, model_path, render_speed=0):
     env.render_speed = render_speed
-    model = stable_baselines3.SAC.load(model_path, env)
+    model = stable_baselines3.PPO.load(model_path, env)
     obs, _ = env.reset()
     env.inf.totaltimestep = 0
     env.inf.total_reward = 0
@@ -78,9 +79,9 @@ if __name__ == '__main__':
     model_last_path = os.path.join(file_path, "model_last.zip")
     model_best_path = os.path.join(file_path, "model_best.zip")
     if os.path.exists(model_last_path):
-        RL_model = stable_baselines3.SAC.load(model_last_path, my_env)
+        RL_model = stable_baselines3.PPO.load(model_last_path, my_env)
     else:
-        RL_model = stable_baselines3.SAC('MlpPolicy', my_env, learning_rate=0.0003)
+        RL_model = stable_baselines3.PPO('MlpPolicy', my_env, learning_rate=0.0003)
         RL_model.save(model_last_path)
         print("Create new MLP RL model.")
     
@@ -91,6 +92,6 @@ if __name__ == '__main__':
     #     RL_model.policy.to("cpu")
     #     print("Model 2 : CPU")
 
-    train(RL_model, my_env, file_path, render_speed = 0.5)
+    train(RL_model, my_env, file_path, render_speed = 1.0)
     # test(RL_model, my_env, model_last_path, render_speed = 0)
     # test(RL_model, my_env, model_best_path, render_speed = 0)

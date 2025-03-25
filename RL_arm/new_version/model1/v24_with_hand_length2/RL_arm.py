@@ -87,8 +87,7 @@ class RL_arm(gym.Env):
 
             self.get_reward()
             self.get_state()
-            self.observation_space = np.concatenate([self.obs.obj_to_neck_xyz, 
-                                                     self.obs.obj_to_hand_xyz_norm, 
+            self.observation_space = np.concatenate([self.obs.obj_to_hand_xyz_norm, 
                                                      self.inf.action, 
                                                      self.obs.joint_arm,
                                                      [self.obs.hand_length]]).astype(np.float32)
@@ -129,8 +128,7 @@ class RL_arm(gym.Env):
 
             # self.head_camera.get_img(self.data, rgb=True, depth=True)
             self.get_state()
-            self.observation_space = np.concatenate([self.obs.obj_to_neck_xyz, 
-                                                     self.obs.obj_to_hand_xyz_norm, 
+            self.observation_space = np.concatenate([self.obs.obj_to_hand_xyz_norm, 
                                                      self.inf.action, 
                                                      self.obs.joint_arm,
                                                      [self.obs.hand_length]]).astype(np.float32)
@@ -224,7 +222,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0):
+    def render(self, speed=1):
         if self.inf.timestep%int(48*speed+2) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()
@@ -233,9 +231,9 @@ class RL_arm(gym.Env):
     def check_reachable(self, point):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
-        if distoshoulder >= (0.47+self.obs.hand_length) or distoshoulder <= abs((0.03-self.obs.hand_length)):
+        if distoshoulder >= (0.47+0) or distoshoulder <= 0.25:
             return False
-        elif (point[0]<0.12 and point[1] > -0.20):
+        elif (point[0]<0.08 and point[1] > -0.15):
             return False
         else:
             return True
@@ -252,7 +250,7 @@ class RL_arm(gym.Env):
 
             # new hand length
             self.obs.hand_length = random.uniform(0.0, 0.15)
-            self.obs.hand_length = 0.0
+            # self.obs.hand_length = 0.0
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.22 + self.obs.hand_length
             mujoco.mj_forward(self.robot, self.data)
             self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()

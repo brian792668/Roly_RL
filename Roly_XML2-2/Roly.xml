@@ -232,7 +232,8 @@
         <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
 		    <body name="hitbox1" > 
             <!-- <geom name="hitbox1-1" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.5"/> 
-            <geom name="hitbox1-2" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/> -->
+            <geom name="hitbox1-2" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/>
+            <geom name="hitbox1-3" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.00 0.0 0.39" size="0.07 0.16 0.12" rgba="0.99 0.752941 0.752941 1.0"/> -->
         </body>
         <body name="neck" pos="0.0236 0 0.525">
           <inertial pos="-0.01154 -2.7422e-05 0.076842" quat="-0.0193906 0.70689 0.0191848 0.706797" mass="0.091599" diaginertia="2.6139e-05 2.12139e-05 1.51841e-05"/>
@@ -260,6 +261,12 @@
             <geom name="R_arm1" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/>
             <!-- <geom name="R_arm1" type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1"/> -->
 			      <site name="R_shoulder_marker" type="sphere" size="0.020" pos="0 0 0" rgba="0 1 1 1"/>
+            <site name="R_arm_marker1" type="sphere" size="0.015" pos="-0.14 0.0 0.0" rgba="0 1 1 0.5"/>
+            <site name="R_arm_marker2" type="sphere" size="0.015" pos="-0.16 0.0 0.0" rgba="0 1 1 0.5"/>
+            <site name="R_arm_marker3" type="sphere" size="0.015" pos="-0.18 0.0 0.0" rgba="0 1 1 0.5"/>
+            <site name="R_arm_marker4" type="sphere" size="0.015" pos="-0.20 0.0 0.0" rgba="0 1 1 0.5"/>
+            <site name="R_arm_marker5" type="sphere" size="0.015" pos="-0.22 0.0 0.0" rgba="0 1 1 0.5"/>
+            <site name="R_arm_marker6" type="sphere" size="0.015" pos="-0.24 0.0 0.0" rgba="0 1 1 0.5"/>
             <body name="R_arm2" pos="-0.1105 0 0">
               <inertial pos="-0.0563 1.74831e-07 -0.00680843" quat="0.707087 -0.00578054 -0.00578188 0.707079" mass="0.0726996" diaginertia="2.69669e-05 2.47831e-05 1.38386e-05"/>
               <joint name="R_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
@@ -275,7 +282,12 @@
                   <joint name="R_arm4" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
                   <geom name="R_arm4" type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/>
                   <!-- <geom name="R_arm4" type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4"/> -->
-                  <site name="R_elbow_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
+                  <site name="R_elbow_marker" type="sphere" size="0.015" pos="0.0 -0.00 0.0" rgba="0 1 1 0.5"/>
+                  <site name="R_arm_marker7" type="sphere" size="0.015" pos="0.0 -0.04 0.0" rgba="0 1 1 0.5"/>
+                  <site name="R_arm_marker8" type="sphere" size="0.015" pos="0.0 -0.08 0.0" rgba="0 1 1 0.5"/>
+                  <site name="R_arm_marker9" type="sphere" size="0.015" pos="0.0 -0.12 0.0" rgba="0 1 1 0.5"/>
+                  <site name="R_arm_marker10" type="sphere" size="0.015" pos="0.0 -0.16 0.0" rgba="0 1 1 0.5"/>
+                  <site name="R_arm_marker11" type="sphere" size="0.015" pos="0.0 -0.20 0.0" rgba="0 1 1 0.5"/>
                   <body name="R_palm" quat="0.707107 0.707107 0 0">
                     <inertial pos="-0.0114428 0.023578 0.122371" quat="0.615966 0.339362 0.623104 0.342287" mass="0.113422" diaginertia="4.23069e-05 4.17695e-05 1.3767e-05"/>
                     <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
