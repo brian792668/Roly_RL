@@ -115,6 +115,12 @@ class RL_arm(gym.Env):
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
             self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
+            # if (self.sys.limit_high[2]-self.sys.guide_arm_joints[3])*(self.sys.limit_low[2]-self.sys.guide_arm_joints[3]) <0:
+            #     self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
+            # elif self.sys.guide_arm_joints[3] < self.sys.limit_low[2]:
+            #     self.sys.joints_increment[2] = np.tanh(self.sys.limit_low[2]- self.sys.pos[5])
+            # else: 
+            #     self.sys.joints_increment[2] = np.tanh(self.sys.limit_high[2]- self.sys.pos[5])
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
             self.sys.joints_increment[4] = 0
             alpha = 1-0.8*np.exp(-300*self.sys.hand2guide**2)
@@ -180,15 +186,38 @@ class RL_arm(gym.Env):
         collision *= 1 - ((-np.tanh(500 * (pos_arm11[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm11[1] + 0.20)) + 1) / 2)
 
         # from MLP
-        input_tensor = torch.tensor(self.observation_space).unsqueeze(0)
+        input_tensor = torch.tensor(np.array(self.sys.vec_guide2neck.copy(), dtype=np.float32) ).unsqueeze(0)
         with torch.no_grad():
             CBoutput = self.CBmodel(input_tensor)
-        c_pred, d_pred = CBoutput[0].numpy()
+        low_bound, high_bound = CBoutput[0].numpy()
+        if low_bound > high_bound:
+            low_bound, high_bound = high_bound, low_bound
+
+        if low_bound > 1.57 or high_bound < -1.57:
+            self.sys.limit_high[2] = 0.90*self.sys.limit_high[2] + 0.10*1.57
+            self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*-1.57
+        else:
+            self.sys.limit_high[2] = 0.90*self.sys.limit_high[2] + 0.10*1.57
+            self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*high_bound
+
+        future_elbow_yaw = self.sys.pos[5] + 20*self.sys.joints_increment[2]
+        if future_elbow_yaw > high_bound:
+            self.sys.joints_increment[2] = (high_bound - future_elbow_yaw)/20.0
+        elif future_elbow_yaw < low_bound:
+            self.sys.joints_increment[2] = (low_bound - future_elbow_yaw)/20.0
+
+        input_tensor = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
+        with torch.no_grad():
+            CBoutput = self.CBmodel(input_tensor)
+        low_bound, high_bound = CBoutput[0].numpy()
+        if low_bound > high_bound:
+            low_bound, high_bound = high_bound, low_bound
+
 
         # boundary function
         x = self.sys.pos[5]
         # boundary_value = (x-self.inf.action[0])*(x-self.inf.action[1])
-        boundary_value = (x-c_pred)*(x-d_pred)
+        boundary_value = (x-low_bound)*(x-high_bound)
         normalized = 1/(1+np.exp(-500*np.clip(boundary_value, -0.02, 0.02)))
 
         # reward
@@ -198,7 +227,7 @@ class RL_arm(gym.Env):
             self.inf.reward = 0
         self.inf.total_reward += self.inf.reward
         # self.print_scale(self.inf.action[0], self.inf.action[1], self.sys.pos[5], collision, self.inf.reward)
-        self.print_scale(c_pred, d_pred, self.sys.pos[5], collision, self.inf.reward)
+        self.print_scale(low_bound, high_bound, self.sys.pos[5], collision, self.inf.reward)
 
 
         # # label
@@ -340,22 +369,19 @@ class RL_arm(gym.Env):
         # step & render
         mujoco.mj_step(self.robot, self.data)
 
-    def print_scale(self, a, b, c, collision, reward):
+    def print_scale(self, low, high, elbow, collision, reward):
 
-        a *= 180/np.pi
-        b *= 180/np.pi  
-        c *= 180/np.pi
-
-        if a > b:  # 確保 a 在 b 的左邊
-            a, b = b, a
+        low *= 180/np.pi
+        high *= 180/np.pi  
+        elbow *= 180/np.pi
 
         total_length = 40  # 總長度
         start = -95
         end = 95
 
-        pos_a = round((a - start) / (end - start) * total_length)
-        pos_b = round((b - start) / (end - start) * total_length)
-        pos_c = round((c - start) / (end - start) * total_length)
+        pos_a = round((low - start) / (end - start) * total_length)
+        pos_b = round((high - start) / (end - start) * total_length)
+        pos_c = round((elbow - start) / (end - start) * total_length)
 
         output = ['-'] * total_length
         output[pos_c+1:pos_a] = ['-'] * (pos_a - pos_c - 1)
@@ -363,11 +389,11 @@ class RL_arm(gym.Env):
         output[pos_a+1:pos_b] = ['='] * (pos_b - pos_a - 1)
         output[pos_b] = ' '
         if collision <= 0.5:
-            output[pos_c] = f' \033[93m{c:.0f}\033[0m '
+            output[pos_c] = f' \033[93m{elbow:.0f}\033[0m '
         else:
-            output[pos_c] = f' {c:.0f} '
+            output[pos_c] = f' {elbow:.0f} '
 
-        print(''.join(output), f"{reward:.1f}")
+        print(''.join(output), f"{reward:.1f}", "bound:", f"{low:.3f}", f"{high:.3f}")
 
     def compensate(self):
         self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()

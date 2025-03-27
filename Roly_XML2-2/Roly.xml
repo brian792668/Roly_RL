@@ -232,8 +232,8 @@
         <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="trunk_link"/>
 		    <body name="hitbox1" > 
             <!-- <geom name="hitbox1-1" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.5"/> 
-            <geom name="hitbox1-2" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/>
-            <geom name="hitbox1-3" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.00 0.0 0.39" size="0.07 0.16 0.12" rgba="0.99 0.752941 0.752941 1.0"/> -->
+            <geom name="hitbox1-2" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/> -->
+            <geom name="hitbox1-3" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.00 0.0 0.30" size="0.08 0.18 0.20" rgba="0.99 0.752941 0.752941 0.2"/>
         </body>
         <body name="neck" pos="0.0236 0 0.525">
           <inertial pos="-0.01154 -2.7422e-05 0.076842" quat="-0.0193906 0.70689 0.0191848 0.706797" mass="0.091599" diaginertia="2.6139e-05 2.12139e-05 1.51841e-05"/>

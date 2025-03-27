@@ -256,6 +256,7 @@
           <joint name="R_shoulder" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
           <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.75294 0.75294 0.75294 1" mesh="R_shoulder"/>
           <geom type="mesh" rgba="0.75294 0.75294 0.75294 1" mesh="R_shoulder"/>
+          <site name="origin_marker" type="sphere" size="0.20" pos="0.0 0.0 0.0" rgba="1 0.1 0.1 0.5"/>
           <body name="R_arm1" pos="0 0 0.2488" quat="0.5 0.5 0.5 0.5">
             <inertial pos="-0.0833488 1.97169e-05 -7.82531e-06" quat="0.483195 0.516442 0.516157 0.483106" mass="0.185808" diaginertia="8.80008e-05 6.51814e-05 5.49517e-05"/>
             <joint name="R_arm1" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.5" stiffness="0.0" armature="0.01"/>
