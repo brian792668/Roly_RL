@@ -49,51 +49,51 @@ def lebal_Roly_IK(numberofpoints = 2000):
         else:
             return True
 
-    # targetpoints = [[0, 0, 0] for _ in range(numberofpoints)]
+    targetpoints = [[0, 0, 0] for _ in range(numberofpoints)]
     xyzs = [[0, 0, 0] for _ in range(numberofpoints)]
     joints = [[0, 0, 0, 0] for _ in range(numberofpoints)]
 
-    # for i in range(len(targetpoints)):
-    #     reachable = False
-    #     while reachable == False:
-    #         targetpoints[i][0] = random.uniform(-0.05, 0.5)
-    #         targetpoints[i][1] = random.uniform(-0.7, 0.0)
-    #         targetpoints[i][2] = random.uniform(1.35, 0.8)
-    #         reachable = check(targetpoints[i])
+    for i in range(len(targetpoints)):
+        reachable = False
+        while reachable == False:
+            targetpoints[i][0] = random.uniform(-0.05, 0.5)
+            targetpoints[i][1] = random.uniform(-0.7, 0.0)
+            targetpoints[i][2] = random.uniform(1.33, 0.8)
+            reachable = check(targetpoints[i])
     # 設定範圍
-    x_min, x_max = -0.05, 0.5
-    y_min, y_max = -0.7, 0.0
-    z_min, z_max = 0.8, 1.33
+    # x_min, x_max = -0.05, 0.5
+    # y_min, y_max = -0.7, 0.0
+    # z_min, z_max = 0.8, 1.33
 
-    # 計算 x, y, z 軸上應該分幾個點，取近似的三次方根
-    num_x = int(round(numberofpoints ** (1/3)))
-    num_y = int(round(numberofpoints ** (1/3)))
-    num_z = int(round(numberofpoints ** (1/3)))
+    # # 計算 x, y, z 軸上應該分幾個點，取近似的三次方根
+    # num_x = int(round(numberofpoints ** (1/3)))
+    # num_y = int(round(numberofpoints ** (1/3)))
+    # num_z = int(round(numberofpoints ** (1/3)))
 
-    # 產生均勻分佈的點
-    x_vals = np.linspace(x_min, x_max, num_x)
-    y_vals = np.linspace(y_min, y_max, num_y)
-    z_vals = np.linspace(z_min, z_max, num_z)
+    # # 產生均勻分佈的點
+    # x_vals = np.linspace(x_min, x_max, num_x)
+    # y_vals = np.linspace(y_min, y_max, num_y)
+    # z_vals = np.linspace(z_min, z_max, num_z)
 
-    # 建立 3D 網格
-    X, Y, Z = np.meshgrid(x_vals, y_vals, z_vals)
-    grid_points = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T  # 轉成 (N, 3) 形狀
+    # # 建立 3D 網格
+    # X, Y, Z = np.meshgrid(x_vals, y_vals, z_vals)
+    # grid_points = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T  # 轉成 (N, 3) 形狀
 
-    # 檢查可到達點
-    targetpoints = [point.tolist() for point in grid_points if check(point)]
+    # # 檢查可到達點
+    # targetpoints = [point.tolist() for point in grid_points if check(point)]
 
-    # 如果可到達的點數不足，補上
-    while len(targetpoints) < numberofpoints:
-        extra_point = [
-            np.random.uniform(x_min, x_max),
-            np.random.uniform(y_min, y_max),
-            np.random.uniform(z_min, z_max)
-        ]
-        if check(extra_point):
-            targetpoints.append(extra_point)
+    # # 如果可到達的點數不足，補上
+    # while len(targetpoints) < numberofpoints:
+    #     extra_point = [
+    #         np.random.uniform(x_min, x_max),
+    #         np.random.uniform(y_min, y_max),
+    #         np.random.uniform(z_min, z_max)
+    #     ]
+    #     if check(extra_point):
+    #         targetpoints.append(extra_point)
 
-    # 確保點的數量剛好為 10000
-    targetpoints = targetpoints[:numberofpoints]
+    # # 確保點的數量剛好為 10000
+    # targetpoints = targetpoints[:numberofpoints]
     sorted_targetpoints = sorted(targetpoints, key=lambda x: x[1])
     
     point_index = 0
@@ -257,6 +257,6 @@ def lebal_Roly_IK(numberofpoints = 2000):
     print(f"length of dataest: {len(xyzs)}\n\n")
 
 if __name__ == '__main__':
-    lebal_Roly_IK(numberofpoints = 10000)
+    lebal_Roly_IK(numberofpoints = 1000)
     # from ..IK_train import *
     # train(numberofpoints=10, version="v1")

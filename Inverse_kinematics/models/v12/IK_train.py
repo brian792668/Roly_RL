@@ -24,8 +24,8 @@ class IKDataset(Dataset):
 class IKMLP(nn.Module):
     def __init__(self):
         super(IKMLP, self).__init__()
-        self.fc1 = nn.Linear(3, 32)
-        self.fc2 = nn.Linear(32, 16)
+        self.fc1 = nn.Linear(3, 64)
+        self.fc2 = nn.Linear(64, 16)
         self.fc3 = nn.Linear(16, 8)
         self.fc4 = nn.Linear(8, 1)
     
@@ -34,7 +34,7 @@ class IKMLP(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
-        x = torch.tanh(x) * 95
+        # x = torch.tanh(x) * 95
         return x
 
 def train(numberofpoints, version):
@@ -45,13 +45,13 @@ def train(numberofpoints, version):
     xyz_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/{numberofpoints}points/xyz.npy"))
     joints_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/{numberofpoints}points/joints.npy"))
     ik_dataset = IKDataset(xyz_array, joints_array)
-    dataloader = DataLoader(ik_dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(ik_dataset, batch_size=64, shuffle=True)
 
     # Load test data
-    test_xyz_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/100points/xyz.npy"))
-    test_joints_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/100points/joints.npy"))
+    test_xyz_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/992points/xyz.npy"))
+    test_joints_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/992points/joints.npy"))
     test_dataset = IKDataset(test_xyz_array, test_joints_array)
-    test_dataloader = DataLoader(test_dataset, batch_size=2, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
     # ----------------------- Model --------------------------
     model = IKMLP()
@@ -59,7 +59,7 @@ def train(numberofpoints, version):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # --------------------------- Training ------------------------------
-    epochs = 10000
+    epochs = 5000
     train_losses = []
     test_losses = []
     min_test_loss = 1000
@@ -101,9 +101,9 @@ def train(numberofpoints, version):
         print(f'Epoch [{epoch+1}/{epochs}]   Train/Test Loss: {epoch_loss:.1f}, {test_loss:.1f}    min test loss: {min_test_loss:.3f}')
 
         # 每個 epoch 結束後繪製並儲存圖
-        plt.figure(figsize=(12, 8))
-        plt.plot(range(1, epoch+2), test_losses, label='Test Loss', alpha=0.5)
-        plt.plot(range(1, epoch+2), train_losses, label='Training Loss')
+        plt.figure(figsize=(15, 8))
+        plt.plot(range(1, epoch+2), train_losses, label='Training Loss', alpha=0.5)
+        plt.plot(range(1, epoch+2), test_losses, label='Test Loss')
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.ylim(0, 200)
@@ -115,4 +115,4 @@ def train(numberofpoints, version):
 
 
 if __name__ == '__main__':
-    train(numberofpoints=4997, version="v12")
+    train(numberofpoints=9923, version="v12")

@@ -87,7 +87,7 @@ class RL_arm(gym.Env):
         self.CBmodel.eval()
     
     def render(self):
-        if self.inf.timestep%int(48*self.render_speed+2) ==0:
+        if self.inf.timestep%int(49*self.render_speed+1) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_guide.copy()
             self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[3:7].copy()
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[0:3].copy()
@@ -115,12 +115,8 @@ class RL_arm(gym.Env):
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
             self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
-            # if (self.sys.limit_high[2]-self.sys.guide_arm_joints[3])*(self.sys.limit_low[2]-self.sys.guide_arm_joints[3]) <0:
-            #     self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
-            # elif self.sys.guide_arm_joints[3] < self.sys.limit_low[2]:
-            #     self.sys.joints_increment[2] = np.tanh(self.sys.limit_low[2]- self.sys.pos[5])
-            # else: 
-            #     self.sys.joints_increment[2] = np.tanh(self.sys.limit_high[2]- self.sys.pos[5])
+            if self.sys.guide_arm_joints[3] < self.sys.limit_low[2]:
+                self.sys.joints_increment[2] = np.tanh(self.sys.limit_low[2]- self.sys.pos[5])
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
             self.sys.joints_increment[4] = 0
             alpha = 1-0.8*np.exp(-300*self.sys.hand2guide**2)
@@ -186,7 +182,10 @@ class RL_arm(gym.Env):
         collision *= 1 - ((-np.tanh(500 * (pos_arm11[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm11[1] + 0.20)) + 1) / 2)
 
         # from MLP
+        # future_position = [self.sys.vec_hand2neck[0]+self.model1.obs_guide_to_hand_norm[0], self.sys.vec_hand2neck[1]+self.model1.obs_guide_to_hand_norm[1], self.sys.vec_hand2neck[2]+self.model1.obs_guide_to_hand_norm[2]]
+        # input_tensor = torch.tensor(np.array(future_position.copy(), dtype=np.float32) ).unsqueeze(0)
         input_tensor = torch.tensor(np.array(self.sys.vec_guide2neck.copy(), dtype=np.float32) ).unsqueeze(0)
+        # input_tensor = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
         with torch.no_grad():
             CBoutput = self.CBmodel(input_tensor)
         low_bound, high_bound = CBoutput[0].numpy()
@@ -194,17 +193,12 @@ class RL_arm(gym.Env):
             low_bound, high_bound = high_bound, low_bound
 
         if low_bound > 1.57 or high_bound < -1.57:
-            self.sys.limit_high[2] = 0.90*self.sys.limit_high[2] + 0.10*1.57
             self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*-1.57
+            self.sys.limit_low[2] -1.57
         else:
-            self.sys.limit_high[2] = 0.90*self.sys.limit_high[2] + 0.10*1.57
             self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*high_bound
+            self.sys.limit_low[2] = high_bound
 
-        future_elbow_yaw = self.sys.pos[5] + 20*self.sys.joints_increment[2]
-        if future_elbow_yaw > high_bound:
-            self.sys.joints_increment[2] = (high_bound - future_elbow_yaw)/20.0
-        elif future_elbow_yaw < low_bound:
-            self.sys.joints_increment[2] = (low_bound - future_elbow_yaw)/20.0
 
         input_tensor = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
         with torch.no_grad():
@@ -226,8 +220,7 @@ class RL_arm(gym.Env):
         if self.inf.action[0] < self.inf.action[1]:
             self.inf.reward = 0
         self.inf.total_reward += self.inf.reward
-        # self.print_scale(self.inf.action[0], self.inf.action[1], self.sys.pos[5], collision, self.inf.reward)
-        self.print_scale(low_bound, high_bound, self.sys.pos[5], collision, self.inf.reward)
+        self.print_scale(low_bound, high_bound, self.sys.pos[5], self.sys.guide_arm_joints[3], collision, self.inf.reward)
 
 
         # # label
@@ -263,6 +256,12 @@ class RL_arm(gym.Env):
         self.sys.vec_hand2neck    = [self.sys.pos_hand[0]   - self.sys.pos_neck[0] ,   self.sys.pos_hand[1]   - self.sys.pos_neck[1],   self.sys.pos_hand[2]   - self.sys.pos_neck[2]]
         self.sys.vec_hand2elbow   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0],   self.sys.pos_hand[1]   - self.sys.pos_elbow[1],  self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
 
+        route_collision = self.chech_route_collision(start=self.sys.vec_hand2neck, guide=self.sys.vec_guide2neck)
+        if route_collision:
+            self.sys.vec_guide2neck[0:2] = [0.25, -0.25]
+            self.sys.vec_guide2hand[0:2] = [(0.25 - self.sys.pos_hand[0]), (-0.25 - self.sys.pos_hand[1])]
+
+
 
         # distance
         self.sys.hand2guide  = ( self.sys.vec_guide2hand[0]**2  + self.sys.vec_guide2hand[1]**2  + self.sys.vec_guide2hand[2]**2 )  ** 0.5
@@ -285,6 +284,7 @@ class RL_arm(gym.Env):
         # model2
         self.obs.joint_arm[0:2] = self.data.qpos[9:11].copy()
         self.obs.joint_arm[2:4] = self.data.qpos[12:14].copy()
+        # self.obs.joint_arm[2] += self.sys.joints_increment[2]*0.01*20
 
         # ----------------------------------------------------------------------------------
         # update camera
@@ -308,7 +308,7 @@ class RL_arm(gym.Env):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
         # distoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if distoshoulder >= 0.5 or distoshoulder <= 0.25:
+        if distoshoulder >= 0.47 or distoshoulder <= 0.25:
             return False
         elif point[2]>shoulder_pos[2]:
             return False
@@ -369,31 +369,34 @@ class RL_arm(gym.Env):
         # step & render
         mujoco.mj_step(self.robot, self.data)
 
-    def print_scale(self, low, high, elbow, collision, reward):
+    def print_scale(self, low, high, elbow_now, elbow_input, collision, reward):
 
         low *= 180/np.pi
         high *= 180/np.pi  
-        elbow *= 180/np.pi
+        elbow_now *= 180/np.pi
+        elbow_input *= 180/np.pi
 
-        total_length = 40  # 總長度
+        total_length = 50  # 總長度
         start = -95
         end = 95
 
         pos_a = round((low - start) / (end - start) * total_length)
         pos_b = round((high - start) / (end - start) * total_length)
-        pos_c = round((elbow - start) / (end - start) * total_length)
+        pos_c = round((elbow_now - start) / (end - start) * total_length)
+        pos_d = round((elbow_input - start) / (end - start) * total_length)
 
         output = ['-'] * total_length
         output[pos_c+1:pos_a] = ['-'] * (pos_a - pos_c - 1)
         output[pos_a] = ' '
         output[pos_a+1:pos_b] = ['='] * (pos_b - pos_a - 1)
         output[pos_b] = ' '
+        output[pos_d] = f' {elbow_input:.0f} '
         if collision <= 0.5:
-            output[pos_c] = f' \033[93m{elbow:.0f}\033[0m '
+            output[pos_c] = f' \033[91m{elbow_now:.0f}\033[0m '
         else:
-            output[pos_c] = f' {elbow:.0f} '
+            output[pos_c] = f' \033[93m{elbow_now:.0f}\033[0m '
 
-        print(''.join(output), f"{reward:.1f}", "bound:", f"{low:.3f}", f"{high:.3f}")
+        print(''.join(output), f" {reward:.1f}")
 
     def compensate(self):
         self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
@@ -410,3 +413,15 @@ class RL_arm(gym.Env):
         # else:
         #     self.sys.pos_guide = self.sys.pos_hand.copy()
         #     self.sys.vec_guide2hand  = [self.sys.pos_guide[0] - self.sys.pos_hand[0] , self.sys.pos_guide[1] - self.sys.pos_hand[1] , self.sys.pos_guide[2] - self.sys.pos_hand[2]]
+
+    def chech_route_collision(self, start, guide):
+        start_point = start
+        guide_point = guide
+        route_collision = False
+        collision_with_boundary1 = (-0.2-start_point[1]) / (guide_point[1]-start_point[1]) # 0~1 if has intersection with y = -0.2
+        if 0 <= collision_with_boundary1 <= 1 :
+            intersection_at_x = start_point[0]*(1-collision_with_boundary1) + guide_point[0]*collision_with_boundary1
+            if intersection_at_x <= 0.1:
+                route_collision = True
+                # print("route_collision", start_point)
+        return route_collision
