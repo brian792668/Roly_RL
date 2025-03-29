@@ -11,13 +11,16 @@ def merge_npy_files(input_dir, output_dir, file_prefix):
         file_path = os.path.join(input_dir, f"{file_prefix}_epoch{i}.npy")
         if os.path.exists(file_path):
             data = np.load(file_path)  # 讀取 .npy 檔案
+            print(data)
             
             if merged_array.size == 0:
                 merged_array = np.array(data.copy())
             else:
                 merged_array = np.concatenate((merged_array, data.copy()), axis=0)
+
         else:
             raise FileNotFoundError(f"File not found: {file_path}")
+        
     
     # 儲存合併後的檔案
     output_file = os.path.join(output_dir, f"{file_prefix}.npy")
@@ -26,14 +29,14 @@ def merge_npy_files(input_dir, output_dir, file_prefix):
 
 # 設定資料夾路徑
 file_path = os.path.dirname(os.path.abspath(__file__))
-input_directory = os.path.join(file_path, f"datasets/new/1_epoch_points")
-output_directory = os.path.join(file_path, f"datasets/409points")
+input_directory = os.path.join(file_path, f"datasets/new/500_epoch_points")
+output_directory = os.path.join(file_path, f"datasets/2048000points")
 
 # 合併 collision_label 檔案
 merge_npy_files(input_directory, output_directory, "collision_label")
 merge_npy_files(input_directory, output_directory, "EE_xyz_label")
 
 
-position_data = np.load(os.path.join(file_path, f"datasets/409points/EE_xyz_label.npy"))
-collision_data = np.load(os.path.join(file_path, f"datasets/409points/collision_label.npy"))
+position_data = np.load(os.path.join(file_path, f"datasets/2048000points/EE_xyz_label.npy"))
+collision_data = np.load(os.path.join(file_path, f"datasets/2048000points/collision_label.npy"))
 print("EE_xyz_label:", position_data.shape, "collision_label:", collision_data.shape)

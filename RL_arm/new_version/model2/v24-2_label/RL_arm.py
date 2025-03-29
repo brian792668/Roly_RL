@@ -115,8 +115,8 @@ class RL_arm(gym.Env):
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
             self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
-            if self.sys.guide_arm_joints[3] < self.sys.limit_low[2]:
-                self.sys.joints_increment[2] = np.tanh(self.sys.limit_low[2]- self.sys.pos[5])
+            # if self.sys.guide_arm_joints[3] < self.sys.limit_low[2]:
+            #     self.sys.joints_increment[2] = np.tanh(self.sys.limit_low[2]- self.sys.pos[5])
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
             self.sys.joints_increment[4] = 0
             alpha = 1-0.8*np.exp(-300*self.sys.hand2guide**2)
@@ -181,37 +181,34 @@ class RL_arm(gym.Env):
         collision *= 1 - ((-np.tanh(500 * (pos_arm10[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm10[1] + 0.20)) + 1) / 2)
         collision *= 1 - ((-np.tanh(500 * (pos_arm11[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm11[1] + 0.20)) + 1) / 2)
 
-        # from MLP
-        # future_position = [self.sys.vec_hand2neck[0]+self.model1.obs_guide_to_hand_norm[0], self.sys.vec_hand2neck[1]+self.model1.obs_guide_to_hand_norm[1], self.sys.vec_hand2neck[2]+self.model1.obs_guide_to_hand_norm[2]]
-        # input_tensor = torch.tensor(np.array(future_position.copy(), dtype=np.float32) ).unsqueeze(0)
-        input_tensor = torch.tensor(np.array(self.sys.vec_guide2neck.copy(), dtype=np.float32) ).unsqueeze(0)
+        # # from MLP
+        # input_tensor = torch.tensor(np.array(self.sys.vec_guide2neck.copy(), dtype=np.float32) ).unsqueeze(0)
+        # with torch.no_grad():
+        #     CBoutput = self.CBmodel(input_tensor)
+        # low_bound, high_bound = CBoutput[0].numpy()
+        # if low_bound > high_bound:
+        #     low_bound, high_bound = high_bound, low_bound
+
+        # if low_bound > 1.57 or high_bound < -1.57:
+        #     self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*-1.57
+        #     self.sys.limit_low[2] -1.57
+        # else:
+        #     self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*high_bound
+        #     self.sys.limit_low[2] = high_bound
+
+
         # input_tensor = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
-        with torch.no_grad():
-            CBoutput = self.CBmodel(input_tensor)
-        low_bound, high_bound = CBoutput[0].numpy()
-        if low_bound > high_bound:
-            low_bound, high_bound = high_bound, low_bound
-
-        if low_bound > 1.57 or high_bound < -1.57:
-            self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*-1.57
-            self.sys.limit_low[2] -1.57
-        else:
-            self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*high_bound
-            self.sys.limit_low[2] = high_bound
-
-
-        input_tensor = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
-        with torch.no_grad():
-            CBoutput = self.CBmodel(input_tensor)
-        low_bound, high_bound = CBoutput[0].numpy()
-        if low_bound > high_bound:
-            low_bound, high_bound = high_bound, low_bound
+        # with torch.no_grad():
+        #     CBoutput = self.CBmodel(input_tensor)
+        # low_bound, high_bound = CBoutput[0].numpy()
+        # if low_bound > high_bound:
+        #     low_bound, high_bound = high_bound, low_bound
 
 
         # boundary function
         x = self.sys.pos[5]
-        # boundary_value = (x-self.inf.action[0])*(x-self.inf.action[1])
-        boundary_value = (x-low_bound)*(x-high_bound)
+        # boundary_value = (x-low_bound)*(x-high_bound)
+        boundary_value = (x-self.inf.action[0])*(x-self.inf.action[1])
         normalized = 1/(1+np.exp(-500*np.clip(boundary_value, -0.02, 0.02)))
 
         # reward
@@ -220,18 +217,18 @@ class RL_arm(gym.Env):
         if self.inf.action[0] < self.inf.action[1]:
             self.inf.reward = 0
         self.inf.total_reward += self.inf.reward
-        self.print_scale(low_bound, high_bound, self.sys.pos[5], self.sys.guide_arm_joints[3], collision, self.inf.reward)
+        # self.print_scale(low_bound, high_bound, self.sys.pos[5], self.sys.guide_arm_joints[3], collision, self.inf.reward)
 
 
-        # # label
+        # label
         # if self.inf.totaltimestep%10 == 0:
-        #     label = [self.sys.pos[5], collision]
-        #     if self.EE_xyz_label.size == 0:
-        #         self.EE_xyz_label = np.array([self.sys.vec_hand2neck.copy()])
-        #         self.collision_label = np.array([label])
-        #     else:
-        #         self.EE_xyz_label = np.concatenate((self.EE_xyz_label, [self.sys.vec_hand2neck.copy()]), axis=0)
-        #         self.collision_label = np.concatenate((self.collision_label, [label.copy()]), axis=0)
+        label = [self.sys.pos[5], collision]
+        if self.EE_xyz_label.size == 0:
+            self.EE_xyz_label = np.array([self.sys.vec_hand2neck.copy()])
+            self.collision_label = np.array([label])
+        else:
+            self.EE_xyz_label = np.concatenate((self.EE_xyz_label, [self.sys.vec_hand2neck.copy()]), axis=0)
+            self.collision_label = np.concatenate((self.collision_label, [label.copy()]), axis=0)
 
         return self.inf.reward
  
@@ -241,7 +238,7 @@ class RL_arm(gym.Env):
 
         # position of hand, neck, elbow
         self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
-        self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
+        self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
         self.sys.pos_elbow  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")].copy()
         # self.sys.pos_guide = [self.sys.pos_hand[0]*0.5 + self.sys.pos_target[0]*0.5,  self.sys.pos_hand[1]*0.5 + self.sys.pos_target[1]*0.5,  self.sys.pos_hand[2]*0.5 + self.sys.pos_target[2]*0.5]
 
@@ -256,10 +253,10 @@ class RL_arm(gym.Env):
         self.sys.vec_hand2neck    = [self.sys.pos_hand[0]   - self.sys.pos_neck[0] ,   self.sys.pos_hand[1]   - self.sys.pos_neck[1],   self.sys.pos_hand[2]   - self.sys.pos_neck[2]]
         self.sys.vec_hand2elbow   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0],   self.sys.pos_hand[1]   - self.sys.pos_elbow[1],  self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
 
-        route_collision = self.chech_route_collision(start=self.sys.vec_hand2neck, guide=self.sys.vec_guide2neck)
-        if route_collision:
-            self.sys.vec_guide2neck[0:2] = [0.25, -0.25]
-            self.sys.vec_guide2hand[0:2] = [(0.25 - self.sys.pos_hand[0]), (-0.25 - self.sys.pos_hand[1])]
+        # route_collision = self.chech_route_collision(start=self.sys.vec_hand2neck, guide=self.sys.vec_guide2neck)
+        # if route_collision:
+        #     self.sys.vec_guide2neck[0:2] = [0.25, -0.25]
+        #     self.sys.vec_guide2hand[0:2] = [(0.25 - self.sys.pos_hand[0]), (-0.25 - self.sys.pos_hand[1])]
 
 
 
@@ -326,14 +323,14 @@ class RL_arm(gym.Env):
                 self.sys.pos_target[2] = random.uniform( 0.90, 1.40)
                 reachable = self.check_reachable(self.sys.pos_target.copy())
             self.data.qpos[15:18] = self.sys.pos_target.copy()
-            # self.sys.guide_arm_joints[3] = np.radians(random.uniform( -90, 90))
+            self.sys.guide_arm_joints[3] = np.radians(random.uniform( -90, 90))
             self.model1.obs_hand_dis = 0.0
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.22 + self.model1.obs_hand_dis
             mujoco.mj_forward(self.robot, self.data)
 
             self.sys.guide_arm_joints[3] = np.radians(-90 + 180*random.uniform( 0.0, 1.0)**2)
 
-            self.sys.pos_neck = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
+            self.sys.pos_neck = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
             self.sys.vec_target2neck = [self.sys.pos_target[0]-self.sys.pos_neck[0], self.sys.pos_target[1]-self.sys.pos_neck[1], self.sys.pos_target[2]-self.sys.pos_neck[2]]
             self.sys.vec_target2hand = [self.sys.pos_target[0]-self.sys.pos_hand[0], self.sys.pos_target[1]-self.sys.pos_hand[1], self.sys.pos_target[2]-self.sys.pos_hand[2]]
             self.sys.hand2target = ( self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 + self.sys.vec_target2hand[2]**2 ) ** 0.5

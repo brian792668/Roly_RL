@@ -248,7 +248,6 @@
             <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera"/>
             <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="camera"/>
             <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="50"/>
-            <site name="neck_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
           </body>
         </body>
         <body name="R_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
