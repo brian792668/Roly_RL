@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
-class IKDataset(Dataset):
+class CBDataset(Dataset):
     def __init__(self, xyz_data, collision_data):
         self.xyz_data = xyz_data
         self.collision_data = collision_data
@@ -21,9 +21,9 @@ class IKDataset(Dataset):
         collision_tensor = torch.tensor(collision, dtype=torch.float32)
         return xyz_tensor, collision_tensor
 
-class IKMLP(nn.Module):
+class CBMLP(nn.Module):
     def __init__(self): # 3 -> 32 -> 16 -> 2
-        super(IKMLP, self).__init__()
+        super(CBMLP, self).__init__()
         self.fc1 = nn.Linear(3, 64)
         self.fc2 = nn.Linear(64, 64)
         self.fc3 = nn.Linear(64, 2)
@@ -41,16 +41,16 @@ def train(numberofpoints, version):
     # ---------------- Create datasets -----------------
     EE_xyz_array = np.load(os.path.join(file_path, f"datasets/{numberofpoints}points/EE_xyz_label.npy"))
     collision_array = np.load(os.path.join(file_path, f"datasets/{numberofpoints}points/collision_label.npy"))
-    ik_dataset = IKDataset(EE_xyz_array, collision_array)
-    dataloader = DataLoader(ik_dataset, batch_size=256, shuffle=True)
+    ik_dataset = CBDataset(EE_xyz_array, collision_array)
+    dataloader = DataLoader(ik_dataset, batch_size=1024, shuffle=True)
     # ---------------- Create testing datasets -----------------
-    test_EE_xyz_array = np.load(os.path.join(file_path, "datasets/409points/EE_xyz_label.npy"))
-    test_collision_array = np.load(os.path.join(file_path, "datasets/409points/collision_label.npy"))
-    test_dataset = IKDataset(test_EE_xyz_array, test_collision_array)
-    test_dataloader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+    test_EE_xyz_array = np.load(os.path.join(file_path, "datasets/408points/EE_xyz_label.npy"))
+    test_collision_array = np.load(os.path.join(file_path, "datasets/408points/collision_label.npy"))
+    test_dataset = CBDataset(test_EE_xyz_array, test_collision_array)
+    test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
     # ----------------------- Model --------------------------
-    model = IKMLP()
+    model = CBMLP()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
     criterion = nn.MSELoss()
 
@@ -73,13 +73,12 @@ def train(numberofpoints, version):
             d = predicted[:, 1]
 
             # 根據公式計算 boundary_value
-            boundary_value = (collision_batch[:, 0] - c) * (collision_batch[:, 0] - d)
+            boundary_value = (collision_batch[:, 2] - c) * (collision_batch[:, 2] - d)
             normalized = 1 / (1 + torch.exp(-500 * torch.clamp(boundary_value, -0.02, 0.02)))
-            # print(normalized, collision_batch[:, 1])
+            # print(normalized, collision_batch[:, 4])
 
             # 計算 loss: 使用 MSE 來與 collision_batch 中的 b 進行比較
-            # loss = torch.mean(torch.abs(normalized - collision_batch[:, 1]))
-            loss = criterion(normalized, collision_batch[:, 1])
+            loss = criterion(normalized, collision_batch[:, 4])
 
             # 清空梯度
             optimizer.zero_grad()
@@ -106,10 +105,10 @@ def train(numberofpoints, version):
                 predicted = model(xyz_batch)
                 c = predicted[:, 0]
                 d = predicted[:, 1]
-                boundary_value = (collision_batch[:, 0] - c) * (collision_batch[:, 0] - d)
+                boundary_value = (collision_batch[:, 2] - c) * (collision_batch[:, 2] - d)
                 normalized = 1 / (1 + torch.exp(-500 * torch.clamp(boundary_value, -0.02, 0.02)))
-                # loss = torch.mean(torch.abs(normalized - collision_batch[:, 1]))
-                loss = criterion(normalized, collision_batch[:, 1])
+                # loss = torch.mean(torch.abs(normalized - collision_batch[:, 4]))
+                loss = criterion(normalized, collision_batch[:, 4])
                 test_running_loss += loss.item()
         
         test_epoch_loss = test_running_loss / len(test_dataloader)
