@@ -13,3 +13,4 @@ Increase new point spawn interval to 5 sec (was 3), to let agent learn staying s
 
 **+-1 degree noise in joint observation state**
 **range of vec_target2hand increase to +-0.05**
+**add target elbow yaw angle in state**

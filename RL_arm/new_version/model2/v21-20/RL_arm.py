@@ -114,7 +114,7 @@ class RL_arm(gym.Env):
             self.inf.reward = self.get_reward()
             self.observation_space = np.concatenate([self.sys.vec_target2neck, 
                                                      self.sys.vec_target2guide,
-                                                     [self.obs.joint_arm[2]]]).astype(np.float32)
+                                                     [self.sys.guide_arm_joints[3]]]).astype(np.float32)
             return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
     
     def reset(self, seed=None, **kwargs): 
@@ -132,7 +132,7 @@ class RL_arm(gym.Env):
             self.get_state()
             self.observation_space = np.concatenate([self.sys.vec_target2neck, 
                                                      self.sys.vec_target2guide,
-                                                     [self.obs.joint_arm[2]]]).astype(np.float32)
+                                                     [self.sys.guide_arm_joints[3]]]).astype(np.float32)
             self.inf.done = False
             self.inf.truncated = False
             self.inf.info = {}
