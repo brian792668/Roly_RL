@@ -17,7 +17,7 @@ class RL_arm(gym.Env):
     def __init__(self):
         self.done = False
         self.truncated = False
-        self.robot = mujoco.MjModel.from_xml_path('Roly/Roly_XML2-2/Roly.xml')
+        self.robot = mujoco.MjModel.from_xml_path('Roly/Roly_XML/Roly.xml')
         self.data = mujoco.MjData(self.robot)
         self.action_space = gym.spaces.box.Box( low  = act_low,      # action (rad)
                                                 high = act_high,
@@ -33,11 +33,11 @@ class RL_arm(gym.Env):
 
         tableR = [ [    0.0, np.pi/2,     0.0,     0.0],
                    [np.pi/2, np.pi/2,     0.0,  0.2488],
-                   [    0.0,     0.0, -0.1305,     0.0], # -0.1105
+                   [    0.0,     0.0, -0.1705,     0.0], 
                    [np.pi/2, np.pi/2,     0.0,     0.0],
-                   [np.pi/2, np.pi/2,     0.0, -0.1195],
+                   [np.pi/2, np.pi/2,     0.0, -0.2003],
                    [    0.0, np.pi/2,     0.0,     0.0],
-                   [    0.0, np.pi/2,     0.0,  0.2200]] # 0.1803
+                   [    0.0, np.pi/2,     0.0,  0.1700]] # 0.22
         self.DH_R = DHtable(tableR)
 
         # self.head_camera = Camera(renderer=self.renderer, camID=0)
@@ -56,7 +56,6 @@ class RL_arm(gym.Env):
         else:
             self.inf.timestep += 1
             self.inf.totaltimestep += 1
-            print(self.inf.timestep)
 
             for i in range(len(action)):
                 self.inf.action[i] = self.inf.action[i]*0.9  + action[i]*0.1
@@ -223,7 +222,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=2.0):
+    def render(self, speed=0.2):
         if self.inf.timestep%int(48*speed+2) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()
@@ -232,7 +231,7 @@ class RL_arm(gym.Env):
     def check_reachable(self, point):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
-        if distoshoulder >= 0.45 or distoshoulder <= 0.27:
+        if distoshoulder >= 0.57 or distoshoulder <= 0.39:
             return False
         else:
             return True
@@ -249,17 +248,17 @@ class RL_arm(gym.Env):
             shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
             reachable = False
             while reachable == False:
-                self.sys.pos_target0[0] = shoulder_pos[0] + random.uniform(-0.10, 0.50)
-                self.sys.pos_target0[1] = shoulder_pos[1] + random.uniform(-0.50, 0.50)
-                self.sys.pos_target0[2] = shoulder_pos[2] + random.uniform(-0.50, 0.10)
+                self.sys.pos_target0[0] = shoulder_pos[0] + random.uniform(-0.10, 0.65)
+                self.sys.pos_target0[1] = shoulder_pos[1] + random.uniform(-0.65, 0.65)
+                self.sys.pos_target0[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
                 reachable = self.check_reachable(self.sys.pos_target0)
             self.data.qpos[15:18] = self.sys.pos_target0.copy()
 
             reachable = False
             while reachable == False:
-                self.sys.pos_target0[0] = shoulder_pos[0] + random.uniform(-0.10, 0.50)
-                self.sys.pos_target0[1] = shoulder_pos[1] + random.uniform(-0.50, 0.50)
-                self.sys.pos_target0[2] = shoulder_pos[2] + random.uniform(-0.50, 0.10)
+                self.sys.pos_target0[0] = shoulder_pos[0] + random.uniform(-0.10, 0.65)
+                self.sys.pos_target0[1] = shoulder_pos[1] + random.uniform(-0.65, 0.65)
+                self.sys.pos_target0[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
                 reachable = self.check_reachable(self.sys.pos_target0)
             
             neck_xyz = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()

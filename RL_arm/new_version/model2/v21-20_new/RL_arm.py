@@ -37,7 +37,7 @@ class RL_arm(gym.Env):
     def __init__(self):
         self.done = False
         self.truncated = False
-        self.robot = mujoco.MjModel.from_xml_path('Roly/Roly_XML2-2/Roly.xml')
+        self.robot = mujoco.MjModel.from_xml_path('Roly/Roly_XML/Roly.xml')
         self.data = mujoco.MjData(self.robot)
         self.action_space = gym.spaces.box.Box( low  = act_low,      # action (rad)
                                                 high = act_high,
@@ -87,9 +87,6 @@ class RL_arm(gym.Env):
             self.inf.info = {}
             if self.inf.timestep > 2048 :
                 self.inf.truncated = True
-            if self.check_collision() == True:
-                self.inf.reward -= 10
-                self.inf.truncated = True
 
             self.inf.action[0] = self.inf.action[0]*0.9 + action[0]*0.1
             self.inf.action[1] = self.inf.action[1]*0.9 + action[1]*0.1
@@ -97,7 +94,7 @@ class RL_arm(gym.Env):
             action_from_model1 = self.model1.predict()
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
-            self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3] - self.sys.pos[5])*0.01
+            self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3] - self.sys.pos[5])
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
             self.sys.joints_increment[4] = 0
             alpha = 1-0.8*np.exp(-300*self.sys.hand2guide**2)
@@ -105,7 +102,7 @@ class RL_arm(gym.Env):
                 self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.sys.joints_increment[0]*0.01*alpha
                 self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.sys.joints_increment[1]*0.01*alpha
                 self.sys.ctrlpos[4] = 0
-                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]
+                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + self.sys.joints_increment[2]*0.01
                 self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.sys.joints_increment[3]*0.01*alpha
                 self.sys.ctrlpos[7] = self.sys.ctrlpos[7] + self.sys.joints_increment[4]*0.01
                 self.control_and_step()
@@ -201,7 +198,7 @@ class RL_arm(gym.Env):
 
         # position of hand, neck, elbow
         self.sys.pos_hand   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
-        self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
+        self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
         self.sys.pos_elbow  = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")].copy()
         # self.sys.pos_guide = [self.sys.pos_hand[0]*0.5 + self.sys.pos_target[0]*0.5,  self.sys.pos_hand[1]*0.5 + self.sys.pos_target[1]*0.5,  self.sys.pos_hand[2]*0.5 + self.sys.pos_target[2]*0.5]
 
@@ -224,10 +221,11 @@ class RL_arm(gym.Env):
         # model1
         self.model1.obs_guide_to_neck = self.sys.vec_guide2neck.copy()
         self.model1.obs_guide_to_hand_norm = self.sys.vec_guide2hand.copy()
-        if self.sys.hand2guide > 0.02:
-            self.model1.obs_guide_to_hand_norm[0] *= 0.02/self.sys.hand2guide
-            self.model1.obs_guide_to_hand_norm[1] *= 0.02/self.sys.hand2guide
-            self.model1.obs_guide_to_hand_norm[2] *= 0.02/self.sys.hand2guide
+        self.model1.obs_guide_arm_joint = self.sys.guide_arm_joints[3]
+        if self.sys.hand2guide > 0.05:
+            self.model1.obs_guide_to_hand_norm[0] *= 0.05/self.sys.hand2guide
+            self.model1.obs_guide_to_hand_norm[1] *= 0.05/self.sys.hand2guide
+            self.model1.obs_guide_to_hand_norm[2] *= 0.05/self.sys.hand2guide
         self.model1.obs_joints[0:2] = self.data.qpos[9:11].copy()
         self.model1.obs_joints[2:4] = self.data.qpos[12:14].copy()
         self.model1.action[0] = self.sys.joints_increment[0]
@@ -259,27 +257,28 @@ class RL_arm(gym.Env):
         shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
         distoshoulder = ( (point[0]-shoulder_pos[0])**2 + (point[1]-shoulder_pos[1])**2 + (point[2]-shoulder_pos[2])**2 ) **0.5
         # distoshoulder = ( (point[0]-0.00)**2 + (point[1]+0.25)**2 + (point[2]-1.35)**2 ) **0.5
-        if distoshoulder >= 0.5 or distoshoulder <= 0.25:
+        if distoshoulder >= 0.57 or distoshoulder <= 0.39:
             return False
-        elif point[2]>shoulder_pos[2]:
-            return False
-        elif (point[0]<0.12 and point[1] > -0.20):
-            return False
+        # elif point[2]>shoulder_pos[2]:
+        #     return False
+        # elif (point[0]<0.12 and point[1] > -0.20):
+        #     return False
         else:
             return True
         
     def spawn_new_point(self):
         if self.inf.timestep == 0 or self.sys.hand2guide <= 0.05:
+            self.sys.guide_arm_joints[3] = np.radians(random.uniform( -90, 90))
+            shoulder_pos = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")].copy()
             reachable = False
             while reachable == False:
-                self.sys.pos_target[0] = random.uniform(-0.05, 0.50)
-                self.sys.pos_target[1] = random.uniform(-0.75, 0.00)
-                self.sys.pos_target[2] = random.uniform( 0.90, 1.40)
+                self.sys.pos_target[0] = shoulder_pos[0] + random.uniform(-0.10, 0.65)
+                self.sys.pos_target[1] = shoulder_pos[1] + random.uniform(-0.65, 0.65)
+                self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
                 reachable = self.check_reachable(self.sys.pos_target.copy())
             self.data.qpos[15:18] = self.sys.pos_target.copy()
-            self.sys.guide_arm_joints[3] = np.radians(random.uniform( -90, 90))
 
-            self.sys.pos_neck = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"neck_marker")].copy()
+            self.sys.pos_neck = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
             self.sys.vec_target2neck = [self.sys.pos_target[0]-self.sys.pos_neck[0], self.sys.pos_target[1]-self.sys.pos_neck[1], self.sys.pos_target[2]-self.sys.pos_neck[2]]
             self.sys.vec_target2hand = [self.sys.pos_target[0]-self.sys.pos_hand[0], self.sys.pos_target[1]-self.sys.pos_hand[1], self.sys.pos_target[2]-self.sys.pos_hand[2]]
             self.sys.hand2target = ( self.sys.vec_target2hand[0]**2 + self.sys.vec_target2hand[1]**2 + self.sys.vec_target2hand[2]**2 ) ** 0.5
@@ -307,36 +306,8 @@ class RL_arm(gym.Env):
         self.sys.vel = [self.data.qvel[i-1] for i in controlList]
         self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
 
-        # fix obstacle      
-        self.data.qpos[22:29] = self.sys.obstacle_hand_pos_and_quat.copy()
-        self.data.qpos[29:36] = self.sys.obstacle_table_pos_and_quat.copy()
-        self.data.qpos[36:43] = self.sys.obstacle_human_pos_and_quat.copy()
-
         # step & render
         mujoco.mj_step(self.robot, self.data)
-            
-    def random_quaternion_and_pos(self, name):
-
-        quat = np.array([1.0, 0, 0, 0])
-        pos = self.data.qpos[15:18].copy()
-        if name == "human_hand":
-            euler = np.array([np.radians(random.uniform( 0.0, 270)), 0, np.radians(random.uniform( -45, 225))])
-            mujoco.mju_euler2Quat(quat, euler, "zyx")
-
-        if name == "table":
-            euler = np.array([np.radians(random.uniform( -30, 30)), 0, 0])
-            mujoco.mju_euler2Quat(quat, euler, "zyx")
-            pos[0] = random.uniform( 0.35, 1.00) - 0.5
-            pos[2] -= random.uniform( 0.20, 0.50)
-
-        if name == "human":
-            euler = np.array([np.radians(random.uniform( -90, 90)), 0, 0])
-            mujoco.mju_euler2Quat(quat, euler, "zyx")
-            pos[0] += random.uniform( 0.25, 0.70) -0.5
-            pos[1] += random.uniform( -0.30, 0.30)
-            pos[2] = random.uniform( -0.2, 0.75)
-    
-        return [pos[0], pos[1], pos[2], quat[0], quat[1], quat[2], quat[3]]
     
     def check_collision(self):
         id1 = mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, f"R_shoulder")
