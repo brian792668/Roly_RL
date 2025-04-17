@@ -191,10 +191,9 @@
                 <!-- <joint name="trunk" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" /> -->
                 <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="trunk_link" />
                 <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="trunk_link" />
-                <!-- <body name="hitbox1" > 
-                    <geom name="hitbox1-1" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.015 0.0 0.18" size="0.05 0.16 0.08" rgba="0.752941 0.752941 0.752941 0.5"/> 
-                    <geom name="hitbox1-2" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.025 0.0 0.39" size="0.03 0.16 0.12" rgba="0.752941 0.752941 0.752941 0.5"/>
-                </body> -->
+		        <body name="hitbox1" > 
+                    <geom name="hitbox1-3" type="box" contype="1" conaffinity="1" group="1" mass="0.00000001" pos="0.00 0.0 0.30" size="0.08 0.18 0.20" rgba="0.99 0.752941 0.752941 0.2"/>
+                </body>
                 <body name="neck" pos="0.0236 0 0.6049" quat="0.707107 0.707107 0 0">
                     <inertial pos="-0.0115402 -0.00305819 2.74218e-05" quat="0.486136 0.513558 0.513346 0.486216" mass="0.0915993" diaginertia="2.61388e-05 2.1214e-05 1.5184e-05" />
                     <joint name="neck" pos="0 0 0" axis="0 1 0" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01"/>
@@ -244,11 +243,11 @@
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4" />
                                     <!-- <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4" /> -->
                                     <site name="R_elbow_marker" type="sphere" size="0.020" pos="0.0 0.0 0.0"   rgba="1 0 1.0 0.5"/>
-                                    <site name="R_arm_marker8"  type="sphere" size="0.015" pos="0.0 -0.04 0.0" rgba="0 1 0.5 0.5"/>
-                                    <site name="R_arm_marker9"  type="sphere" size="0.015" pos="0.0 -0.08 0.0" rgba="0 1 0.5 0.5"/>
-                                    <site name="R_arm_marker10" type="sphere" size="0.015" pos="0.0 -0.12 0.0" rgba="0 1 0.5 0.5"/>
-                                    <site name="R_arm_marker11" type="sphere" size="0.015" pos="0.0 -0.16 0.0" rgba="0 1 0.5 0.5"/>
-                                    <site name="R_arm_marker12" type="sphere" size="0.015" pos="0.0 -0.20 0.0" rgba="0 1 0.5 0.5"/>
+                                    <site name="R_arm_marker8"  type="sphere" size="0.010" pos="0.0 -0.04 0.0" rgba="0 1 0.5 0.1"/>
+                                    <site name="R_arm_marker9"  type="sphere" size="0.010" pos="0.0 -0.08 0.0" rgba="0 1 0.5 0.1"/>
+                                    <site name="R_arm_marker10" type="sphere" size="0.010" pos="0.0 -0.12 0.0" rgba="0 1 0.5 0.1"/>
+                                    <site name="R_arm_marker11" type="sphere" size="0.010" pos="0.0 -0.16 0.0" rgba="0 1 0.5 0.1"/>
+                                    <site name="R_arm_marker12" type="sphere" size="0.010" pos="0.0 -0.20 0.0" rgba="0 1 0.5 0.1"/>
                                     <body name="R_palm" pos="0 0 0" quat="0.707107 0.707107 0 0">
                                         <inertial pos="-0.00739621 -4.38124e-05 0.113166" quat="0.00210295 0.697675 -0.00221488 0.716408" mass="0.114731" diaginertia="3.2167e-05 3.0104e-05 1.92109e-05" />
                                         <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" />
@@ -356,12 +355,12 @@
             <geom name="obstacle_human" type="box" contype="2" conaffinity="4" group="1" mass="1.0" pos="10.5 0.0 0.0" size="0.10 0.20 0.75" rgba="0 0 0 0.5" condim="6" priority="1" class="plastic_collision"/> 
         </body> -->
 
-        <!-- <body name="fix_box" > 
+        <body name="fix_box" > 
             <geom type="box" mass="20000" pos="0.020  0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 0"/> 
             <geom type="box" mass="20000" pos="0.020 -0.43 0" size="0.145 0.20 0.02"  rgba="0.2 0.2 0.2 0"/> 
             <geom type="box" mass="20000" pos="0.365  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 0"/> 
             <geom type="box" mass="20000" pos="-0.325  0.00 0" size="0.200 0.63 0.02"  rgba="0.2 0.2 0.2 0"/> 
-        </body> -->
+        </body>
     </worldbody>
     <equality>
         <connect name="linkageR_knee" active="true" body1="R_calf" body2="R_knee_linkage" anchor="-0.05638 -0.02052 -0.056" />
