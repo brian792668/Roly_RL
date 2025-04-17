@@ -94,5 +94,5 @@ if __name__ == '__main__':
         RL_model.save(current_model_path)
 
     # train(RL_model, my_env, file_path, render_speed = 1.0)
-    test(RL_model, my_env, current_model_path, render_speed = 0.1)
-    # test(RL_model, my_env, best_model_path, render_speed = 0.1)
+    # test(RL_model, my_env, current_model_path, render_speed = 0.1)
+    test(RL_model, my_env, best_model_path, render_speed = 0.1)
