@@ -1,7 +1,3 @@
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from DXL_Motor_python.bulk_read_write.func.dynamixel_bulk import *
 from DXL_Motor_python.bulk_read_write.func.motor_info import X_Motor_Info, P_Motor_Info
 
@@ -62,3 +58,10 @@ class Roly_motor(DXL_Motor):
     def toRolyctrl(self, ctrlpos):
         return [(ctrlpos[i]*self.joints_axis[i]+self.joints_bias[i]) for i in range(len(self.joints_bias))]
     
+
+if __name__ == "__main__":
+    motor = Roly_motor()
+    motor.to_pose(pose="initial", speed=0.3)
+    motor.to_pose(pose="shut down", speed=0.3)
+    motor.setAllMotorTorqurDisable()
+

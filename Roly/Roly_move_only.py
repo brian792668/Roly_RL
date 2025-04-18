@@ -168,7 +168,7 @@ class Robot_system:
                 joints_increment[8] = (np.radians(0)*0.98 + joints[8]*0.02) - joints[8]
                 with self.lock:
                     self.motor.joints_increment[8] = joints_increment[8]
-                if joints[8] <= np.radians(50):
+                if joints[8] <= np.radians(0.6):
                     with self.lock:
                         self.status = "wait_to_grasp"
                         self.grasping_dis = 0.0
