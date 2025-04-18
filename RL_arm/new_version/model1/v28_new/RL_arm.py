@@ -65,13 +65,14 @@ class RL_arm(gym.Env):
                 if self.inf.action[i] < -1: self.inf.action[i] = -1
 
             # alpha1 = 1-0.8*np.exp(-300*self.sys.hand2target**2)
+            alpha1 = 1.0
 
             for i in range(int(1/self.sys.Hz/0.005)):
-                self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.inf.action[0]*0.01
-                self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.inf.action[1]*0.01
+                self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.inf.action[0]*0.01*alpha1
+                self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.inf.action[1]*0.01*alpha1
                 self.sys.ctrlpos[4] = 0
                 self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + np.tanh(1.2*self.sys.arm_target_pos[3] - 1.2*self.sys.pos[5])*0.01
-                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.inf.action[2]*0.01
+                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.inf.action[2]*0.01*alpha1
                 if   self.sys.ctrlpos[2] > self.sys.limit_high[0]: self.sys.ctrlpos[2] = self.sys.limit_high[0]
                 elif self.sys.ctrlpos[2] < self.sys.limit_low[0] : self.sys.ctrlpos[2] = self.sys.limit_low[0]
                 if   self.sys.ctrlpos[3] > self.sys.limit_high[1]: self.sys.ctrlpos[3] = self.sys.limit_high[1]
