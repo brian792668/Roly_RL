@@ -134,7 +134,7 @@ class Camera():
             for hand_idx, handedness in enumerate(results.multi_handedness):
                 label = handedness.classification[0].label  # 'Left' or 'Right'
                 score = handedness.classification[0].score
-                if label == 'Right':  # 只處理左手
+                if label == 'Left':  # 只處理左手
                     hand_landmarks = results.multi_hand_landmarks[hand_idx]
                     lmList = []
                     h, w, _ = color_img.shape
@@ -167,7 +167,8 @@ class Camera():
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
                     return  # 找到左手就結束
 
-        self.hand_exist = False
+        else:
+            self.hand_exist = False
         
     def start(self):
         self.pipeline.start(self.config)  # start pipeline with config
