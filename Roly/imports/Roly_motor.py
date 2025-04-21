@@ -17,8 +17,8 @@ class Roly_motor(DXL_Motor):
         self.joints_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1,  1]
         self.joints = [0] * 9
         self.joints_increment = [0] * 9
-        # self.initial_pos = [-20, -45, -10, -31, 0, 20, 92, 0, 95] # gripper closed
-        self.initial_pos = [-20, -45, -10, -31, 0, 20, 92, 90, 0]  # gripper opened
+        # self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 0, 95] # gripper closed
+        self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 90, 0]  # gripper opened
         self.limit_high = [ 1.57, 0.00, 1.57, 1.90]
         self.limit_low  = [-1.57,-1.57,-1.57, 0.00]
 

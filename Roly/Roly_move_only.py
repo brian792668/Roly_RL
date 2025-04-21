@@ -88,8 +88,8 @@ class Robot_system:
         self.pos_target   = self.pos_hand.copy()
         self.pos_guide    = self.pos_hand.copy()
         self.pos_grasppnt = [ 0.000, -0.2488,  0.000]
-        self.pos_placepnt = [ 0.350, -0.1000,  0.000]
-        self.pos_initpnt  = [ 0.255, -0.3431, -0.298]
+        self.pos_placepnt = [ 0.000, -0.2488,  0.000]
+        self.pos_initpnt  = [ 0.096, -0.3851, -0.375]
         self.pos_shoulder = [ 0.000, -0.2488, -0.104]
         self.pos_elbow    = [ 0.000, -0.2488, -0.350]
         
@@ -135,10 +135,10 @@ class Robot_system:
 
             elif status == "grasping":
                 joints = [ np.radians(joints[i]) for i in range(len(joints))]
-                joints_increment[8] = (np.radians(95)*0.98 + joints[8]*0.02) - joints[8]
+                joints_increment[8] = (np.radians(85)*0.98 + joints[8]*0.02) - joints[8]
                 with self.lock:
                     self.motor.joints_increment[8] = joints_increment[8]
-                if joints[8] >= np.radians(94.8):
+                if joints[8] >= np.radians(84.8):
                     with self.lock:
                         self.status = "carrying"
 
@@ -174,10 +174,15 @@ class Robot_system:
                 joints_increment[8] = (np.radians(0)*0.98 + joints[8]*0.02) - joints[8]
                 with self.lock:
                     self.motor.joints_increment[8] = joints_increment[8]
+                
                 if joints[8] <= np.radians(0.6):
                     with self.lock:
                         self.status = "wait_to_grasp"
                         self.grasping_dis = 0.0
+                        self.pos_target = self.pos_initpnt.copy()
+                        self.pos_guide = self.pos_target.copy()
+                elif joints[8] <= np.radians(20):
+                    with self.lock:
                         self.pos_target = self.pos_initpnt.copy()
                         self.pos_guide = self.pos_target.copy()
 
@@ -189,7 +194,7 @@ class Robot_system:
         self.head_camera.start()
         while not self.stop_event.is_set():
             # 50 Hz
-            time.sleep(0.02)
+            time.sleep(0.01)
 
             self.head_camera.get_img(rgb=True, depth=True)
             # self.head_camera.get_target(depth=True)
@@ -268,6 +273,10 @@ class Robot_system:
                 with self.lock:
                     self.pos_grasppnt = camera_point.copy()
                     self.pos_placepnt = camera_point.copy()
+            else:
+                with self.lock:
+                    self.pos_grasppnt = [ 0.000, -0.2488,  0.000]
+                    self.pos_placepnt = [ 0.000, -0.2488,  0.000]
 
     def thread_RL_move(self):
         while not self.stop_event.is_set():
@@ -304,16 +313,16 @@ class Robot_system:
             joints_increment[3] = np.degrees( action_old[1]* 0.015*alpha ) # shoulder roll
             joints_increment[6] = np.degrees( action_old[2]* 0.015*alpha ) # elbow pitch
             
-            # # elbow yaw
-            # with torch.no_grad():  # 不需要梯度計算，因為只做推論
-            #     desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
-            # desire_joints[0] += 30
-            # desire_joints = np.radians(desire_joints)
-            # new_joint_increment = np.degrees( ( joints[5]*0.9 + desire_joints[0]*0.1 ) - joints[5] )*0.2
-            # if abs(new_joint_increment) > joints_increment[5]:
-            #     joints_increment[5] = 0.1*new_joint_increment + 0.9*joints_increment[5]
-            # else:
-            #     joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_joints[0]*0.1 ) - joints[5] ) # elbow yaw
+            # elbow yaw
+            with torch.no_grad():  # 不需要梯度計算，因為只做推論
+                desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
+            desire_joints[0] += 40
+            desire_joints = np.radians(desire_joints)
+            new_joint_increment = np.degrees( ( joints[5]*0.9 + desire_joints[0]*0.1 ) - joints[5] )*0.2
+            if abs(new_joint_increment) > joints_increment[5]:
+                joints_increment[5] = 0.1*new_joint_increment + 0.9*joints_increment[5]
+            else:
+                joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_joints[0]*0.1 ) - joints[5] ) # elbow yaw
 
             # desire_joints[3] = IK_elbow_pitch(guide_xyz.copy())
             # joints_increment[6] = np.degrees( ( joints[6]*0.9 + desire_joints[3]*0.1 ) - joints[6] ) # elbow yaw
@@ -352,17 +361,17 @@ class Robot_system:
                 dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
                 if dis_target2hand <= 0.02:
                     with self.lock:
-                        self.grasping_dis = 0.0
+                        self.grasping_dis = 0.05
                         self.status = "grasping"
 
             if status == "move_to_place":
                 # # calculate new grasp distance
                 target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
                 dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
-                if dis_target2hand <= 0.05 and grasping_dis > 0.03:
+                if dis_target2hand <= 0.02 and grasping_dis > 0.05:
                     with self.lock:
-                        self.grasping_dis = 0.03
-                elif dis_target2hand <= 0.05 and grasping_dis == 0.03:
+                        self.grasping_dis = 0.05
+                elif dis_target2hand <= 0.02 and grasping_dis == 0.05:
                     with self.lock:
                         self.status = "placing"
 
