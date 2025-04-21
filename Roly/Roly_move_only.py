@@ -142,26 +142,29 @@ class Robot_system:
             elif status == "carrying":
                 reachable = self.reachable(pos_placepnt.copy())
                 if track_done and reachable:
+                    pos_target = pos_placepnt.copy()
+                    pos_target[2] +=  0.10
                     with self.lock:
                         self.status = "move_to_place"
                         self.grasping_dis = 0.15
-                        self.pos_target = pos_placepnt.copy()
-                        self.pos_guide = self.pos_target.copy()
-
-            elif status == "move_to_place":
-                reachable = self.reachable(pos_placepnt.copy())
-                if track_done and reachable:
-                    pos_target = pos_placepnt.copy()
-                    pos_target[2] +=  0.05
-                    with self.lock:
                         self.pos_target = pos_target.copy()
                         self.pos_guide = self.pos_target.copy()
-                # else:
-                #     with self.lock:
-                #         self.status = "carrying"
-                #         self.grasping_dis = 0.0
-                #         self.pos_target = self.pos_initpnt.copy()
-                #         self.pos_guide = self.pos_target.copy()
+
+            # elif status == "move_to_place":
+            #     reachable = self.reachable(pos_placepnt.copy())
+            #     if track_done and reachable:
+            #         pos_target = pos_placepnt.copy()
+            #         pos_target[2] +=  0.05
+            #         with self.lock:
+            #             self.pos_target = pos_target.copy()
+            #             self.pos_guide = self.pos_target.copy()
+                        
+            #     # else:
+            #     #     with self.lock:
+            #     #         self.status = "carrying"
+            #     #         self.grasping_dis = 0.0
+            #     #         self.pos_target = self.pos_initpnt.copy()
+            #     #         self.pos_guide = self.pos_target.copy()
 
             elif status == "placing":
                 joints = [ np.radians(joints[i]) for i in range(len(joints))]
@@ -334,20 +337,41 @@ class Robot_system:
                 target_xyz = self.pos_target.copy()
                 hand_xyz = self.pos_hand.copy()
                 status = self.status
+                grasping_dis = self.grasping_dis
 
-            if status == "move_to_grasp" or status == "move_to_place":
+            # if status == "move_to_grasp" or status == "move_to_place":
+            #     # # calculate new grasp distance
+            #     target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
+            #     dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
+            #     if dis_target2hand <= 0.02:
+            #         if status == "move_to_grasp":
+            #             with self.lock:
+            #                 self.grasping_dis = 0.0
+            #                 self.status = "grasping"
+            #         elif status == "move_to_place":
+            #             with self.lock:
+            #                 self.grasping_dis = 0.0
+            #                 self.status = "placing"
+            
+            if status == "move_to_grasp":
                 # # calculate new grasp distance
                 target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
                 dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
-                if dis_target2hand <= 0.03:
-                    if status == "move_to_grasp":
-                        with self.lock:
-                            self.grasping_dis = 0.0
-                            self.status = "grasping"
-                    elif status == "move_to_place":
-                        with self.lock:
-                            self.grasping_dis = 0.0
-                            self.status = "placing"
+                if dis_target2hand <= 0.02:
+                    with self.lock:
+                        self.grasping_dis = 0.0
+                        self.status = "grasping"
+
+            if status == "move_to_place":
+                # # calculate new grasp distance
+                target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
+                dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
+                if dis_target2hand <= 0.05 and grasping_dis > 0.0:
+                    with self.lock:
+                        self.grasping_dis = 0.0
+                elif dis_target2hand <= 0.05 and grasping_dis == 0.0:
+                    with self.lock:
+                        self.status = "placing"
 
     def thread_motor(self):
         while not self.stop_event.is_set():
@@ -404,4 +428,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=60)
+    Roly.run(endtime=40)

@@ -130,11 +130,11 @@ class Camera():
         img_rgb = cv2.cvtColor(color_img, cv2.COLOR_BGR2RGB)
         results = self.hands.process(img_rgb)
 
-        if results.multi_hand_landmarks and results.multi_handedness:
+        if results.multi_handedness:
             for hand_idx, handedness in enumerate(results.multi_handedness):
                 label = handedness.classification[0].label  # 'Left' or 'Right'
                 score = handedness.classification[0].score
-                if label == 'Left' and score > 0.5:  # 只處理左手
+                if label == 'Right':  # 只處理左手
                     hand_landmarks = results.multi_hand_landmarks[hand_idx]
                     lmList = []
                     h, w, _ = color_img.shape
