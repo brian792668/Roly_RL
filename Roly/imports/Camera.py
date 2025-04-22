@@ -40,8 +40,8 @@ class Camera():
         mp_hands = mp.solutions.hands
         self.hands = mp_hands.Hands(
             static_image_mode=False,
-            max_num_hands=1,
-            min_detection_confidence=0.9
+            max_num_hands=2,
+            min_detection_confidence=0.7
         )
         self.hand_exist = False
         self.hand_norm = [0.0, 0.0]

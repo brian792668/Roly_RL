@@ -135,10 +135,10 @@ class Robot_system:
 
             elif status == "grasping":
                 joints = [ np.radians(joints[i]) for i in range(len(joints))]
-                joints_increment[8] = (np.radians(85)*0.98 + joints[8]*0.02) - joints[8]
+                joints_increment[8] = (np.radians(80)*0.98 + joints[8]*0.02) - joints[8]
                 with self.lock:
                     self.motor.joints_increment[8] = joints_increment[8]
-                if joints[8] >= np.radians(84.8):
+                if joints[8] >= np.radians(79.8):
                     with self.lock:
                         self.status = "carrying"
 
