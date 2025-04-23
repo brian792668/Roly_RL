@@ -124,7 +124,8 @@ def lebal_Roly_IK(numberofpoints = 2000):
     targetpoints = targetpoints[:numberofpoints]
 
 
-    sorted_targetpoints = sorted(targetpoints, key=lambda x: x[2])
+    # sorted_targetpoints = sorted(targetpoints, key=lambda x: x[2])
+    sorted_targetpoints = targetpoints
     point_index = 0
     numberofdelete = 0
     stabletime = 0
