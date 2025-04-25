@@ -67,7 +67,7 @@ class RL_arm(gym.Env):
         self.IK.eval()
     
     def render(self):
-        if self.inf.timestep%int(48*self.render_speed+2) ==0:
+        if self.inf.timestep%int(49*self.render_speed+1) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "predicted_grasp_point")] = self.sys.pos_grasp_point.copy()
             # self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_guide.copy()
             # self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[3:7].copy()
@@ -148,7 +148,7 @@ class RL_arm(gym.Env):
         # print(f"dis: {dis:3f},  reward: {self.inf.reward:.2f}")
  
     def get_state(self):
-        if self.inf.timestep%int(1.5*self.sys.Hz) == 0:
+        if self.inf.timestep%int(2.0*self.sys.Hz) == 0:
             self.spawn_new_point()
 
         # position of hand, neck, elbow
@@ -208,9 +208,12 @@ class RL_arm(gym.Env):
         self.sys.pos_neck   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")]
         self.sys.pos_temp_target = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"temp_target")]
         self.sys.vec_temp_to_neck = [self.sys.pos_temp_target[0]-self.sys.pos_neck[0],  self.sys.pos_temp_target[1]-self.sys.pos_neck[1],  self.sys.pos_temp_target[2]-self.sys.pos_neck[2]]
-        self.sys.pos_grasp_point[0] = self.sys.pos_temp_target[0] + 0.08*self.inf.action[0]
-        self.sys.pos_grasp_point[1] = self.sys.pos_temp_target[1] + 0.08*self.inf.action[1]
-        self.sys.pos_grasp_point[2] = self.sys.pos_temp_target[2] + 0.08*self.inf.action[2]
+        # self.sys.pos_grasp_point[0] = self.sys.pos_temp_target[0] + 0.08*self.inf.action[0]
+        # self.sys.pos_grasp_point[1] = self.sys.pos_temp_target[1] + 0.08*self.inf.action[1]
+        # self.sys.pos_grasp_point[2] = self.sys.pos_temp_target[2] + 0.08*self.inf.action[2]
+        self.sys.pos_grasp_point[0] = self.sys.pos_target[0] + 0.08*self.inf.action[0]
+        self.sys.pos_grasp_point[1] = self.sys.pos_target[1] + 0.08*self.inf.action[1]
+        self.sys.pos_grasp_point[2] = self.sys.pos_target[2] + 0.08*self.inf.action[2]
         # print(self.sys.pos_temp_target, self.sys.pos_hand)
 
     def close(self):

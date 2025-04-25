@@ -6,8 +6,8 @@ import time
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from RL_arm import *
-# from RL_arm_copy import *
+# from RL_arm import *
+from RL_arm_copy import *
 from scipy.ndimage import gaussian_filter1d
 
 def train(model, env, file_path, render_speed=1):

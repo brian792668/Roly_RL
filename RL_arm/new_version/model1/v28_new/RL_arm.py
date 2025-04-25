@@ -262,6 +262,7 @@ class RL_arm(gym.Env):
 
             # new hand length -----------------------------------
             self.obs.hand_length = random.uniform(0.0, 0.15)
+            self.obs.hand_length = random.uniform(0.0, 0.05)
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.17 + self.obs.hand_length
             mujoco.mj_forward(self.robot, self.data)
             self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
@@ -277,6 +278,7 @@ class RL_arm(gym.Env):
                 self.sys.pos_target0[2] = self.sys.pos_shoulder[2] + random.uniform(-0.65, 0.10)
                 reachable = self.check_reachable(self.sys.pos_target0)
             self.sys.pos_target = self.sys.pos_target0.copy()
+            self.data.qpos[15:18] = self.sys.pos_target0.copy()
 
             reachable = False
             while reachable == False:

@@ -42,7 +42,7 @@ class Roly():
         self.viewer.cam.lookat = [0.0, -0.25, 1.0]
         self.viewer.cam.elevation = -45
         self.viewer.cam.azimuth = 180
-        self.render_speed = 1.0
+        self.render_speed = 3.0
         self.inf = RL_inf()
         self.sys = RL_sys(Hz=50)
         self.obs = RL_obs()
@@ -219,9 +219,9 @@ class Roly():
 if __name__ == '__main__':
     Robot = Roly()
     Robot.spawn_new_point()
+    image_index = 0
     while Robot.viewer.is_running() == True:
         if Robot.inf.timestep%int(33*Robot.sys.Hz) == 0:
-            
             fig = plt.figure(figsize=(15, 10))
             plt.title("Torque vs Elbow_yaw")
             plt.xlabel("Elbow yaw (degree)")
@@ -236,12 +236,13 @@ if __name__ == '__main__':
                 desire_joints = Robot.IK(torch.tensor(Robot.sys.vec_guide2neck, dtype=torch.float32)).tolist()
             plt.axvline(x=desire_joints[2], color='red', linestyle='--', linewidth=2)
             plt.axvline(x=desire_joints[2], color='red', linestyle='-', linewidth=100, alpha=0.1)
-            plt.savefig(os.path.join(Robot.file_path, "Torque_vs_Elbow_yaw.png"))
+            plt.savefig(os.path.join(Robot.file_path, f"Torque_vs_Elbow_yaw_{image_index}.png"))
             plt.close()
             Robot.torque = 0
             Robot.plt_degree = np.array([])
             Robot.plt_torque = np.array([])
             Robot.spawn_new_point()
+            image_index += 1
 
             
         Robot.step()
