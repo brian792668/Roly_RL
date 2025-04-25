@@ -222,7 +222,7 @@ if __name__ == '__main__':
     image_index = 0
     while Robot.viewer.is_running() == True:
         if Robot.inf.timestep%int(33*Robot.sys.Hz) == 0:
-            fig = plt.figure(figsize=(15, 10))
+            fig = plt.figure(figsize=(9, 6))
             plt.title("Torque vs Elbow_yaw")
             plt.xlabel("Elbow yaw (degree)")
             plt.ylabel("Arm total torque (Nm)")
