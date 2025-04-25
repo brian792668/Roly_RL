@@ -124,8 +124,8 @@ def lebal_Roly_IK(numberofpoints = 2000):
     targetpoints = targetpoints[:numberofpoints]
 
 
-    # sorted_targetpoints = sorted(targetpoints, key=lambda x: x[2])
-    sorted_targetpoints = targetpoints
+    sorted_targetpoints = sorted(targetpoints, key=lambda x: x[1])
+    # sorted_targetpoints = targetpoints
     point_index = 0
     numberofdelete = 0
     stabletime = 0
@@ -279,6 +279,6 @@ def lebal_Roly_IK(numberofpoints = 2000):
     print(f"length of dataest: {len(xyzs)}\n\n")
 
 if __name__ == '__main__':
-    lebal_Roly_IK(numberofpoints = 10000)
+    lebal_Roly_IK(numberofpoints = 1000)
     # from ..IK_train import *
     # train(numberofpoints=10, version="v1")

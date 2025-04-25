@@ -48,8 +48,8 @@ def train(numberofpoints, version):
     dataloader = DataLoader(ik_dataset, batch_size=64, shuffle=True)
 
     # Load test data
-    test_xyz_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/new_992points/xyz.npy"))
-    test_joints_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/new_992points/joints.npy"))
+    test_xyz_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/new_988points/xyz.npy"))
+    test_joints_array = np.load(os.path.join(file_path, f"../../datasets/new_origin/new_988points/joints.npy"))
     test_dataset = IKDataset(test_xyz_array, test_joints_array)
     test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=True)
 
@@ -115,4 +115,5 @@ def train(numberofpoints, version):
 
 
 if __name__ == '__main__':
-    train(numberofpoints=8974, version="v13")
+    # train(numberofpoints=8974, version="v13")
+    train(numberofpoints=9876, version="v13")
