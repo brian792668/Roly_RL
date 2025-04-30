@@ -366,9 +366,9 @@ class RL_arm(gym.Env):
                 self.sys.pos_target[1] = shoulder_pos[1] - random.uniform( 0.00, 1.00)**2 *1.30 + 0.65
                 self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
 
-                self.sys.pos_target[0] = shoulder_pos[0] + random.uniform( 0.10, 0.65)
-                self.sys.pos_target[1] = shoulder_pos[1] + random.uniform(-0.00, 0.24)
-                self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
+                self.sys.pos_target[0] = shoulder_pos[0] + random.uniform( 0.10, 0.20)
+                self.sys.pos_target[1] = shoulder_pos[1] + random.uniform(-0.00, 0.01)
+                self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.50,-0.20)
                 # self.sys.pos_target[0] = shoulder_pos[0] + 0.10
                 # self.sys.pos_target[1] = shoulder_pos[1] + 0.00
                 # self.sys.pos_target[2] = shoulder_pos[2] + -0.4
