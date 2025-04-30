@@ -18,13 +18,13 @@ from imports.state_action import *
 from imports.RL_info import *
 from imports.model1 import RL_moving_model
 
-class IKMLP(nn.Module):
+class NPMLP(nn.Module):
     def __init__(self):
-        super(IKMLP, self).__init__()
+        super(NPMLP, self).__init__()
         self.fc1 = nn.Linear(3, 64)  # 輸入3維，隱藏層64
         self.fc2 = nn.Linear(64, 16)
         self.fc3 = nn.Linear(16, 8)
-        self.fc4 = nn.Linear(8, 4)  # 輸出4維（4個關節角度）
+        self.fc4 = nn.Linear(8, 1)  # 輸出4維（4個關節角度）
     
     def forward(self, x):
         x = F.relu(self.fc1(x))  # 第1層用 ReLU
@@ -33,18 +33,19 @@ class IKMLP(nn.Module):
         x = self.fc4(x)          # 最後一層直接輸出
         return x
 
-class CB(nn.Module):
+class CBMLP(nn.Module):
     def __init__(self): # 3 -> 32 -> 16 -> 2
-        super(CB, self).__init__()
-        self.fc1 = nn.Linear(3, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, 2)
+        super(CBMLP, self).__init__()
+        self.fc1 = nn.Linear(3, 32)
+        self.fc2 = nn.Linear(32, 16)
+        self.fc3 = nn.Linear(16, 8)
+        self.fc4 = nn.Linear(8, 2)
     
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        x = torch.tanh(x) * 1.6
+        x = F.relu(self.fc3(x))
+        x = torch.tanh(self.fc4(x)) * 1.6
         return x
 
 class RL_arm(gym.Env):
@@ -79,12 +80,15 @@ class RL_arm(gym.Env):
 
         self.EE_xyz_label = np.array([])
         self.collision_label = np.array([])
-        # self.CBmodel = CB()
-        # self.CBmodel.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "collision_bound_2048000points_v1.pth"), weights_only=True))
-        # self.CBmodel.eval()
+        self.CBmodel = CBMLP()
+        self.CBmodel.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "MLP_collision_bound.pth"), weights_only=True))
+        self.CBmodel.eval()
+        self.NPmodel = NPMLP()
+        self.NPmodel.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "MLP_natural_posture.pth"), weights_only=True))
+        self.NPmodel.eval()
     
     def render(self):
-        if self.inf.timestep%int(49*self.render_speed+1) ==0:
+        if self.inf.timestep%int(29*self.render_speed+1) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_guide.copy()
             self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[3:7].copy()
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[0:3].copy()
@@ -111,7 +115,7 @@ class RL_arm(gym.Env):
             action_from_model1 = self.model1.predict()
             self.sys.joints_increment[0] = self.sys.joints_increment[0]*0.9 + action_from_model1[0]*0.1
             self.sys.joints_increment[1] = self.sys.joints_increment[1]*0.9 + action_from_model1[1]*0.1
-            self.sys.joints_increment[2] = np.tanh(self.sys.guide_arm_joints[3]- self.sys.pos[5])
+            self.sys.joints_increment[2] = np.tanh(10*(self.sys.guide_arm_joints[3]- self.sys.pos[5]))
             if self.sys.guide_arm_joints[3] < self.sys.limit_low[2]:
                 self.sys.joints_increment[2] = np.tanh(self.sys.limit_low[2]- self.sys.pos[5])
             self.sys.joints_increment[3] = self.sys.joints_increment[3]*0.9 + action_from_model1[2]*0.1
@@ -184,35 +188,58 @@ class RL_arm(gym.Env):
         collision *= 1 - ((-np.tanh(500 * (pos_arm10[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm10[1] + 0.20)) + 1) / 2)
         collision *= 1 - ((-np.tanh(500 * (pos_arm11[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm11[1] + 0.20)) + 1) / 2)
         collision *= 1 - ((-np.tanh(500 * (pos_arm12[0] - 0.10)) + 1) / 2) * ((np.tanh(500 * (pos_arm12[1] + 0.20)) + 1) / 2)
+        if collision <= 0.1:
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")]   = np.array([1.0, 0.3, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+1] = np.array([1.0, 0.3, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+2] = np.array([1.0, 0.3, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+3] = np.array([1.0, 0.3, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+4] = np.array([1.0, 0.3, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+5] = np.array([1.0, 0.3, 0.3, 1.0])
+        else:
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")]   = np.array([0.75, 0.75, 0.75, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+1] = np.array([0.75, 0.75, 0.75, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+2] = np.array([0.75, 0.75, 0.75, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+3] = np.array([0.75, 0.75, 0.75, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+4] = np.array([0.75, 0.75, 0.75, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+5] = np.array([0.75, 0.75, 0.75, 1.0])
 
-        # # from MLP
-        # input_tensor = torch.tensor(np.array(self.sys.vec_guide2neck.copy(), dtype=np.float32) ).unsqueeze(0)
-        # with torch.no_grad():
-        #     CBoutput = self.CBmodel(input_tensor)
-        # low_bound, high_bound = CBoutput[0].numpy()
-        # if low_bound > high_bound:
-        #     low_bound, high_bound = high_bound, low_bound
-
-        # if low_bound > 1.57 or high_bound < -1.57:
-        #     self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*(-1.57+0.1)
-        #     # self.sys.limit_low[2] -1.57
-        # else:
-        #     self.sys.limit_low[2] = 0.90*self.sys.limit_low[2] + 0.10*(high_bound+0.1)
-        #     # self.sys.limit_low[2] = high_bound
+        if abs(self.sys.pos[5] - self.sys.guide_arm_joints[3]) <= np.radians(5):
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")]   = np.array([0.3, 1.0, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+1] = np.array([0.3, 1.0, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+2] = np.array([0.3, 1.0, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+3] = np.array([0.3, 1.0, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+4] = np.array([0.3, 1.0, 0.3, 1.0])
+            self.robot.geom_rgba[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_GEOM, "R_shoulder")+5] = np.array([0.3, 1.0, 0.3, 1.0])
 
 
-        # input_tensor = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
-        # with torch.no_grad():
-        #     CBoutput = self.CBmodel(input_tensor)
-        # low_bound, high_bound = CBoutput[0].numpy()
-        # if low_bound > high_bound:
-        #     low_bound, high_bound = high_bound, low_bound
+
+
+        # from MLP
+        input_tensor_guide = torch.tensor(np.array(self.sys.vec_guide2neck.copy(), dtype=np.float32) ).unsqueeze(0)
+        input_tensor_hand = torch.tensor(np.array(self.sys.vec_hand2neck.copy(), dtype=np.float32) ).unsqueeze(0)
+        with torch.no_grad():
+            CBoutput_guide = self.CBmodel(input_tensor_guide)
+            CBoutput_hand = self.CBmodel(input_tensor_hand)
+        bound_guide = CBoutput_guide[0].numpy()
+        bound_hand = CBoutput_hand[0].numpy()
+        if bound_guide[0] > bound_guide[1]: bound_guide[0], bound_guide[1] = bound_guide[1], bound_guide[0]
+        if bound_hand[0] > bound_hand[1]:   bound_hand[0], bound_hand[1] = bound_hand[1], bound_hand[0]
+        high_bound = max(bound_guide[1], bound_hand[1])
+
+        if high_bound < -1.57:
+            self.sys.limit_low[2] = 0.95*self.sys.limit_low[2] + 0.05*(-1.57)
+            # self.sys.limit_low[2] -1.57
+        else:
+            self.sys.limit_low[2] = 0.95*self.sys.limit_low[2] + 0.05*(high_bound+0.1)
+            # self.sys.limit_low[2] = high_bound
 
 
         # boundary function
         x = self.sys.pos[5]
-        high_bound = self.inf.action[0]
-        low_bound = self.inf.action[1]
+        # high_bound = self.inf.action[0]
+        # low_bound = self.inf.action[1]
+        high_bound = bound_hand[1]
+        low_bound = bound_hand[0]
         boundary_value = (x-low_bound)*(x-high_bound)
         normalized = 1/(1+np.exp(-500*np.clip(boundary_value, -0.02, 0.02)))
 
@@ -229,18 +256,18 @@ class RL_arm(gym.Env):
         if self.inf.action[0] < self.inf.action[1]:
             self.inf.reward = 0
         self.inf.total_reward += self.inf.reward
-        # self.print_scale(low_bound, high_bound, self.sys.pos[5], self.sys.guide_arm_joints[3], collision, self.inf.reward)
+        self.print_scale(low_bound, high_bound, self.sys.pos[5], self.sys.guide_arm_joints[3], collision, self.inf.reward)
 
 
-        # label
-        if self.inf.totaltimestep%20 == 0:
-            label = [self.sys.pos[2], self.sys.pos[3], self.sys.pos[5], self.sys.pos[6], collision]
-            if self.EE_xyz_label.size == 0:
-                self.EE_xyz_label = np.array([self.sys.vec_hand2neck.copy()])
-                self.collision_label = np.array([label])
-            else:
-                self.EE_xyz_label = np.concatenate((self.EE_xyz_label, [self.sys.vec_hand2neck.copy()]), axis=0)
-                self.collision_label = np.concatenate((self.collision_label, [label.copy()]), axis=0)
+        # # label
+        # if self.inf.totaltimestep%20 == 0:
+        #     label = [self.sys.pos[2], self.sys.pos[3], self.sys.pos[5], self.sys.pos[6], collision]
+        #     if self.EE_xyz_label.size == 0:
+        #         self.EE_xyz_label = np.array([self.sys.vec_hand2neck.copy()])
+        #         self.collision_label = np.array([label])
+        #     else:
+        #         self.EE_xyz_label = np.concatenate((self.EE_xyz_label, [self.sys.vec_hand2neck.copy()]), axis=0)
+        #         self.collision_label = np.concatenate((self.collision_label, [label.copy()]), axis=0)
 
         return self.inf.reward
  
@@ -265,10 +292,12 @@ class RL_arm(gym.Env):
         self.sys.vec_hand2neck    = [self.sys.pos_hand[0]   - self.sys.pos_neck[0] ,   self.sys.pos_hand[1]   - self.sys.pos_neck[1],   self.sys.pos_hand[2]   - self.sys.pos_neck[2]]
         self.sys.vec_hand2elbow   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0],   self.sys.pos_hand[1]   - self.sys.pos_elbow[1],  self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
 
-        # route_collision = self.chech_route_collision(start=self.sys.vec_hand2neck, guide=self.sys.vec_guide2neck)
-        # if route_collision:
-        #     self.sys.vec_guide2neck[0:2] = [0.25, -0.25]
-        #     self.sys.vec_guide2hand[0:2] = [(0.25 - self.sys.pos_hand[0]), (-0.25 - self.sys.pos_hand[1])]
+
+        # with torch.no_grad():  # 不需要梯度計算，因為只做推論
+        #     desire_joints = self.NPmodel(torch.tensor(self.sys.vec_target2neck, dtype=torch.float32)).tolist()
+        # desire_joints[0] += 20
+        # desire_joints = np.radians(desire_joints)
+        # self.sys.guide_arm_joints[3] = desire_joints[0]
 
 
 
@@ -296,19 +325,12 @@ class RL_arm(gym.Env):
         self.obs.joint_arm[2:4] = self.data.qpos[12:14].copy()
         # self.obs.joint_arm[2] += self.sys.joints_increment[2]*0.01*20
 
-        # ----------------------------------------------------------------------------------
-        # update camera
 
         self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "pos_target")] = self.sys.pos_guide.copy()
         self.robot.site_quat[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[3:7].copy()
         self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, "obstacle_hand")] = self.sys.obstacle_hand_pos_and_quat[0:3].copy()
 
-        # self.head_camera.get_img(self.data, rgb=True, depth=True)
-        # # self.head_camera.get_guide(depth = False)
-        # self.head_camera.depth_feature()
-        # self.obs.feature_points = self.obs.feature_points*0.9 + self.head_camera.feature_points*0.1
-        # self.head_camera.show(rgb=False, depth=True)
-        # self.sys.ctrlpos[0:2] = self.head_camera.track(self.sys.ctrlpos[0:2])
+
 
     def close(self):
         self.renderer.close() 
@@ -331,9 +353,18 @@ class RL_arm(gym.Env):
                 self.sys.pos_target[0] = shoulder_pos[0] + random.uniform(-0.10, 0.65)
                 self.sys.pos_target[1] = shoulder_pos[1] - random.uniform( 0.00, 1.00)**2 *1.30 + 0.65
                 self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
+
+                self.sys.pos_target[0] = shoulder_pos[0] + random.uniform( 0.10, 0.65)
+                self.sys.pos_target[1] = shoulder_pos[1] + random.uniform(-0.65, 0.24)
+                self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
+                # self.sys.pos_target[0] = shoulder_pos[0] + 0.10
+                # self.sys.pos_target[1] = shoulder_pos[1] + 0.00
+                # self.sys.pos_target[2] = shoulder_pos[2] + -0.4
+
                 reachable = self.check_reachable(self.sys.pos_target.copy())
             self.data.qpos[15:18] = self.sys.pos_target.copy()
-            self.sys.guide_arm_joints[3] = np.radians(-90 + 180*random.uniform( 0.0, 1.0)**2)
+            self.sys.guide_arm_joints[3] = np.radians(-90 + 180*random.uniform( 0.0, 1.0)**3)
+            # self.sys.guide_arm_joints[3] = np.radians(np.random.choice([-85, 85]))
             self.model1.obs_hand_dis = 0.0
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.17 + self.model1.obs_hand_dis
             mujoco.mj_forward(self.robot, self.data)

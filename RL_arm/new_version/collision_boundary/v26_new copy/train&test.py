@@ -57,16 +57,16 @@ def train(model, env, file_path, render_speed=1):
         plt.savefig(os.path.join(file_path, "epoch_vs_reward.png"))
         plt.close()
 
-        # save label
-        folder_path = os.path.join(file_path, f"datasets/new/500_epoch_points")
-        os.makedirs(folder_path, exist_ok=True)
-        np.save(os.path.join(folder_path, f"EE_xyz_label_epoch{i}.npy"), env.EE_xyz_label)
-        np.save(os.path.join(folder_path, f"collision_label_epoch{i}.npy"), env.collision_label)
-        print(env.EE_xyz_label.shape, env.collision_label.shape)
-        del env.EE_xyz_label
-        del env.collision_label
-        env.EE_xyz_label = np.array([])
-        env.collision_label = np.array([])
+        # # save label
+        # folder_path = os.path.join(file_path, f"datasets/new/500_epoch_points")
+        # os.makedirs(folder_path, exist_ok=True)
+        # np.save(os.path.join(folder_path, f"EE_xyz_label_epoch{i}.npy"), env.EE_xyz_label)
+        # np.save(os.path.join(folder_path, f"collision_label_epoch{i}.npy"), env.collision_label)
+        # print(env.EE_xyz_label.shape, env.collision_label.shape)
+        # del env.EE_xyz_label
+        # del env.collision_label
+        # env.EE_xyz_label = np.array([])
+        # env.collision_label = np.array([])
     print("Done labeling\n")
           
 def test(model, env, model_path, render_speed=0):
@@ -104,6 +104,6 @@ if __name__ == '__main__':
     #     RL_model.policy.to("cpu")
     #     print("Model 2 : CPU")
 
-    train(RL_model, my_env, file_path, render_speed = 2.0)
-    # test(RL_model, my_env, model_last_path, render_speed = 0)
+    # train(RL_model, my_env, file_path, render_speed = 2.0)
+    test(RL_model, my_env, model_last_path, render_speed = 0)
     # test(RL_model, my_env, model_best_path, render_speed = 0)
