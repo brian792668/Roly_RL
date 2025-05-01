@@ -45,6 +45,7 @@ class Robot_system:
         self.target_depth = self.head_camera.target_depth
         self.target_pixel_norm = self.head_camera.target_norm
         self.track_done = False
+        self.target_position_to_camera = [0, 0, 0]
 
         # Initial RL policy
         RL_path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RLmodel/model_1/v28/model.zip")
@@ -61,7 +62,7 @@ class Robot_system:
  
         # Initial motors
         self.motor = Roly_motor()
-        self.motor.to_pose(pose="initial", speed=0.5)
+        # self.motor.to_pose(pose="initial", speed=0.5)
 
         # Initial mechanism
         self.DH_table_R = DHtable([[    0.0, np.pi/2,     0.0,     0.0],
@@ -78,10 +79,9 @@ class Robot_system:
                                    [np.pi/2, np.pi/2,     0.0, -0.2003],
                                    [    0.0, np.pi/2,     0.0,     0.0],
                                    [    0.0, np.pi/2,     0.0,  0.1700]])
-        self.DH_table_neck = DHtable([[    0.0,     0.0,   0.021,   0.104],
-                                      [    0.0, np.pi/2,     0.0,     0.0],
-                                      [np.pi/2, np.pi/2,   0.062,     0.0],
-                                      [    0.0,     0.0,     0.0,     0.0]])
+        self.DH_table_neck = DHtable([[     0.0,     0.0,   0.021,   0.104],
+                                      [     0.0, np.pi/2,     0.0,     0.0],
+                                      [ np.pi/2, np.pi/2,   0.062,     0.0]])
 
         self.grasping_dis = 0.0
         self.pos_hand     = self.DH_table_R.forward_hand(angles=np.radians(self.motor.joints[2:7].copy()), hand_length=self.grasping_dis)
@@ -211,12 +211,14 @@ class Robot_system:
                     with self.lock:
                         self.target_exist = True
                         self.track_done = False
+                        self.target_position_to_camera = self.head_camera.target_position.copy()
                         # self.target_pixel_norm = self.head_camera.target_norm
                         self.motor.joints_increment[0] = ( -3.0*self.head_camera.target_norm[0] - 0.5*self.head_camera.target_vel[0] - 0.7*self.motor.joints_increment[0] )*0.5
                         self.motor.joints_increment[1] = ( -3.0*self.head_camera.target_norm[1] - 0.5*self.head_camera.target_vel[0] - 0.7*self.motor.joints_increment[1] )*0.5
                     if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
                         with self.lock:
                             self.target_depth = self.head_camera.target_depth
+                            self.target_position_to_camera = self.head_camera.target_position.copy()
                             self.track_done = True
                 else:
                     with self.lock:
@@ -239,6 +241,7 @@ class Robot_system:
                     if np.abs(self.head_camera.hand_norm[0]) <= 0.05 and np.abs(self.head_camera.hand_norm[1]) <= 0.05 :
                         with self.lock:
                             self.target_depth = self.head_camera.hand_depth
+                            self.target_position_to_camera = self.head_camera.target_position.copy()
                             self.track_done = True
                 else:
                     with self.lock:
@@ -260,7 +263,9 @@ class Robot_system:
                 hand_length = self.grasping_dis
                 track_done = self.track_done
                 d = self.target_depth
+                target_position_to_camera = self.target_position_to_camera.copy()
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
+
     
             # Farward Kinematics of EE position
             pos_hand = self.DH_table_R.forward_hand(angles=joints[2:7].copy(), hand_length=hand_length)
@@ -269,7 +274,8 @@ class Robot_system:
                 
             # Farward Kinematics of target position
             if track_done:
-                camera_point = self.DH_table_neck.forward_neck(angles=joints[0:2].copy(), camera_distance=d)
+                # camera_point = self.DH_table_neck.forward_neck(angles=joints[0:2].copy(), camera_distance=d)
+                camera_point = self.DH_table_neck.forward_neck_new(angles=joints[0:2].copy(), target_position=target_position_to_camera)
                 with self.lock:
                     self.pos_grasppnt = camera_point.copy()
                     self.pos_placepnt = camera_point.copy()
@@ -378,16 +384,16 @@ class Robot_system:
     def thread_motor(self):
         while not self.stop_event.is_set():
             time.sleep(0.01) # 100 Hz
-            with self.lock: 
-                joints = self.motor.joints.copy()
-                joints_increment = self.motor.joints_increment.copy()
-            for i in range(len(joints)):
-                joints[i] += joints_increment[i]
-            with self.lock: 
-                self.motor.joints = joints.copy()
-            self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
+        #     with self.lock: 
+        #         joints = self.motor.joints.copy()
+        #         joints_increment = self.motor.joints_increment.copy()
+        #     for i in range(len(joints)):
+        #         joints[i] += joints_increment[i]
+        #     with self.lock: 
+        #         self.motor.joints = joints.copy()
+        #     self.motor.writeAllMotorPosition(self.motor.toRolyctrl(joints.copy()))
             
-        self.motor.to_pose(pose="shut down", speed=0.3)
+        # self.motor.to_pose(pose="shut down", speed=0.3)
         self.motor.setAllMotorTorqurDisable()
         self.motor.portHandler.closePort()
 
@@ -430,4 +436,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=30)
+    Roly.run(endtime=20)

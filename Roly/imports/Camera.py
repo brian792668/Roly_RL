@@ -48,6 +48,8 @@ class Camera():
         self.hand_vel  = [0.0, 0.0]
         self.hand_depth = 1.0
 
+        self.target_position = [0.0, 0.0, 0.0]
+
     def get_img(self, rgb=True, depth=True):
         frames = self.pipeline.wait_for_frames()
         aligned_frames = self.align.process(frames)
@@ -55,6 +57,7 @@ class Camera():
             color_frame = frames.get_color_frame()
             # color_frame = aligned_frames.get_color_frame()
             self.color_img = np.asanyarray(color_frame.get_data())
+            self.color_img = cv2.rotate(self.color_img, cv2.ROTATE_180)
         if depth == True:
             depth_frame = frames.get_depth_frame()
             depth_frame = aligned_frames.get_depth_frame()
@@ -63,6 +66,7 @@ class Camera():
             depth_frame = self.spatial.process(depth_frame)
             depth_frame = self.hole_filling.process(depth_frame)
             self.depth_img = np.asanyarray(depth_frame.get_data())
+            self.depth_img = cv2.rotate(self.depth_img, cv2.ROTATE_180)
 
             new_depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(self.depth_img, alpha=-0.2), cv2.COLORMAP_JET)
             self.depth_colormap = cv2.addWeighted(self.depth_colormap, 0.1, new_depth_colormap, 0.9, 0)
@@ -107,19 +111,38 @@ class Camera():
             cv2.line(self.color_img, (int(center_x), int(center_y) - size), 
                      (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
 
-            if depth == True:
-                # 從深度圖像中獲取對應的深度值
-                self.target_depth = self.depth_img[int(center_y), int(center_x)]*0.001  # m
-
-                cv2.putText(self.color_img, f"{self.target_depth:.3f} m", (int(center_x) + 30, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 
-                        0.5, (255, 255, 255), 1, cv2.LINE_AA)
-
             # 將像素座標轉換至[-1, 1]區間
             norm_x = (center_x / self.color_img.shape[1]) * 2 - 1
             norm_y = (center_y / self.color_img.shape[0]) * 2 - 1
 
             self.target_vel = [norm_x-self.target_norm[0], norm_y-self.target_norm[1]]
             self.target_norm = [norm_x, norm_y]
+
+
+            if depth == True:
+                # 從深度圖像中獲取對應的深度值
+                self.target_depth = self.depth_img[int(center_y), int(center_x)]*0.001  # m
+
+                # 投影平面半寬與半高 FOVx=64, FOVy=50
+                half_width = np.tan(np.radians(55) / 2)
+                half_height = np.tan(np.radians(55) / 2)
+                X, Y, Z = -(norm_y * half_width), (norm_x * half_height), 1.0
+                # 單位向量方向
+                vec = np.array([X, Y, Z])
+                vec_normalized = vec / np.linalg.norm(vec)
+                self.target_position = vec_normalized * self.target_depth
+
+
+                cv2.putText( self.color_img,
+                             f"{self.target_depth:.3f} m", 
+                             (int(center_x) + 30, int(center_y)), 
+                             cv2.FONT_HERSHEY_SIMPLEX, 
+                             0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                cv2.putText( self.color_img,
+                             f"[{self.target_position[0]:.2f} {self.target_position[1]:.2f} {self.target_position[2]:.2f}]", 
+                             (int(center_x) + 30, int(center_y) + 15), 
+                             cv2.FONT_HERSHEY_SIMPLEX, 
+                             0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
         else:
             self.target_exist = False
@@ -163,8 +186,28 @@ class Camera():
 
                     if depth:
                         self.hand_depth = self.depth_img[int(cy), int(cx)] * 0.001
-                        cv2.putText(self.color_img, f"{self.hand_depth:.3f} m", (int(cx) + 30, int(cy)),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                        
+
+                        # 投影平面半寬與半高 FOVx=64, FOVy=50
+                        half_width = np.tan(np.radians(55) / 2)
+                        half_height = np.tan(np.radians(55) / 2)
+                        X, Y, Z = -(norm_y * half_width), (norm_x * half_height), 1.0
+                        # 單位向量方向
+                        vec = np.array([X, Y, Z])
+                        vec_normalized = vec / np.linalg.norm(vec)
+                        self.target_position = vec_normalized * self.hand_depth
+
+
+                        cv2.putText( self.color_img,
+                                     f"{self.hand_depth:.3f} m", 
+                                     (int(cx) + 30, int(cy)), 
+                                     cv2.FONT_HERSHEY_SIMPLEX, 
+                                     0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                        cv2.putText( self.color_img,
+                                     f"[{self.target_position[0]:.2f} {self.target_position[1]:.2f} {self.target_position[2]:.2f}]", 
+                                     (int(cx) + 30, int(cy) + 15), 
+                                     cv2.FONT_HERSHEY_SIMPLEX, 
+                                     0.4, (255, 255, 255), 1, cv2.LINE_AA)
                     return  # 找到左手就結束
 
         else:

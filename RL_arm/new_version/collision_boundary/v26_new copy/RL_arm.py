@@ -440,7 +440,8 @@ class RL_arm(gym.Env):
         else:
             output[pos_c] = f' \033[93m{elbow_now:.0f}\033[0m '
 
-        print(''.join(output), f" {reward:.1f}")
+        # print(''.join(output), f" {reward:.1f}")
+        print(''.join(output))
 
     def compensate(self):
         self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")].copy()
