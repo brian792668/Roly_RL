@@ -139,8 +139,8 @@ class DXL_Motor():
         dxl_comm_result = self.writeAllMotorStatus(PROFILE_VELOCITY, "PROFILE_VELOCITY")
         if dxl_comm_result != COMM_SUCCESS:
             print(f"Write motor profile velocity fail : {self.packetHandler.getTxRxResult(dxl_comm_result)}")
-        # else:
-        #     print(f"Successfully write all motor profile velocity to {PROFILE_VELOCITY}") # 關
+        else:
+            print(f"Successfully write all motor profile velocity to {PROFILE_VELOCITY}") # 關
 
     def writeAllMotorProfileAcceleration(self, PROFILE_ACCELERATION):
         dxl_comm_result = self.writeAllMotorStatus(PROFILE_ACCELERATION, "PROFILE_ACCELERATION")

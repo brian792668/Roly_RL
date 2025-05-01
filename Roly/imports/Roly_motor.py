@@ -16,30 +16,31 @@ class Roly_motor(DXL_Motor):
         self.joints_bias = [180.0] * 9
         self.joints_axis = [1,   -1,   1,   1,   1,   -1,   -1,   1,  1]
         self.joints = [0] * 9
-        self.joints[1] = 40
         self.joints_increment = [0] * 9
-        # self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 0, 95] # gripper closed
-        self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 90, 0]  # gripper opened
+        # self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 90, 95] # gripper closed
+        self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 90, 5]  # gripper opened
         self.limit_high = [ 1.57, 0.00, 1.57, 1.90]
         self.limit_low  = [-1.57,-1.57,-1.57, 0.00]
 
-        self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[200, 200, 50, 50, 50, 50, 50, 50, 200])
         self.changeAllMotorOperatingMode(OP_MODE=3)
+        self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[100, 100, 40, 40, 40, 40, 40, 40, 100])
         time.sleep(0.1)
 
     def to_pose(self, pose, speed=0.5):
         # Get current joint angles.
-        current_angles = self.readAllMotorPosition()
-        while current_angles ==  None:
-            time.sleep(0.1)
-            print("failed to read motor position. Retry...")
-            current_angles = self.readAllMotorPosition()
+        # current_angles = self.readAllMotorPosition()
+        # while current_angles ==  None:
+        #     time.sleep(0.1)
+        #     print("failed to read motor position. Retry...")
+        #     current_angles = self.readAllMotorPosition()
 
-        current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(self.joints))]
+        # current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(self.joints))]
+
+        current_angles = self.joints.copy()
 
         # Set final joint angles.
         final_angles = current_angles
-        if   pose == "initial":   
+        if pose == "initial":   
             final_angles = self.initial_pos.copy()
             print("\n\033[1;33m[ Motor  ]\033[0m To INITIAL pose ...")
         elif pose == "shut down": 
