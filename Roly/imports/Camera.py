@@ -77,77 +77,161 @@ class Camera():
         # if depth == True:   cv2.imshow("Realsense D435i Depth with color", self.depth_img)
         cv2.waitKey(1)
 
-    def get_target(self, depth=False):
-        # 定義紅色的RGB範圍
-        lower_red = np.array([0, 10, 180], dtype=np.uint8)
-        upper_red = np.array([100, 200, 255], dtype=np.uint8)
-        # 創建紅色遮罩
-        mask = cv2.inRange(self.color_img, lower_red, upper_red)
-        self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
+    # def get_target(self, depth=False):
+    #     # 定義紅色的RGB範圍
+    #     lower_red = np.array([0, 10, 180], dtype=np.uint8)
+    #     upper_red = np.array([100, 200, 255], dtype=np.uint8)
+    #     # 創建紅色遮罩
+    #     mask = cv2.inRange(self.color_img, lower_red, upper_red)
+    #     self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=mask)
         
-        # 將原圖與遮罩層進行混合
-        alpha = 0.7  # 透明度
-        self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1-alpha, 0)
+    #     # 將原圖與遮罩層進行混合
+    #     alpha = 0.7  # 透明度
+    #     self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1-alpha, 0)
 
-        # 確保在圖像中有紅色物體
-        if np.any(mask):
-            self.target_exist = True
+    #     # 確保在圖像中有紅色物體
+    #     if np.any(mask):
+    #         self.target_exist = True
 
-            # 獲取紅色物體的像素坐標
-            coords = np.column_stack(np.where(mask > 0))
+    #         # 獲取紅色物體的像素坐標
+    #         coords = np.column_stack(np.where(mask > 0))
 
-            # 計算紅色物體的中心點
-            center = np.mean(coords, axis=0)
-            center_y, center_x = center
+    #         # 計算紅色物體的中心點
+    #         center = np.mean(coords, axis=0)
+    #         center_y, center_x = center
 
-            # 在RGB圖像上畫十字標
-            size = 3  # 十字標的大小
-            thickness = 1  # 線條的粗細
+    #         # 在RGB圖像上畫十字標
+    #         size = 3  # 十字標的大小
+    #         thickness = 1  # 線條的粗細
 
-            # 畫橫線
-            cv2.line(self.color_img, (int(center_x) - size, int(center_y)), 
-                     (int(center_x) + size, int(center_y)), (255, 255, 255), thickness)
-            # 畫縱線
-            cv2.line(self.color_img, (int(center_x), int(center_y) - size), 
-                     (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
+    #         # 畫橫線
+    #         cv2.line(self.color_img, (int(center_x) - size, int(center_y)), 
+    #                  (int(center_x) + size, int(center_y)), (255, 255, 255), thickness)
+    #         # 畫縱線
+    #         cv2.line(self.color_img, (int(center_x), int(center_y) - size), 
+    #                  (int(center_x), int(center_y) + size), (255, 255, 255), thickness)
 
-            # 將像素座標轉換至[-1, 1]區間
-            norm_x = (center_x / self.color_img.shape[1]) * 2 - 1
-            norm_y = (center_y / self.color_img.shape[0]) * 2 - 1
+    #         # 將像素座標轉換至[-1, 1]區間
+    #         norm_x = (center_x / self.color_img.shape[1]) * 2 - 1
+    #         norm_y = (center_y / self.color_img.shape[0]) * 2 - 1
 
-            self.target_vel = [norm_x-self.target_norm[0], norm_y-self.target_norm[1]]
-            self.target_norm = [norm_x, norm_y]
-
-
-            if depth == True:
-                # 從深度圖像中獲取對應的深度值
-                self.target_depth = self.depth_img[int(center_y), int(center_x)]*0.001  # m
-
-                # 投影平面半寬與半高 FOVx=64, FOVy=50
-                half_width = np.tan(np.radians(55) / 2)
-                half_height = np.tan(np.radians(55) / 2)
-                X, Y, Z = -(norm_y * half_width), (norm_x * half_height), 1.0
-                # 單位向量方向
-                vec = np.array([X, Y, Z])
-                vec_normalized = vec / np.linalg.norm(vec)
-                self.target_position = vec_normalized * self.target_depth
+    #         self.target_vel = [norm_x-self.target_norm[0], norm_y-self.target_norm[1]]
+    #         self.target_norm = [norm_x, norm_y]
 
 
-                cv2.putText( self.color_img,
-                             f"{self.target_depth:.3f} m", 
-                             (int(center_x) + 30, int(center_y)), 
-                             cv2.FONT_HERSHEY_SIMPLEX, 
-                             0.5, (255, 255, 255), 1, cv2.LINE_AA)
-                cv2.putText( self.color_img,
-                             f"[{self.target_position[0]:.2f} {self.target_position[1]:.2f} {self.target_position[2]:.2f}]", 
-                             (int(center_x) + 30, int(center_y) + 15), 
-                             cv2.FONT_HERSHEY_SIMPLEX, 
-                             0.4, (255, 255, 255), 1, cv2.LINE_AA)
+    #         if depth == True:
+    #             # 從深度圖像中獲取對應的深度值
+    #             self.target_depth = self.depth_img[int(center_y), int(center_x)]*0.001  # m
 
-        else:
+    #             # 投影平面半寬與半高 FOVx=64, FOVy=50
+    #             half_width = np.tan(np.radians(55) / 2)
+    #             half_height = np.tan(np.radians(55) / 2)
+    #             X, Y, Z = -(norm_y * half_width), (norm_x * half_height), 1.0
+    #             # 單位向量方向
+    #             vec = np.array([X, Y, Z])
+    #             vec_normalized = vec / np.linalg.norm(vec)
+    #             self.target_position = vec_normalized * self.target_depth
+
+
+    #             cv2.putText( self.color_img,
+    #                          f"{self.target_depth:.3f} m", 
+    #                          (int(center_x) + 30, int(center_y)), 
+    #                          cv2.FONT_HERSHEY_SIMPLEX, 
+    #                          0.5, (255, 255, 255), 1, cv2.LINE_AA)
+    #             cv2.putText( self.color_img,
+    #                          f"[{self.target_position[0]:.2f} {self.target_position[1]:.2f} {self.target_position[2]:.2f}]", 
+    #                          (int(center_x) + 30, int(center_y) + 15), 
+    #                          cv2.FONT_HERSHEY_SIMPLEX, 
+    #                          0.4, (255, 255, 255), 1, cv2.LINE_AA)
+
+    #     else:
+    #         self.target_exist = False
+
+    def get_target(self):
+        # 定義橘色的RGB範圍（可依需要微調）
+        lower_orange = np.array([0, 10, 180], dtype=np.uint8)
+        upper_orange = np.array([100, 200, 255], dtype=np.uint8)
+
+        # 建立橘色遮罩
+        mask = cv2.inRange(self.color_img, lower_orange, upper_orange)
+
+        # 找出橘色像素的座標
+        ys, xs = np.where(mask > 0)
+        if len(xs) == 0:
             self.target_exist = False
+            self.target_depth = None
+            self.target_position = None
+            return
 
-    def get_hand(self, depth=False):
+        # 取得對應像素的深度值，單位：公尺
+        depths = self.depth_img[ys, xs] * 0.001
+
+        # 建立有效遮罩（只保留 0 < depth ≤ 0.8 公尺的像素）
+        valid_mask = (depths > 0) & (depths <= 0.8)
+        if np.count_nonzero(valid_mask) == 0:
+            self.target_exist = False
+            self.target_depth = None
+            self.target_position = None
+            return
+
+        # 保留有效像素位置與深度
+        valid_xs = xs[valid_mask]
+        valid_ys = ys[valid_mask]
+        valid_depths = depths[valid_mask]
+
+        # 遮罩圖（僅包含有效橘色區域）
+        valid_mask_img = np.zeros_like(mask)
+        valid_mask_img[valid_ys, valid_xs] = 255
+
+        # 建立彩色圖的可視遮罩
+        self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=valid_mask_img)
+        alpha = 0.7
+        self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1 - alpha, 0)
+
+        # 目標存在
+        self.target_exist = True
+
+        # 計算平均位置與深度
+        mean_x = np.mean(valid_xs)
+        mean_y = np.mean(valid_ys)
+        mean_depth = np.mean(valid_depths)  # 單位：m
+
+        # 將像素座標轉換至 [-1, 1] 範圍
+        norm_x = (mean_x / self.color_img.shape[1]) * 2 - 1
+        norm_y = (mean_y / self.color_img.shape[0]) * 2 - 1
+
+        self.target_vel = [norm_x - self.target_norm[0], norm_y - self.target_norm[1]]
+        self.target_norm = [norm_x, norm_y]
+        self.target_depth = mean_depth
+
+        # 將畫面中心對應至視角方向 (假設 FOVx ≈ FOVy = 55°)
+        half_width = np.tan(np.radians(55) / 2)
+        half_height = np.tan(np.radians(55) / 2)
+        X, Y, Z = -(norm_y * half_width), (norm_x * half_height), 1.0
+        vec = np.array([X, Y, Z])
+        vec_normalized = vec / np.linalg.norm(vec)
+        self.target_position = vec_normalized * self.target_depth
+
+        # 繪製十字標與文字
+        size = 3
+        thickness = 1
+        cv2.line(self.color_img, (int(mean_x) - size, int(mean_y)), 
+                 (int(mean_x) + size, int(mean_y)), (255, 255, 255), thickness)
+        cv2.line(self.color_img, (int(mean_x), int(mean_y) - size), 
+                 (int(mean_x), int(mean_y) + size), (255, 255, 255), thickness)
+
+        cv2.putText(self.color_img,
+                    f"{self.target_depth:.3f} m", 
+                    (int(mean_x) + 30, int(mean_y)), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 
+                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(self.color_img,
+                    f"[{self.target_position[0]:.2f} {self.target_position[1]:.2f} {self.target_position[2]:.2f}]", 
+                    (int(mean_x) + 30, int(mean_y) + 15), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 
+                    0.4, (255, 255, 255), 1, cv2.LINE_AA)
+        
+    def get_hand(self, depth=False, hand="Left"):
         color_img = self.color_img
         self.hand_center = None
         img_rgb = cv2.cvtColor(color_img, cv2.COLOR_BGR2RGB)
@@ -157,13 +241,14 @@ class Camera():
             for hand_idx, handedness in enumerate(results.multi_handedness):
                 label = handedness.classification[0].label  # 'Left' or 'Right'
                 score = handedness.classification[0].score
-                if label == 'Left':  # 只處理左手
+                # if label == 'Left':
+                if label != hand:
                     hand_landmarks = results.multi_hand_landmarks[hand_idx]
                     lmList = []
                     h, w, _ = color_img.shape
                     for id, lm in enumerate(hand_landmarks.landmark):
                         cx, cy = int(lm.x * w), int(lm.y * h)
-                        lmList.append((cx, cy))
+                        lmList.append((int(cx), int(cy)))
 
                     # 中心點取 5, 17 號關節平均
                     cx, cy = int((lmList[5][0] + lmList[17][0]) / 2), \
@@ -186,8 +271,7 @@ class Camera():
 
                     if depth:
                         self.hand_depth = self.depth_img[int(cy), int(cx)] * 0.001
-                        
-
+    
                         # 投影平面半寬與半高 FOVx=64, FOVy=50
                         half_width = np.tan(np.radians(55) / 2)
                         half_height = np.tan(np.radians(55) / 2)
