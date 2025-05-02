@@ -32,8 +32,8 @@ class Roly_motor(DXL_Motor):
 
         self.changeAllMotorOperatingMode(OP_MODE=3)
         self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[ 100, 100,
-                                                             40, 40, 40, 40, 40, 40, 100,
-                                                             40, 40, 40, 40, 40, 40, 100])
+                                                             40, 40, 40, 40, 40, 40, 200,
+                                                             40, 40, 40, 40, 40, 40, 200])
         time.sleep(0.1)
 
     def to_pose(self, pose, speed=0.5):

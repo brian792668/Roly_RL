@@ -59,6 +59,7 @@ class Robot_system:
         self.IK = IKMLP()
         self.IK.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "IKmodel_v13.pth"), weights_only=True))
         self.IK.eval()
+        self.posture_ratio = 0.1
  
         # Initial motors
         self.motor = Roly_motor()
@@ -334,15 +335,24 @@ class Robot_system:
             joints_increment[6] = np.degrees( action_old[2]* 0.01*alpha ) # elbow pitch
             
             # elbow yaw
+            # with torch.no_grad():  # 不需要梯度計算，因為只做推論
+            #     desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
+            # desire_joints[0] += 40
+            # desire_joints = np.radians(desire_joints)
+            with self.lock:
+                posture_ratio = self.posture_ratio
             with torch.no_grad():  # 不需要梯度計算，因為只做推論
                 desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
-            desire_joints[0] += 40
-            desire_joints = np.radians(desire_joints)
-            new_joint_increment = np.degrees( ( joints[5]*0.9 + desire_joints[0]*0.1 ) - joints[5] )*0.2
+            natural_posture = np.radians(desire_joints[0])
+            natural_posture_max = np.radians(min(desire_joints[0]+90, 90))
+            desire_posture = natural_posture*(1-posture_ratio) + natural_posture_max*posture_ratio
+
+
+            new_joint_increment = np.degrees( ( joints[5]*0.9 + desire_posture*0.1 ) - joints[5] )*0.2
             if abs(new_joint_increment) > joints_increment[5]:
                 joints_increment[5] = 0.1*new_joint_increment + 0.9*joints_increment[5]
             else:
-                joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_joints[0]*0.1 ) - joints[5] ) # elbow yaw
+                joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_posture*0.1 ) - joints[5] ) # elbow yaw
 
             # desire_joints[3] = IK_elbow_pitch(guide_xyz.copy())
             # joints_increment[6] = np.degrees( ( joints[6]*0.9 + desire_joints[3]*0.1 ) - joints[6] ) # elbow yaw
@@ -453,4 +463,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=10)
+    Roly.run(endtime=30)

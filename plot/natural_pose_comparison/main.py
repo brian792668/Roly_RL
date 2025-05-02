@@ -167,7 +167,8 @@ class Roly():
         # self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3]) + abs(self.data.ctrl[5]) + abs(self.data.ctrl[6])
         # self.torque = abs(self.data.ctrl[2])/10 + abs(self.data.ctrl[3])/10 + abs(self.data.ctrl[5])/5
         self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[3]) + abs(self.data.ctrl[5])
-        # self.torque = abs(self.data.ctrl[3]) + abs(self.data.ctrl[5])
+        # self.torque = abs(self.data.ctrl[2]) + abs(self.data.ctrl[5])
+        # self.torque = abs(self.data.ctrl[5])
 
         # step & render
         mujoco.mj_step(self.robot, self.data)
@@ -236,7 +237,8 @@ if __name__ == '__main__':
                 desire_joints = Robot.IK(torch.tensor(Robot.sys.vec_guide2neck, dtype=torch.float32)).tolist()
             plt.axvline(x=desire_joints[2], color='red', linestyle='--', linewidth=2)
             plt.axvline(x=desire_joints[2], color='red', linestyle='-', linewidth=100, alpha=0.1)
-            plt.savefig(os.path.join(Robot.file_path, f"Torque_vs_Elbow_yaw_{image_index}.png"))
+            # plt.savefig(os.path.join(Robot.file_path, f"Torque_vs_Elbow_yaw_{image_index}.png"))
+            plt.savefig(os.path.join(Robot.file_path, f"Torque_vs_Elbow_yaw.png"))
             plt.close()
             Robot.torque = 0
             Robot.plt_degree = np.array([])
