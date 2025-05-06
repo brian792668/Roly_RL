@@ -21,7 +21,7 @@ class Roly_motor(DXL_Motor):
         self.joints_increment = [0] * 16
         self.initial_pos = [   0,   0,
                              -10, -31,  20, 20, 92, 90, 90,
-                             -10, -31,  20, 20, 92, 90, 90] # gripper closed
+                             -10, -31,  20, 20, 92, 90, 5] # gripper closed
         # self.initial_pos = [-20, -45, -10, -31, 0, 20, 92, 90, 5,  0,  0]  # gripper opened
         self.limit_high = [ 1.57, 0.00, 1.57, 1.90]
         self.limit_low  = [-1.57,-1.57,-1.57, 0.00]
@@ -33,15 +33,15 @@ class Roly_motor(DXL_Motor):
         time.sleep(0.1)
 
     def to_pose(self, pose, speed=0.5):
-        # Get current joint angles.
-        self.writeOperatingMode(OP_MODE=3)
-        current_angles = None
-        while current_angles == None:
-            time.sleep(0.1)
-            print("failed to read motor position. Retry...")
-            current_angles = self.readAllMotorPosition()
-        current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(self.joints))]
-        # current_angles = self.joints.copy()
+        # # Get current joint angles.
+        # self.writeOperatingMode(OP_MODE=3)
+        # current_angles = None
+        # while current_angles == None:
+        #     time.sleep(0.1)
+        #     print("failed to read motor position. Retry...")
+        #     current_angles = self.readAllMotorPosition()
+        # current_angles = [(resolution2degree(current_angles[i])-self.joints_bias[i])*self.joints_axis[i] for i in range(len(self.joints))]
+        current_angles = self.joints.copy()
 
         # Set final joint angles.
         final_angles = current_angles

@@ -1,0 +1,336 @@
+import mujoco
+import mujoco.viewer
+import cv2
+import gymnasium as gym
+import numpy as np
+import random
+
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from imports.Camera import *
+from imports.state_action import *
+from imports.RL_info import *
+from imports.Forward import *
+from imports.MLP import *
+
+class RL_arm(gym.Env):
+    def __init__(self):
+        self.done = False
+        self.truncated = False
+        self.robot = mujoco.MjModel.from_xml_path('Roly/Roly_XML/Roly.xml')
+        self.data = mujoco.MjData(self.robot)
+        self.action_space = gym.spaces.box.Box( low  = act_low,      # action (rad)
+                                                high = act_high,
+                                                dtype = np.float32)
+        self.observation_space = gym.spaces.box.Box(low  = obs_low,
+                                                    high = obs_high,
+                                                    dtype = np.float32 )
+        
+        self.renderer = mujoco.Renderer(self.robot)
+        self.inf = RL_inf()
+        self.sys = RL_sys(Hz=50)
+        self.obs = RL_obs()
+
+        tableR = [ [    0.0, np.pi/2,     0.0,     0.0],
+                   [np.pi/2, np.pi/2,     0.0,  0.2488],
+                   [    0.0,     0.0, -0.1705,     0.0], 
+                   [np.pi/2, np.pi/2,     0.0,     0.0],
+                   [np.pi/2, np.pi/2,     0.0, -0.2003],
+                   [    0.0, np.pi/2,     0.0,     0.0],
+                   [    0.0, np.pi/2,     0.0,  0.1700]] # 0.22
+        self.DH_R = DHtable(tableR)
+
+        # self.head_camera = Camera(renderer=self.renderer, camID=0)
+        # self.hand_camera = Camera(renderer=self.renderer, camID=2)
+
+        self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
+        self.viewer.cam.distance = 1.0
+        self.viewer.cam.lookat = [0.3, -0.2, 1.0]
+        self.viewer.cam.elevation = 0
+        self.viewer.cam.azimuth = 180
+
+        self.render_speed = 0.0
+        self.random_point_index = 0
+        self.randomposition = [[0.39, -0.15, -0.13],
+                               [0.45, -0.31, -0.05],
+                               [0.26, -0.06, -0.38],
+                               [0.15, -0.50, -0.37],
+                               [0.37, -0.06, -0.36]
+                               ]
+        
+        self.CBmodel = CBMLP()
+        self.NPmodel = NPMLP()
+        self.CBmodel.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "MLP_collision_bound.pth"), weights_only=True))
+        self.NPmodel.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "MLP_natural_posture.pth"), weights_only=True))
+        self.CBmodel.eval()
+        self.NPmodel.eval()
+        self.NPandCBmodel = NPandCB(self.NPmodel, self.CBmodel)
+        self.posture_ratio = 1.0
+        
+    def step(self, action): 
+        # self.inf.truncated = False
+        if self.viewer.is_running() == False:
+            self.close()
+        else:
+            self.inf.timestep += 1
+            self.inf.totaltimestep += 1
+
+            for i in range(len(action)):
+                self.inf.action[i] += action[i]*0.10
+                if self.inf.action[i] > 1: self.inf.action[i] = 1
+                if self.inf.action[i] < -1: self.inf.action[i] = -1
+
+            # from MLP
+            input_tensor = torch.tensor(np.array(self.obs.obj_to_neck_xyz.copy(), dtype=np.float32) ).unsqueeze(0)
+            with torch.no_grad():
+                output_tensor = self.NPandCBmodel(input_tensor)
+            NPandCB_output = output_tensor[0].numpy()
+            arm_target_pos_max = min(90, 90+NPandCB_output[0])
+            self.sys.arm_target_pos[3] = np.radians(NPandCB_output[0]*self.posture_ratio + arm_target_pos_max*(1-self.posture_ratio))
+
+            alpha1 = 1.0
+            alpha1 = 1-0.8*np.exp(-300*self.sys.hand2target**2)
+
+            for i in range(int(1/self.sys.Hz/0.005)):
+                self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.inf.action[0]*0.01*alpha1
+                self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.inf.action[1]*0.01*alpha1
+                self.sys.ctrlpos[4] = 0
+                self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + np.tanh(1.2*self.sys.arm_target_pos[3] - 1.2*self.sys.pos[5])*0.01
+                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.inf.action[2]*0.01*alpha1
+                if   self.sys.ctrlpos[2] > self.sys.limit_high[0]: self.sys.ctrlpos[2] = self.sys.limit_high[0]
+                elif self.sys.ctrlpos[2] < self.sys.limit_low[0] : self.sys.ctrlpos[2] = self.sys.limit_low[0]
+                if   self.sys.ctrlpos[3] > self.sys.limit_high[1]: self.sys.ctrlpos[3] = self.sys.limit_high[1]
+                elif self.sys.ctrlpos[3] < self.sys.limit_low[1] : self.sys.ctrlpos[3] = self.sys.limit_low[1]
+                if   self.sys.ctrlpos[5] > self.sys.limit_high[2]: self.sys.ctrlpos[5] = self.sys.limit_high[2]
+                elif self.sys.ctrlpos[5] < self.sys.limit_low[2] : self.sys.ctrlpos[5] = self.sys.limit_low[2]
+                if   self.sys.ctrlpos[6] > self.sys.limit_high[3]: self.sys.ctrlpos[6] = self.sys.limit_high[3]
+                elif self.sys.ctrlpos[6] < self.sys.limit_low[3] : self.sys.ctrlpos[6] = self.sys.limit_low[3]
+
+                self.sys.pos = [self.data.qpos[i] for i in controlList]
+                self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+                self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+                
+                mujoco.mj_step(self.robot, self.data)
+            self.render()
+
+            self.get_reward()
+            self.get_state()
+            self.observation_space = np.concatenate([self.obs.obj_to_neck_xyz, 
+                                                     self.obs.obj_to_hand_xyz_norm, 
+                                                     self.inf.action, 
+                                                     self.obs.joint_arm,
+                                                     [self.sys.arm_target_pos[3]],
+                                                    #  [self.obs.joint_arm[2]],
+                                                     [self.obs.hand_length]]).astype(np.float32)
+            self.inf.truncated = False
+            self.inf.info = {}
+            return self.observation_space, self.inf.reward, self.inf.done, self.inf.truncated, self.inf.info
+    
+    def reset(self, seed=None, **kwargs): 
+        if self.viewer.is_running() == False:
+            self.close()
+        else:
+            mujoco.mj_resetData(self.robot, self.data)
+            self.inf.reset()
+            self.sys.reset()
+            self.obs.reset()
+            # self.head_camera.track_done = False
+            self.sys.pos_hand     = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")]
+            self.sys.pos_origin   = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")]
+            self.sys.pos_shoulder = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_shoulder_marker")]
+            self.sys.pos_elbow    = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_elbow_marker")]
+
+            self.data.qpos[15:18] = [0.2, -0.25, 1.3] # position of target
+
+            dummy_random = np.radians(random.uniform( 0, 1)**2)*60
+            self.sys.arm_target_pos = [ -dummy_random,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        2*dummy_random,
+                                        0.0 ]
+            for i in range(100):
+                self.sys.ctrlpos[2] = self.sys.pos[2] + np.tanh(10*(self.sys.arm_target_pos[0] - self.sys.pos[2]))*0.02
+                self.sys.ctrlpos[3] = 0
+                self.sys.ctrlpos[4] = 0
+                self.sys.ctrlpos[5] = 0
+                self.sys.ctrlpos[6] = self.sys.pos[6] + np.tanh(10*(self.sys.arm_target_pos[4] - self.sys.pos[6]))*0.02
+                self.sys.ctrlpos[5] = 0
+                self.sys.pos = [self.data.qpos[i] for i in controlList]
+                self.sys.vel = [self.data.qvel[i-1] for i in controlList]
+                self.data.ctrl[:] = self.sys.PIDctrl.getSignal(self.sys.pos, self.sys.vel, self.sys.ctrlpos)
+                mujoco.mj_step(self.robot, self.data)
+
+            # self.head_camera.get_img(self.data, rgb=True, depth=True)
+            self.get_state()
+            self.observation_space = np.concatenate([self.obs.obj_to_neck_xyz, 
+                                                     self.obs.obj_to_hand_xyz_norm, 
+                                                     self.inf.action, 
+                                                     self.obs.joint_arm,
+                                                    #  [self.sys.arm_target_pos[3]],
+                                                     [self.obs.joint_arm[2]],
+                                                     [self.obs.hand_length]]).astype(np.float32)
+            self.inf.done = False
+            self.inf.truncated = False
+            self.inf.info = {}
+            return self.observation_space, self.inf.info
+
+    def get_reward(self):
+        # # ----------------------------------
+        # # reward using predicted EE position
+        # joints_in_5_steps = self.data.qpos[9:15].copy()
+        # gamma = (1-0.9**2)/0.1
+        # joints_in_5_steps[0] += (self.inf.action_old[0]*gamma + self.inf.action[0]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        # joints_in_5_steps[1] += (self.inf.action_old[1]*gamma + self.inf.action[1]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)
+        # joints_in_5_steps[4] += (self.inf.action_old[2]*gamma + self.inf.action[2]*(1-gamma) )*0.01*int(1/self.sys.Hz/0.005)  
+        # for i in range(len(self.inf.action)):      
+        #     self.inf.action_old[i] = self.inf.action[i]
+
+        # self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
+        # self.sys.pos_EE_predict = self.DH_R.forward(angles=joints_in_5_steps.copy())
+        # self.sys.pos_EE_predict[0] += self.sys.pos_origin[0]
+        # self.sys.pos_EE_predict[1] += self.sys.pos_origin[1]
+        # self.sys.pos_EE_predict[2] += self.sys.pos_origin[2]
+        # self.sys.pos_target = self.data.qpos[15:18]
+        # new_dis = (self.sys.pos_target[1]-self.sys.pos_EE_predict[0])**2 + (self.sys.pos_target[2]-self.sys.pos_EE_predict[1])**2 + (self.sys.pos_target[2]-self.sys.pos_EE_predict[2])**2
+        # new_dis = new_dis ** 0.5
+
+        # # r0: reward of position
+        # r0 = np.exp(-20*new_dis**2)
+
+        # r1: reward of handCAM central
+        v1 = ( self.sys.elbow_to_hand[0] ** 2 + self.sys.elbow_to_hand[1] ** 2 + self.sys.elbow_to_hand[2] ** 2 ) ** 0.5
+        v2 = ( self.sys.elbow_to_target[0]**2 + self.sys.elbow_to_target[1]**2 + self.sys.elbow_to_target[2]**2 ) ** 0.5
+        r1 = np.dot(self.sys.elbow_to_hand, self.sys.elbow_to_target)/(v1*v2)
+        r1 *= np.abs(r1)
+
+        # # r2: reward of detail control
+        # r2 = np.exp(-(50*new_dis)**4)
+
+        # self.inf.reward = 0.8*r0 + 1.2*r2
+        # self.inf.total_reward_future_state += self.inf.reward
+        # # print(f"reward: {self.inf.reward:.2f}  ({r0*r2:.2f} + {r3:.2f})")
+
+        # ---------------------------------
+        # reward using original EE position
+        self.sys.pos_hand = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")]
+        self.sys.hand2target = ( (self.sys.pos_target[0]-self.sys.pos_hand[0])**2 + (self.sys.pos_target[1]-self.sys.pos_hand[1])**2 + (self.sys.pos_target[2]-self.sys.pos_hand[2])**2 )**0.5
+        r0 = np.exp(-20*self.sys.hand2target**2)
+        r2 = np.exp(-(50*self.sys.hand2target)**4)
+
+        self.inf.reward = 0.8*r0*r1 + 1.2*r2
+        self.inf.total_reward_standard += 0.8*r0*r1 + 1.2*r2
+        self.inf.total_reward_future_state += self.inf.reward
+ 
+    def get_state(self):
+        # update position of target
+        self.data.qpos[15] += 0.01*np.tanh(2*(self.sys.pos_target0[0] - self.data.qpos[15]))
+        self.data.qpos[16] += 0.01*np.tanh(2*(self.sys.pos_target0[1] - self.data.qpos[16]))
+        self.data.qpos[17] += 0.01*np.tanh(2*(self.sys.pos_target0[2] - self.data.qpos[17]))
+        self.sys.pos_target = self.data.qpos[15:18]
+
+        # update camera
+        # self.hand_camera.get_img(self.data, rgb=True, depth=False)
+        # self.hand_camera.get_target(depth = False)
+
+        # joints
+        self.obs.joint_arm[0:2] = self.data.qpos[9:11]
+        self.obs.joint_arm[2:4] = self.data.qpos[12:14]
+        for i in range(4):
+            self.obs.joint_arm[i] += random.uniform(-0.015, 0.015) # noise
+
+        # position of hand, neck, elbow
+        self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.17 + self.obs.hand_length
+        mujoco.mj_forward(self.robot, self.data)
+
+        # vectors
+        self.obs.obj_to_neck_xyz = [self.sys.pos_target[0]-self.sys.pos_origin[0],  self.sys.pos_target[1]-self.sys.pos_origin[1],  self.sys.pos_target[2]-self.sys.pos_origin[2]]
+        self.obs.obj_to_hand_xyz = [self.sys.pos_target[0]-self.sys.pos_hand[0],    self.sys.pos_target[1]-self.sys.pos_hand[1],    self.sys.pos_target[2]-self.sys.pos_hand[2]]
+        self.obs.obj_to_hand_xyz_norm = self.obs.obj_to_hand_xyz.copy()
+        if self.sys.hand2target >= 0.05:
+            self.obs.obj_to_hand_xyz_norm[0] *= 0.05/self.sys.hand2target
+            self.obs.obj_to_hand_xyz_norm[1] *= 0.05/self.sys.hand2target
+            self.obs.obj_to_hand_xyz_norm[2] *= 0.05/self.sys.hand2target
+        self.sys.elbow_to_hand   = [self.sys.pos_hand[0]   - self.sys.pos_elbow[0], self.sys.pos_hand[1]   - self.sys.pos_elbow[1], self.sys.pos_hand[2]   - self.sys.pos_elbow[2]]
+        self.sys.elbow_to_target = [self.sys.pos_target[0] - self.sys.pos_elbow[0], self.sys.pos_target[1] - self.sys.pos_elbow[1], self.sys.pos_target[2] - self.sys.pos_elbow[2]]
+
+        if self.inf.timestep%int(3*self.sys.Hz) == 0:
+
+            self.spawn_new_point()
+
+    def close(self):
+        self.renderer.close() 
+        self.viewer.close()
+        cv2.destroyAllWindows() 
+
+    def render(self):
+        if self.inf.timestep%int(49*self.render_speed+1) ==0:
+            self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
+            self.viewer.sync()
+            # self.viewer.cam.azimuth += 0.05 
+
+    def check_reachable(self, point):
+        distoshoulder = ( (point[0]-self.sys.pos_shoulder[0])**2 + (point[1]-self.sys.pos_shoulder[1])**2 + (point[2]-self.sys.pos_shoulder[2])**2 ) **0.5
+        if distoshoulder >= 0.57 or distoshoulder <= 0.39:
+            return False
+        else:
+            return True
+        
+    def spawn_new_point(self):
+        v1 = (   self.sys.elbow_to_hand[0]**2 +   self.sys.elbow_to_hand[1]**2 +   self.sys.elbow_to_hand[2]**2 ) **0.5
+        v2 = ( self.sys.elbow_to_target[0]**2 + self.sys.elbow_to_target[1]**2 + self.sys.elbow_to_target[2]**2 ) **0.5
+        hand_camera_center = np.degrees(np.arccos(np.dot(self.sys.elbow_to_hand, self.sys.elbow_to_target)/(v1*v2)))
+
+        if self.inf.timestep == 0 or self.sys.hand2target <= 0.05 or hand_camera_center <= 5:
+            self.inf.reward += 10
+
+            # new hand length -----------------------------------
+            self.obs.hand_length = random.uniform(0.0, 0.15)
+            self.obs.hand_length = random.uniform(0.0, 0.05)
+            self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.17 + self.obs.hand_length
+            mujoco.mj_forward(self.robot, self.data)
+            self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
+
+            # new target elbow yaw ------------------------------
+            self.sys.arm_target_pos[3] = np.radians(random.uniform( -90, 90))
+
+            # # new target position -------------------------------
+            # reachable = False
+            # while reachable == False:
+            #     self.sys.pos_target0[0] = self.sys.pos_shoulder[0] + random.uniform( 0.10, 0.55)
+            #     self.sys.pos_target0[1] = self.sys.pos_shoulder[1] + random.uniform(-0.35, 0.35)
+            #     self.sys.pos_target0[2] = self.sys.pos_shoulder[2] + random.uniform(-0.55,-0.10)
+            #     reachable = self.check_reachable(self.sys.pos_target0)
+            # self.sys.pos_target = self.sys.pos_target0.copy()
+            # self.data.qpos[15:18] = self.sys.pos_target0.copy()
+
+            # reachable = False
+            # while reachable == False:
+            #     self.sys.pos_target0[0] = self.sys.pos_shoulder[0] + random.uniform( 0.10, 0.55)
+            #     self.sys.pos_target0[1] = self.sys.pos_shoulder[1] + random.uniform(-0.35, 0.35)
+            #     self.sys.pos_target0[2] = self.sys.pos_shoulder[2] + random.uniform(-0.55,-0.10)
+            #     reachable = self.check_reachable(self.sys.pos_target0)
+
+            if self.random_point_index >= len(self.randomposition):
+                self.random_point_index = 0
+                self.posture_ratio = random.choice([0.1, 1.0])
+                print(self.posture_ratio)
+            self.sys.pos_target0 = self.randomposition[self.random_point_index].copy()
+            self.random_point_index += 1
+            self.sys.pos_target0[0] += self.sys.pos_origin[0]
+            self.sys.pos_target0[1] += self.sys.pos_origin[1]
+            self.sys.pos_target0[2] += self.sys.pos_origin[2]
+            self.sys.pos_target = self.sys.pos_target0.copy()
+            self.data.qpos[15:18] = self.sys.pos_target0.copy()
+            
+            self.sys.pos_origin = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
+            self.obs.obj_to_neck_xyz = [self.sys.pos_target[0]-self.sys.pos_origin[0], self.sys.pos_target[1]-self.sys.pos_origin[1], self.sys.pos_target[2]-self.sys.pos_origin[2]]
+            self.obs.obj_to_hand_xyz = [self.sys.pos_target[0]-self.sys.pos_hand[0],   self.sys.pos_target[1]-self.sys.pos_hand[1],   self.sys.pos_target[2]-self.sys.pos_hand[2]]
+
+            new_dis = (self.obs.obj_to_hand_xyz[0]**2 + self.obs.obj_to_hand_xyz[1]**2 + self.obs.obj_to_hand_xyz[2]**2) **0.5
+            self.sys.hand2target  = new_dis
+            self.sys.hand2target0 = new_dis
+            mujoco.mj_step(self.robot, self.data)
+        else:
+            self.reset()

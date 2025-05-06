@@ -15,7 +15,9 @@ class Roly_motor(DXL_Motor):
                         "model": [X_series_info] * 16 }
         super().__init__(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 
-        self.joints_bias = [180.0] * 16
+        self.joints_bias = [184, 180,
+                            180, 180, 180, 180, 180, 180, 180,
+                            180, 180, 180, 180, 180, 180, 180]
         self.joints_axis = [ 1, -1,
                              1,  1,  1, -1, -1,  1,  1,
                             -1, -1, -1,  1, -1, -1,  1]
@@ -24,9 +26,9 @@ class Roly_motor(DXL_Motor):
                         0, 0, 0, 0, 0, 0, 90]
         self.joints_increment = [0] * 16
         # self.initial_pos = [-20, -45, -11, -26, 0, 11, 90, 90, 90] # gripper closed
-        self.initial_pos = [ -20, -45,
-                             -11, -26,  0, 11, 90, 90, 30,  # gripper opened: 30 degree
-                               0,   0,  0,  0, 90,  0, 90]  # gripper closed: 90 degree
+        self.initial_pos = [   0,   0,
+                             -11, -26,  0, 11, 90, 90, 90,  # gripper opened: 90 degree
+                               0,   0,  0,  0, 90,  0, 90]  # gripper closed: 5 degree
         self.limit_high = [ 1.57, 0.00, 1.57, 1.90]
         self.limit_low  = [-1.57,-1.57,-1.57, 0.00]
 
