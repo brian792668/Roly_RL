@@ -6,7 +6,7 @@ from stable_baselines3 import SAC
 
 class RLmodel:
     def __init__(self):
-        self.model = SAC.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model1.zip"))
+        self.model = SAC.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "model1_v28.zip"))
         self.model.policy.to("cpu")
         print("Model 1 : CPU")
         # if torch.cuda.is_available():
