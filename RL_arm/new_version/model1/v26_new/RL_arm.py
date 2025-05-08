@@ -44,10 +44,10 @@ class RL_arm(gym.Env):
         # self.hand_camera = Camera(renderer=self.renderer, camID=2)
 
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
-        self.viewer.cam.distance = 2.0
-        self.viewer.cam.lookat = [0.3, 0.0, 1.0]
-        self.viewer.cam.elevation = -60
-        self.viewer.cam.azimuth = 200
+        self.viewer.cam.distance = 1.5
+        self.viewer.cam.lookat = [0.3, -0.15, 1.2]
+        self.viewer.cam.elevation = -20
+        self.viewer.cam.azimuth = 180
         
     def step(self, action): 
         # self.inf.truncated = False
@@ -61,14 +61,15 @@ class RL_arm(gym.Env):
                 self.inf.action[i] = self.inf.action[i]*0.9  + action[i]*0.1
                 self.inf.action_new[i] = action[i]
 
-            # alpha1 = 1-0.8*np.exp(-300*self.sys.hand2target**2)
+            alpha1 = 1
+            alpha1 = 1-0.8*np.exp(-300*self.sys.hand2target**2)
 
             for i in range(int(1/self.sys.Hz/0.005)):
-                self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.inf.action[0]*0.01
-                self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.inf.action[1]*0.01
+                self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.inf.action[0]*0.01*alpha1
+                self.sys.ctrlpos[3] = self.sys.ctrlpos[3] + self.inf.action[1]*0.01*alpha1
                 self.sys.ctrlpos[4] = 0
                 self.sys.ctrlpos[5] = self.sys.ctrlpos[5] + np.tanh(1.2*self.sys.arm_target_pos[3] - 1.2*self.sys.pos[5])*0.01
-                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.inf.action[2]*0.01
+                self.sys.ctrlpos[6] = self.sys.ctrlpos[6] + self.inf.action[2]*0.01*alpha1
                 if   self.sys.ctrlpos[2] > self.sys.limit_high[0]: self.sys.ctrlpos[2] = self.sys.limit_high[0]
                 elif self.sys.ctrlpos[2] < self.sys.limit_low[0] : self.sys.ctrlpos[2] = self.sys.limit_low[0]
                 if   self.sys.ctrlpos[3] > self.sys.limit_high[1]: self.sys.ctrlpos[3] = self.sys.limit_high[1]
@@ -222,7 +223,7 @@ class RL_arm(gym.Env):
         self.renderer.close() 
         cv2.destroyAllWindows() 
 
-    def render(self, speed=0.2):
+    def render(self, speed=0.1):
         if self.inf.timestep%int(48*speed+2) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()

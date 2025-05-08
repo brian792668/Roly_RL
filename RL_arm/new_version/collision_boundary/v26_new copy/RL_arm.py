@@ -35,10 +35,10 @@ class RL_arm(gym.Env):
         
         self.renderer = mujoco.Renderer(self.robot)
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
-        self.viewer.cam.distance = 2.0
-        self.viewer.cam.lookat = [0.3, 0.0, 1.0]
-        self.viewer.cam.elevation = -60
-        self.viewer.cam.azimuth = 200
+        self.viewer.cam.distance = 1.5
+        self.viewer.cam.lookat = [0.3, -0.15, 1.2]
+        self.viewer.cam.elevation = -20
+        self.viewer.cam.azimuth = 180
         self.render_speed = 0
         self.inf = RL_inf()
         self.sys = RL_sys(Hz=50)
@@ -198,12 +198,12 @@ class RL_arm(gym.Env):
         if NPandCB_hand[1] > NPandCB_hand[2]:   NPandCB_hand[1], NPandCB_hand[2] = NPandCB_hand[2], NPandCB_hand[1]
         high_bound = max(NPandCB_guide[2], NPandCB_hand[2])
 
-        if high_bound < -1.57:
-            self.sys.limit_low[2] = 0.95*self.sys.limit_low[2] + 0.05*(-1.57)
-            # self.sys.limit_low[2] -1.57
-        else:
-            self.sys.limit_low[2] = 0.95*self.sys.limit_low[2] + 0.05*(high_bound+0.1)
-            # self.sys.limit_low[2] = high_bound
+        # if high_bound < -1.57:
+        #     self.sys.limit_low[2] = 0.95*self.sys.limit_low[2] + 0.05*(-1.57)
+        #     # self.sys.limit_low[2] -1.57
+        # else:
+        #     self.sys.limit_low[2] = 0.95*self.sys.limit_low[2] + 0.05*(high_bound+0.1)
+        #     # self.sys.limit_low[2] = high_bound
 
         # self.sys.guide_arm_joints[3] = np.radians(NPandCB_hand[0])
 
@@ -327,9 +327,9 @@ class RL_arm(gym.Env):
                 self.sys.pos_target[1] = shoulder_pos[1] - random.uniform( 0.00, 1.00)**2 *1.30 + 0.65
                 self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.65, 0.10)
 
-                self.sys.pos_target[0] = shoulder_pos[0] + random.uniform( 0.10, 0.20)
-                self.sys.pos_target[1] = shoulder_pos[1] + random.uniform(-0.00, 0.01)
-                self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.50,-0.20)
+                self.sys.pos_target[0] = shoulder_pos[0] + random.uniform( 0.10, 0.30)
+                self.sys.pos_target[1] = shoulder_pos[1] + random.uniform(-0.00, 0.05)
+                self.sys.pos_target[2] = shoulder_pos[2] + random.uniform(-0.50,-0.10)
                 # self.sys.pos_target[0] = shoulder_pos[0] + 0.10
                 # self.sys.pos_target[1] = shoulder_pos[1] + 0.00
                 # self.sys.pos_target[2] = shoulder_pos[2] + -0.4

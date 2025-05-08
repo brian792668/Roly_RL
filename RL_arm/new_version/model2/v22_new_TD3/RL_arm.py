@@ -48,10 +48,10 @@ class RL_arm(gym.Env):
         
         self.renderer = mujoco.Renderer(self.robot)
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
-        self.viewer.cam.distance = 2.0
-        self.viewer.cam.lookat = [0.3, 0.0, 1.0]
-        self.viewer.cam.elevation = -60
-        self.viewer.cam.azimuth = 200
+        self.viewer.cam.distance = 1.5
+        self.viewer.cam.lookat = [0.3, -0.15, 1.2]
+        self.viewer.cam.elevation = -20
+        self.viewer.cam.azimuth = 180
         self.render_speed = 0
         self.inf = RL_inf()
         self.sys = RL_sys(Hz=50)

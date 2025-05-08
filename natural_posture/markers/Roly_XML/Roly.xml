@@ -205,7 +205,7 @@
                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="camera" />
                         <geom type="mesh" rgba="0.1 0.1 0.1 1" mesh="camera" />
                         <camera name="head_camera" mode="fixed" pos="0.01 0.06 0" zaxis="-1 0 0" fovy="85"/>
-                        <site name="neck_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.5"/>
+                        <site name="neck_marker" type="sphere" size="0.015" pos="0.0 0.0 0.0" rgba="0 1 1 0.00005"/>
                     </body>
                 </body>
                 <body name="R_shoulder" pos="0 0 0.495" quat="0.707107 0.707107 0 0">
@@ -220,13 +220,13 @@
                         <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1" />
                         <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm1" />
 			            <site name="R_shoulder_marker" type="sphere" size="0.025" pos="0 0 0"     rgba="1 0.0 1 0.5"/>
-                        <site name="R_arm_marker1" type="sphere" size="0.015" pos="-0.10 0.0 0.0" rgba="0 0.9 1 0.5"/>
-                        <site name="R_arm_marker2" type="sphere" size="0.015" pos="-0.14 0.0 0.0" rgba="0 0.9 1 0.5"/>
-                        <site name="R_arm_marker3" type="sphere" size="0.015" pos="-0.18 0.0 0.0" rgba="0 0.9 1 0.5"/>
-                        <site name="R_arm_marker4" type="sphere" size="0.015" pos="-0.22 0.0 0.0" rgba="0 0.9 1 0.5"/>
-                        <site name="R_arm_marker5" type="sphere" size="0.015" pos="-0.26 0.0 0.0" rgba="0 0.9 1 0.5"/>
-                        <site name="R_arm_marker6" type="sphere" size="0.015" pos="-0.30 0.0 0.0" rgba="0 0.9 1 0.5"/>
-                        <site name="R_arm_marker7" type="sphere" size="0.015" pos="-0.34 0.0 0.0" rgba="0 0.9 1 0.5"/>
+                        <site name="R_arm_marker1" type="sphere" size="0.015" pos="-0.10 0.0 0.0" rgba="0 0.9 1 0.00005"/>
+                        <site name="R_arm_marker2" type="sphere" size="0.015" pos="-0.14 0.0 0.0" rgba="0 0.9 1 0.00005"/>
+                        <site name="R_arm_marker3" type="sphere" size="0.015" pos="-0.18 0.0 0.0" rgba="0 0.9 1 0.00005"/>
+                        <site name="R_arm_marker4" type="sphere" size="0.015" pos="-0.22 0.0 0.0" rgba="0 0.9 1 0.00005"/>
+                        <site name="R_arm_marker5" type="sphere" size="0.015" pos="-0.26 0.0 0.0" rgba="0 0.9 1 0.00005"/>
+                        <site name="R_arm_marker6" type="sphere" size="0.015" pos="-0.30 0.0 0.0" rgba="0 0.9 1 0.00005"/>
+                        <site name="R_arm_marker7" type="sphere" size="0.015" pos="-0.34 0.0 0.0" rgba="0 0.9 1 0.00005"/>
                         <body name="R_arm2" pos="-0.1705 0 0">
                             <inertial pos="-0.0928721 1.67411e-07 -0.00651967" quat="0.707071 -0.00727436 -0.00727567 0.707067" mass="0.0759196" diaginertia="2.92269e-05 2.47959e-05 1.60978e-05" />
                             <joint name="R_arm2" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" limited="true" range="-0.0001 0.0001"/>
@@ -243,11 +243,11 @@
                                     <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4" />
                                     <geom type="mesh" rgba="0.752941 0.752941 0.752941 1" mesh="R_arm4" />
                                     <site name="R_elbow_marker" type="sphere" size="0.020" pos="0.0 0.0 0.0"   rgba="1 0 1.0 0.5"/>
-                                    <site name="R_arm_marker8"  type="sphere" size="0.010" pos="0.0 -0.04 0.0" rgba="0 1 0.5 0.1"/>
-                                    <site name="R_arm_marker9"  type="sphere" size="0.010" pos="0.0 -0.08 0.0" rgba="0 1 0.5 0.1"/>
-                                    <site name="R_arm_marker10" type="sphere" size="0.010" pos="0.0 -0.12 0.0" rgba="0 1 0.5 0.1"/>
-                                    <site name="R_arm_marker11" type="sphere" size="0.010" pos="0.0 -0.16 0.0" rgba="0 1 0.5 0.1"/>
-                                    <site name="R_arm_marker12" type="sphere" size="0.010" pos="0.0 -0.20 0.0" rgba="0 1 0.5 0.1"/>
+                                    <site name="R_arm_marker8"  type="sphere" size="0.010" pos="0.0 -0.04 0.0" rgba="0 1 0.5 0.00001"/>
+                                    <site name="R_arm_marker9"  type="sphere" size="0.010" pos="0.0 -0.08 0.0" rgba="0 1 0.5 0.00001"/>
+                                    <site name="R_arm_marker10" type="sphere" size="0.010" pos="0.0 -0.12 0.0" rgba="0 1 0.5 0.00001"/>
+                                    <site name="R_arm_marker11" type="sphere" size="0.010" pos="0.0 -0.16 0.0" rgba="0 1 0.5 0.00001"/>
+                                    <site name="R_arm_marker12" type="sphere" size="0.010" pos="0.0 -0.20 0.0" rgba="0 1 0.5 0.00001"/>
                                     <body name="R_palm" pos="0 0 0" quat="0.707107 0.707107 0 0">
                                         <inertial pos="-0.00739621 -4.38124e-05 0.113166" quat="0.00210295 0.697675 -0.00221488 0.716408" mass="0.114731" diaginertia="3.2167e-05 3.0104e-05 1.92109e-05" />
                                         <joint name="R_palm" pos="0 0 0" axis="0 0 1" frictionloss="0.10" damping="0.4" stiffness="0.0" armature="0.01" />

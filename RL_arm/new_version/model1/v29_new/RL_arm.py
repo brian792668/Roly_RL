@@ -44,10 +44,10 @@ class RL_arm(gym.Env):
         # self.hand_camera = Camera(renderer=self.renderer, camID=2)
 
         self.viewer = mujoco.viewer.launch_passive(self.robot, self.data, show_right_ui= False)
-        self.viewer.cam.distance = 2.0
-        self.viewer.cam.lookat = [0.3, 0.0, 1.0]
-        self.viewer.cam.elevation = -60
-        self.viewer.cam.azimuth = 200
+        self.viewer.cam.distance = 1.5
+        self.viewer.cam.lookat = [0.3, -0.15, 1.2]
+        self.viewer.cam.elevation = -20
+        self.viewer.cam.azimuth = 180
 
         self.render_speed = 0.0
         
@@ -64,8 +64,8 @@ class RL_arm(gym.Env):
                 if self.inf.action[i] > 1: self.inf.action[i] = 1
                 if self.inf.action[i] < -1: self.inf.action[i] = -1
 
-            # alpha1 = 1-0.8*np.exp(-300*self.sys.hand2target**2)
             alpha1 = 1.0
+            alpha1 = 1-0.8*np.exp(-300*self.sys.hand2target**2)
 
             for i in range(int(1/self.sys.Hz/0.005)):
                 self.sys.ctrlpos[2] = self.sys.ctrlpos[2] + self.inf.action[0]*0.01*alpha1
@@ -235,7 +235,7 @@ class RL_arm(gym.Env):
         cv2.destroyAllWindows() 
 
     def render(self):
-        if self.inf.timestep%int(48*self.render_speed+2) ==0:
+        if self.inf.timestep%int(49*self.render_speed+1) ==0:
             self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"end_effector")] = self.sys.pos_EE_predict.copy()
             self.viewer.sync()
             # self.viewer.cam.azimuth += 0.05 
@@ -258,6 +258,8 @@ class RL_arm(gym.Env):
 
             # new hand length -----------------------------------
             self.obs.hand_length = random.uniform(0.0, 0.15)
+
+            self.obs.hand_length = random.choice([0.0, 0.04])
             self.robot.site_pos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"R_hand_marker")][2] = 0.17 + self.obs.hand_length
             mujoco.mj_forward(self.robot, self.data)
             self.DH_R.update_hand_length(hand_length=self.obs.hand_length)
@@ -280,6 +282,9 @@ class RL_arm(gym.Env):
                 self.sys.pos_target0[0] = self.sys.pos_shoulder[0] + random.uniform(-0.10, 0.65)
                 self.sys.pos_target0[1] = self.sys.pos_shoulder[1] + random.uniform(-0.65, 0.65)
                 self.sys.pos_target0[2] = self.sys.pos_shoulder[2] + random.uniform(-0.65, 0.10)
+                self.sys.pos_target0[0] = self.sys.pos_shoulder[0] + random.uniform( 0.10, 0.55)
+                self.sys.pos_target0[1] = self.sys.pos_shoulder[1] + random.uniform(-0.55, 0.55)
+                self.sys.pos_target0[2] = self.sys.pos_shoulder[2] + random.uniform(-0.55, 0.00)
                 reachable = self.check_reachable(self.sys.pos_target0)
             
             self.sys.pos_origin = self.data.site_xpos[mujoco.mj_name2id(self.robot, mujoco.mjtObj.mjOBJ_SITE, f"origin_marker")].copy()
