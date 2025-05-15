@@ -461,4 +461,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=60)
+    Roly.run(endtime=20)
