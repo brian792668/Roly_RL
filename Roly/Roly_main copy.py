@@ -341,7 +341,7 @@ class Robot_system:
             # desire_joints[0] += 40
             # desire_joints = np.radians(desire_joints)
             with torch.no_grad():
-                desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
+                desire_joints = self.NP(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
             NP_min = desire_joints[0]
             NP_max = min(desire_joints[0]+90, 90)
             desire_posture = np.radians( NP_min*NP_rate + NP_max*(1-NP_rate) )

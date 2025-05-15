@@ -14,9 +14,9 @@ from imports.Forward_kinematics import *
 from imports.Roly_motor import *
 
     
-class NPMLP(nn.Module):
+class IKMLP(nn.Module):
     def __init__(self):
-        super(NPMLP, self).__init__()
+        super(IKMLP, self).__init__()
         self.fc1 = nn.Linear(3, 64)
         self.fc2 = nn.Linear(64, 16)
         self.fc3 = nn.Linear(16, 8)
@@ -65,6 +65,7 @@ class Robot_system:
         self.motor = Roly_motor()
         self.motor.to_pose(pose="initial", speed=0.5)
 
+
         # Initial mechanism
         self.DH_table_R = DHtable([[    0.0, np.pi/2,     0.0,     0.0],
                                    [np.pi/2, np.pi/2,     0.0,  0.2488],
@@ -106,13 +107,12 @@ class Robot_system:
             # Update status
             with self.lock:
                 status = self.status
-                track_done = self.track_done
-                pos_grasppnt = self.pos_grasppnt.copy()
-                pos_placepnt = self.pos_placepnt.copy()
-                joints = self.motor.joints.copy()
-                joints_increment = self.motor.joints_increment.copy()
+
 
             if status == "wait_to_grasp":
+                with self.lock:
+                    track_done = self.track_done
+                    pos_grasppnt = self.pos_grasppnt.copy()
                 reachable = self.reachable(pos_grasppnt.copy())
                 if track_done and reachable:
                     with self.lock:
@@ -122,19 +122,29 @@ class Robot_system:
                         self.pos_guide = self.pos_target.copy()
             
             elif status == "move_to_grasp":
+                with self.lock:
+                    track_done = self.track_done
+                    pos_grasppnt = self.pos_grasppnt.copy()
+                    target_xyz = self.pos_target.copy()
+                    hand_xyz = self.pos_hand.copy()
                 reachable = self.reachable(pos_grasppnt.copy())
                 if track_done and reachable:
                     with self.lock:
                         self.pos_target = pos_grasppnt.copy()
                         self.pos_guide = self.pos_target.copy()
-                # else:
-                #     with self.lock:
-                #         self.status = "wait_to_grasp"
-                #         self.grasping_dis = 0.0
-                #         self.pos_target = self.pos_initpnt.copy()
-                #         self.pos_guide = self.pos_target.copy()
+                target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
+                dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
+                with self.lock:
+                    self.grasping_dis = 0.05 + 0.1*np.tanh(200*dis_target2hand)
+                if dis_target2hand <= 0.03:
+                    with self.lock:
+                        self.grasping_dis = 0.05
+                        self.status = "grasping"
 
             elif status == "grasping":
+                with self.lock:
+                    joints = self.motor.joints.copy()
+                    joints_increment = self.motor.joints_increment.copy()
                 joints = [ np.radians(joints[i]) for i in range(len(joints))]
                 joints_increment[8] = (np.radians(85)*0.98 + joints[8]*0.02) - joints[8]
                 with self.lock:
@@ -144,6 +154,11 @@ class Robot_system:
                         self.status = "carrying"
 
             elif status == "carrying":
+                with self.lock:
+                    track_done = self.track_done
+                    joints = self.motor.joints.copy()
+                    joints_increment = self.motor.joints_increment.copy()
+                    pos_placepnt = self.pos_placepnt.copy()
                 pos_placepnt[2] += 0.10
                 reachable = self.reachable(pos_placepnt.copy())
                 if track_done and reachable:
@@ -154,23 +169,23 @@ class Robot_system:
                         self.pos_target = pos_target.copy()
                         self.pos_guide = self.pos_target.copy()
 
-            # elif status == "move_to_place":
-            #     reachable = self.reachable(pos_placepnt.copy())
-            #     if track_done and reachable:
-            #         pos_target = pos_placepnt.copy()
-            #         pos_target[2] +=  0.05
-            #         with self.lock:
-            #             self.pos_target = pos_target.copy()
-            #             self.pos_guide = self.pos_target.copy()
-                        
-            #     # else:
-            #     #     with self.lock:
-            #     #         self.status = "carrying"
-            #     #         self.grasping_dis = 0.0
-            #     #         self.pos_target = self.pos_initpnt.copy()
-            #     #         self.pos_guide = self.pos_target.copy()
+            elif status == "move_to_place":
+                with self.lock:
+                    target_xyz = self.pos_target.copy()
+                    hand_xyz = self.pos_hand.copy()
+                target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
+                dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
+                with self.lock:
+                    self.grasping_dis = 0.05 + 0.1*np.tanh(100*dis_target2hand)
+                if dis_target2hand <= 0.03:
+                    with self.lock:
+                        self.grasping_dis = 0.05
+                        self.status = "placing"
 
             elif status == "placing":
+                with self.lock:
+                    joints = self.motor.joints.copy()
+                    joints_increment = self.motor.joints_increment.copy()
                 joints = [ np.radians(joints[i]) for i in range(len(joints))]
                 joints_increment[8] = (np.radians(30)*0.98 + joints[8]*0.02) - joints[8]
                 with self.lock:
@@ -264,7 +279,6 @@ class Robot_system:
                 joints=self.motor.joints.copy()
                 hand_length = self.grasping_dis
                 track_done = self.track_done
-                d = self.target_depth
                 target_position_to_camera = self.target_position_to_camera.copy()
             joints = [ np.radians(joints[i]) for i in range(len(joints))]
 
@@ -279,16 +293,9 @@ class Robot_system:
                     self.grasping_dis = 0.0
                     self.pos_target = self.pos_initpnt.copy()
                     self.pos_guide = self.pos_target.copy()
-            # if pos_hand[0] < -0.05 or pos_hand[1] < -0.2488-0.5 or pos_hand[2] > 0.05:
-            #     with self.lock:
-            #         self.status = "wait_to_grasp"
-            #         self.grasping_dis = 0.0
-            #         self.pos_target = self.pos_initpnt.copy()
-            #         self.pos_guide = self.pos_target.copy()
                 
             # Farward Kinematics of target position
             if track_done:
-                # camera_point = self.DH_table_neck.forward_neck(angles=joints[0:2].copy(), camera_distance=d)
                 camera_point = self.DH_table_neck.forward_neck_new(angles=joints[0:2].copy(), target_position=target_position_to_camera)
                 with self.lock:
                     self.pos_grasppnt = camera_point.copy()
@@ -297,6 +304,24 @@ class Robot_system:
                 with self.lock:
                     self.pos_grasppnt = [ 0.000, -0.2488,  0.000]
                     self.pos_placepnt = [ 0.000, -0.2488,  0.000]
+
+            # Elbow rotation
+            with self.lock:
+                NP_rate = self.NP_rate
+                guide_xyz = self.pos_guide.copy()
+                joints_increment = self.motor.joints_increment.copy()
+            with torch.no_grad():
+                desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
+            NP_min = desire_joints[0]
+            NP_max = min(desire_joints[0]+90, 90)
+            desire_posture = np.radians( NP_min*NP_rate + NP_max*(1-NP_rate) )
+            new_joint_increment = np.degrees( ( joints[5]*0.9 + desire_posture*0.1 ) - joints[5] )*0.2
+            if abs(new_joint_increment) > joints_increment[5]:
+                joints_increment[5] = 0.1*new_joint_increment + 0.9*joints_increment[5]
+            else:
+                joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_posture*0.1 ) - joints[5] ) # elbow yaw
+            with self.lock:
+                self.motor.joints_increment[5] = joints_increment[5]
 
     def thread_RL_move(self):
         while not self.stop_event.is_set():
@@ -309,7 +334,6 @@ class Robot_system:
                 guide_xyz = self.pos_guide.copy()
                 action_old = self.RL_moving_action.copy()
                 hand_length = self.grasping_dis
-                NP_rate = self.NP_rate
 
             # RL model1: shoulder + elbow pitch
             guidetohand = [guide_xyz[0]-hand_xyz[0], guide_xyz[1]-hand_xyz[1], guide_xyz[2]-hand_xyz[2]]
@@ -334,77 +358,7 @@ class Robot_system:
             joints_increment[2] = np.degrees( action_old[0]* 0.01*alpha ) # shoulder pitch
             joints_increment[3] = np.degrees( action_old[1]* 0.01*alpha ) # shoulder roll
             joints_increment[6] = np.degrees( action_old[2]* 0.01*alpha ) # elbow pitch
-            
-            # elbow yaw
-            # with torch.no_grad():  # 不需要梯度計算，因為只做推論
-            #     desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
-            # desire_joints[0] += 40
-            # desire_joints = np.radians(desire_joints)
-            with torch.no_grad():
-                desire_joints = self.IK(torch.tensor(guide_xyz.copy(), dtype=torch.float32)).tolist()
-            NP_min = desire_joints[0]
-            NP_max = min(desire_joints[0]+90, 90)
-            desire_posture = np.radians( NP_min*NP_rate + NP_max*(1-NP_rate) )
-            new_joint_increment = np.degrees( ( joints[5]*0.9 + desire_posture*0.1 ) - joints[5] )*0.2
-            if abs(new_joint_increment) > joints_increment[5]:
-                joints_increment[5] = 0.1*new_joint_increment + 0.9*joints_increment[5]
-            else:
-                joints_increment[5] = np.degrees( ( joints[5]*0.9 + desire_posture*0.1 ) - joints[5] ) # elbow yaw
-
-            # desire_joints[3] = IK_elbow_pitch(guide_xyz.copy())
-            # joints_increment[6] = np.degrees( ( joints[6]*0.9 + desire_joints[3]*0.1 ) - joints[6] ) # elbow yaw
-
-            with self.lock:
-                self.RL_moving_action = action_old.copy()
-                self.motor.joints_increment = joints_increment.copy()
-
-    def thread_RL_grasp(self):
-        while not self.stop_event.is_set():
-            # 100 Hz
-            time.sleep(0.1)
-            with self.lock:
-                target_xyz = self.pos_target.copy()
-                hand_xyz = self.pos_hand.copy()
-                status = self.status
-                joints = self.motor.joints.copy()
-                grasping_dis = self.grasping_dis
-
-            # if status == "move_to_grasp" or status == "move_to_place":
-            #     # # calculate new grasp distance
-            #     target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
-            #     dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
-            #     if dis_target2hand <= 0.02:
-            #         if status == "move_to_grasp":
-            #             with self.lock:
-            #                 self.grasping_dis = 0.0
-            #                 self.status = "grasping"
-            #         elif status == "move_to_place":
-            #             with self.lock:
-            #                 self.grasping_dis = 0.0
-            #                 self.status = "placing"
-            
-            if status == "move_to_grasp":
-                # # calculate new grasp distance
-                target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
-                dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
-                with self.lock:
-                    self.grasping_dis = 0.05 + 0.1*np.tanh(200*dis_target2hand)
-                if dis_target2hand <= 0.03:
-                    with self.lock:
-                        self.grasping_dis = 0.05
-                        self.status = "grasping"
-
-            if status == "move_to_place":
-                # # calculate new grasp distance
-                target2hand = [target_xyz[0] - hand_xyz[0], target_xyz[1] - hand_xyz[1], target_xyz[2] - hand_xyz[2]]
-                dis_target2hand = ( target2hand[0]**2 + target2hand[1]**2 + target2hand[2]**2 ) **0.5
-                with self.lock:
-                    self.grasping_dis = 0.05 + 0.1*np.tanh(100*dis_target2hand)
-                if dis_target2hand <= 0.03:
-                    with self.lock:
-                        self.grasping_dis = 0.05
-                        self.status = "placing"
-
+        
     def thread_motor(self):
         while not self.stop_event.is_set():
             time.sleep(0.01) # 100 Hz
@@ -427,8 +381,7 @@ class Robot_system:
                     threading.Thread(target=self.thread_camera),
                     threading.Thread(target=self.thread_motor),
                     threading.Thread(target=self.thread_system),
-                    threading.Thread(target=self.thread_RL_move),
-                    threading.Thread(target=self.thread_RL_grasp) ]
+                    threading.Thread(target=self.thread_RL_move)]
         for t in threads:
             t.start()
 
