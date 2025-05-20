@@ -106,49 +106,62 @@ class Camera():
     def get_target(self):
         self.hand_vis_data = None
         self.target_vis_data = None
+        self.color_mask = self.color_img.copy()
+    
+        # 定義橘色的 RGB 範圍
         lower_orange = np.array([0, 10, 180], dtype=np.uint8)
         upper_orange = np.array([100, 200, 255], dtype=np.uint8)
-
+    
+        # 建立橘色遮罩
         mask = cv2.inRange(self.color_img, lower_orange, upper_orange)
+    
+        # 找出橘色像素的座標
         ys, xs = np.where(mask > 0)
         if len(xs) == 0:
             self.target_exist = False
             self.target_depth = None
             self.target_position = None
-            self.target_vis_data = None
             return
-
+    
+        # 取得對應像素的深度值（單位：公尺）
         depths = self.depth_img[ys, xs] * 0.001
         valid_mask = (depths > 0) & (depths <= 0.8)
         if np.count_nonzero(valid_mask) == 0:
             self.target_exist = False
             self.target_depth = None
             self.target_position = None
-            self.target_vis_data = None
             return
-
+    
+        # 有效遮罩處理
         valid_xs = xs[valid_mask]
         valid_ys = ys[valid_mask]
         valid_depths = depths[valid_mask]
-
+    
+        valid_mask_img = np.zeros_like(mask)
+        valid_mask_img[valid_ys, valid_xs] = 255
+        self.color_mask = cv2.bitwise_and(self.color_img, self.color_img, mask=valid_mask_img)
+        alpha = 0.7
+        self.color_img = cv2.addWeighted(self.color_img, alpha, self.color_mask, 1 - alpha, 0)
+    
+        # 計算平均像素位置與深度
         mean_x = np.mean(valid_xs)
         mean_y = np.mean(valid_ys)
         mean_depth = np.mean(valid_depths)
-
+    
         norm_x = (mean_x / self.color_img.shape[1]) * 2 - 1
         norm_y = (mean_y / self.color_img.shape[0]) * 2 - 1
-
+    
         self.target_vel = [norm_x - self.target_norm[0], norm_y - self.target_norm[1]]
         self.target_norm = [norm_x, norm_y]
         self.target_depth = mean_depth
-
+    
         half_width = np.tan(np.radians(55) / 2)
         half_height = np.tan(np.radians(55) / 2)
         X, Y, Z = -(norm_y * half_width), (norm_x * half_height), 1.0
         vec = np.array([X, Y, Z])
         vec_normalized = vec / np.linalg.norm(vec)
         self.target_position = vec_normalized * self.target_depth
-
+    
         self.target_exist = True
         self.target_vis_data = (
             mean_x,

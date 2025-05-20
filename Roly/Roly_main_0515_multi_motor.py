@@ -71,7 +71,7 @@ class Robot_system:
         self.motor_head.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[ 100, 100])
         time.sleep(0.01)
         self.motor_R_arm.changeAllMotorOperatingMode(OP_MODE=3)
-        self.motor_R_arm.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[ 60, 60, 60, 60, 200])
+        self.motor_R_arm.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[ 60, 60, 30, 60, 200])
         time.sleep(0.01)
         self.motor_R_arm_others.changeAllMotorOperatingMode(OP_MODE=3)
         self.motor_R_arm_others.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[ 40, 40])
@@ -210,19 +210,28 @@ class Robot_system:
                 with self.lock:
                     self.motor_R_arm.joints_increment[4] = -1
                     joints_R_arm = self.motor_R_arm.joints.copy()
-                joints_R_arm = np.radians(joints_R_arm)
                 
-                if joints_R_arm[4] <= np.radians(6):
+                if joints_R_arm[4] <= 6:
                     with self.lock:
                         self.status = "wait_to_grasp"
                         self.grasping_dis = 0.04
                         self.motor_R_arm.joints_increment[4] = 0
+                        self.motor_R_arm.joints[4] = 5
                         self.pos_target = self.pos_initpnt.copy()
                         self.pos_guide = self.pos_target.copy()
-                if joints_R_arm[4] <= np.radians(60):
+                if joints_R_arm[4] <= 60:
                     with self.lock:
                         self.pos_target = self.pos_initpnt.copy()
                         self.pos_guide = self.pos_target.copy()
+
+            # elif status == "placing":
+            #     with self.lock:
+            #         self.motor_R_arm.joints_increment[4] = 0
+            #         joints_R_arm[4] = 5
+            #         self.status = "wait_to_grasp"
+            #         self.grasping_dis = 0.04
+            #         self.pos_target = self.pos_initpnt.copy()
+            #         self.pos_guide = self.pos_target.copy()
 
 
             sys.stdout.write(f"\rstatus: {status}        ")
@@ -235,9 +244,7 @@ class Robot_system:
             time.sleep(0.01)
 
             self.head_camera.get_img(rgb=True, depth=True)
-            # self.head_camera.get_target(depth=True)
-            # self.head_camera.get_hand(depth=True)
-            # self.head_camera.show(rgb=True, depth=False)
+            head_increment = [0.0, 0.0]
 
             with self.lock:
                 status = self.status
@@ -249,22 +256,26 @@ class Robot_system:
                     with self.lock:
                         self.target_exist = True
                         self.track_done = False
-                        # self.target_position_to_camera = self.head_camera.target_position.copy()
-                        # self.target_pixel_norm = self.head_camera.target_norm
-
-                        self.motor_head.joints_increment[0] = ( -1.5*self.head_camera.target_norm[0] - 0.4*self.motor_head.joints_increment[0] )
-                        self.motor_head.joints_increment[1] = ( -1.5*self.head_camera.target_norm[1] - 0.4*self.motor_head.joints_increment[1] )
+                    head_increment[0] = ( -1.5*self.head_camera.target_norm[0] - 0.4*head_increment[0] )
+                    head_increment[1] = ( -1.5*self.head_camera.target_norm[1] - 0.4*head_increment[1] )
+                    with self.lock:
+                        self.motor_head.joints[0] += head_increment[0]
+                        self.motor_head.joints[1] += head_increment[1]
+                        self.motor_head.writeAllMotorPosition(self.motor_head.toRolyctrl(self.motor_head.joints.copy()))
+                        # self.motor_head.joints_increment[0] = ( -1.5*self.head_camera.target_norm[0] - 0.4*self.motor_head.joints_increment[0] )
+                        # self.motor_head.joints_increment[1] = ( -1.5*self.head_camera.target_norm[1] - 0.4*self.motor_head.joints_increment[1] )
                     if np.abs(self.head_camera.target_norm[0]) <= 0.05 and np.abs(self.head_camera.target_norm[1]) <= 0.05 :
                         with self.lock:
                             self.target_depth = self.head_camera.target_depth
                             self.target_position_to_camera = self.head_camera.target_position.copy()
                             self.track_done = True
                 else:
+                    head_increment = [0.0, 0.0]
                     with self.lock:
                         self.target_exist = False
                         self.track_done = False
-                        self.motor_head.joints_increment[0] = 0
-                        self.motor_head.joints_increment[1] = 0
+                        # self.motor_head.joints_increment[0] = 0
+                        # self.motor_head.joints_increment[1] = 0
 
 
             elif status == "grasping" or status == "carrying" or status == "move_to_place":
@@ -274,21 +285,26 @@ class Robot_system:
                     with self.lock:
                         self.target_exist = True
                         self.track_done = False
-                        # self.target_pixel_norm = self.head_camera.hand_norm
-                        self.motor_head.joints_increment[0] = ( -1.5*self.head_camera.hand_norm[0] - 0.4*self.motor_head.joints_increment[0] )
-                        self.motor_head.joints_increment[1] = ( -1.5*self.head_camera.hand_norm[1] - 0.4*self.motor_head.joints_increment[1] )
+                    head_increment[0] = ( -1.5*self.head_camera.hand_norm[0] - 0.4*head_increment[0] )
+                    head_increment[1] = ( -1.5*self.head_camera.hand_norm[1] - 0.4*head_increment[1] )
+                    with self.lock:
+                        self.motor_head.joints[0] += head_increment[0]
+                        self.motor_head.joints[1] += head_increment[1]
+                        self.motor_head.writeAllMotorPosition(self.motor_head.toRolyctrl(self.motor_head.joints.copy()))
+                        # self.motor_head.joints_increment[0] = ( -1.5*self.head_camera.hand_norm[0] - 0.4*self.motor_head.joints_increment[0] )
+                        # self.motor_head.joints_increment[1] = ( -1.5*self.head_camera.hand_norm[1] - 0.4*self.motor_head.joints_increment[1] )
                     if np.abs(self.head_camera.hand_norm[0]) <= 0.05 and np.abs(self.head_camera.hand_norm[1]) <= 0.05 :
                         with self.lock:
                             self.target_depth = self.head_camera.hand_depth
                             self.target_position_to_camera = self.head_camera.target_position.copy()
                             self.track_done = True
                 else:
+                    head_increment = [0.0, 0.0]
                     with self.lock:
                         self.target_exist = False
                         self.track_done = False
-                        self.motor_head.joints_increment[0] = 0
-                        self.motor_head.joints_increment[1] = 0
-                
+                        # self.motor_head.joints_increment[0] = 0
+                        # self.motor_head.joints_increment[1] = 0
         
         self.head_camera.stop()
 
@@ -348,7 +364,8 @@ class Robot_system:
             else:
                 R_arm_increment[2] = np.degrees( ( joint_R_arm[2]*0.9 + desire_posture*0.1 ) - joint_R_arm[2] ) # elbow yaw
             with self.lock:
-                self.motor_R_arm.joints_increment[2] = new_joint_increment
+                # self.motor_R_arm.joints_increment[2] = new_joint_increment
+                self.motor_R_arm.joints[2] = self.motor_R_arm.joints[2]*0.6 + np.degrees(desire_posture)*0.4
 
     def thread_RL_move(self):
         while not self.stop_event.is_set():
@@ -382,35 +399,37 @@ class Robot_system:
             joint_R_arm_increment[0] = np.degrees( action_old[0]* 0.01*alpha ) # shoulder pitch
             joint_R_arm_increment[1] = np.degrees( action_old[1]* 0.01*alpha ) # shoulder roll
             joint_R_arm_increment[3] = np.degrees( action_old[2]* 0.01*alpha ) # elbow pitch
+            joint_R_arm = np.degrees(joint_R_arm)
+            for i in range(len(joint_R_arm)):
+                joint_R_arm[i] += joint_R_arm_increment[i]
 
             with self.lock:
-                self.motor_R_arm.joints_increment[0] = joint_R_arm_increment[0]
-                self.motor_R_arm.joints_increment[1] = joint_R_arm_increment[1]
-                self.motor_R_arm.joints_increment[3] = joint_R_arm_increment[3]
+                self.motor_R_arm.writeAllMotorPosition(self.motor_R_arm.toRolyctrl(joint_R_arm.copy()))
+                self.motor_R_arm.joints = joint_R_arm.copy()
                 self.RL_moving_action = action_old.copy()
         
     def thread_motor(self):
         while not self.stop_event.is_set():
-            time.sleep(0.01) # 100 Hz
-            with self.lock: 
-                joint_R_arm = self.motor_R_arm.joints.copy()
-                joints_increment_R_arm = self.motor_R_arm.joints_increment.copy()
-                joint_head = self.motor_head.joints.copy()
-                joints_increment_head = self.motor_head.joints_increment.copy()
-            for i in range(len(joint_R_arm)):
-                joint_R_arm[i] += joints_increment_R_arm[i]
-                joints_increment_R_arm[i] *= 0.8
-            for i in range(len(joint_head)):
-                joint_head[i] += joints_increment_head[i]
-                joints_increment_head[i] *= 0.8
+            time.sleep(0.5) # 100 Hz
+            # with self.lock: 
+            # #     joint_R_arm = self.motor_R_arm.joints.copy()
+            # #     joints_increment_R_arm = self.motor_R_arm.joints_increment.copy()
+            #     joint_head = self.motor_head.joints.copy()
+            #     joints_increment_head = self.motor_head.joints_increment.copy()
+            # # for i in range(len(joint_R_arm)):
+            # #     joint_R_arm[i] += joints_increment_R_arm[i]
+            # #     joints_increment_R_arm[i] *= 0.8
+            # for i in range(len(joint_head)):
+            #     joint_head[i] += joints_increment_head[i]
+            #     joints_increment_head[i] *= 0.8
 
-            self.motor_R_arm.writeAllMotorPosition(self.motor_R_arm.toRolyctrl(joint_R_arm.copy()))
-            self.motor_head.writeAllMotorPosition(self.motor_head.toRolyctrl(joint_head.copy()))
-            with self.lock: 
-                self.motor_R_arm.joints = joint_R_arm.copy()
-                self.motor_head.joints = joint_head.copy()
-                # self.motor_R_arm.joints_increment = joints_increment_R_arm.copy()
-                # self.motor_head.joints_increment = joints_increment_head.copy()
+            # # self.motor_R_arm.writeAllMotorPosition(self.motor_R_arm.toRolyctrl(joint_R_arm.copy()))
+            # self.motor_head.writeAllMotorPosition(self.motor_head.toRolyctrl(joint_head.copy()))
+            # with self.lock: 
+            # #     self.motor_R_arm.joints = joint_R_arm.copy()
+            #     self.motor_head.joints = joint_head.copy()
+            # #     self.motor_R_arm.joints_increment = joints_increment_R_arm.copy()
+            #     self.motor_head.joints_increment = joints_increment_head.copy()
             
         self.motor_head.to_pose(pose="shut down")
         self.motor_R_arm.to_pose(pose="shut down")
@@ -461,4 +480,4 @@ class Robot_system:
 
 if __name__ == "__main__":
     Roly = Robot_system()
-    Roly.run(endtime=20)
+    Roly.run(endtime=30)

@@ -149,7 +149,7 @@ class Roly_R_arm(DXL_Motor):
                         "model": [X_series_info] * 5 }
         super().__init__(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 
-        self.joints_bias = [190, 180, 180, 180, 180]
+        self.joints_bias = [190, 180, 185, 175, 180]
         self.joints_axis = [ 1,  1, -1, -1,  1]
         self.joints = [0, 0, 0, 0, 5]
         self.joints_increment = [0, 0, 0, 0, 0]
@@ -157,7 +157,7 @@ class Roly_R_arm(DXL_Motor):
         # self.initial_pos = [ -11, -26, 11, 90, 85]  # gripper closed: 85 degree
 
         self.changeAllMotorOperatingMode(OP_MODE=3)
-        self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[60, 60, 60, 60, 200])
+        self.writeAllMotorProfileVelocity(PROFILE_VELOCITY=[60, 60, 20, 60, 200])
         time.sleep(0.01)
 
     def toRolyctrl(self, ctrlpos):
