@@ -103,7 +103,6 @@ class Roly_motor(DXL_Motor):
     def toRolyctrl(self, ctrlpos):
         return [(ctrlpos[i]*self.joints_axis[i]+self.joints_bias[i]) for i in range(len(self.joints_bias))]
     
-
 class Roly_head(DXL_Motor):
     def __init__(self):
         X_series_info = X_Motor_Info()
@@ -149,7 +148,7 @@ class Roly_R_arm(DXL_Motor):
                         "model": [X_series_info] * 5 }
         super().__init__(DEVICENAME, DXL_MODELS, BAUDRATE=115200)
 
-        self.joints_bias = [190, 180, 185, 175, 180]
+        self.joints_bias = [84.6, 180, 185, 175, 180]
         self.joints_axis = [ 1,  1, -1, -1,  1]
         self.joints = [0, 0, 0, 0, 5]
         self.joints_increment = [0, 0, 0, 0, 0]

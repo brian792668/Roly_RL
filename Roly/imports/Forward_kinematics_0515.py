@@ -34,7 +34,7 @@ class DHtable():
         T03 = np.dot(T02, T23)
         T04 = np.dot(T03, T34)
         T05 = np.dot(T04, T45)
-        T06 = np.dot(T05, T56)
+        T06 = np.dot(T05, T56)  
         T0E = np.dot(T06, T6E)
         EE  = np.dot(T0E, np.array([[0], [0], [hand_length], [1]]))
         return [EE[0][0], EE[1][0], EE[2][0]]
