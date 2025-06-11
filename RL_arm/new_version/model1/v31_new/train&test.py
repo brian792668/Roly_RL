@@ -94,12 +94,12 @@ if __name__ == '__main__':
         RL_model = stable_baselines3.SAC(
             policy='MlpPolicy',
             env=my_env,
-            learning_rate=0.0015,
+            learning_rate=0.0005,
             policy_kwargs=dict(net_arch=dict(pi=[64, 64], qf=[256, 256]))
         )
         RL_model.save(current_model_path)
     print(RL_model.policy)
 
-    train(RL_model, my_env, file_path, render_speed = 1.0)
-    # test(RL_model, my_env, current_model_path, render_speed = 0.03)
+    # train(RL_model, my_env, file_path, render_speed = 1.0)
+    test(RL_model, my_env, current_model_path, render_speed = 0.03)
     # test(RL_model, my_env, best_model_path, render_speed = 0.1)

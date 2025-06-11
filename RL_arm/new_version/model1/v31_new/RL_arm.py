@@ -194,8 +194,8 @@ class RL_arm(gym.Env):
         r0 = np.exp(-20*self.sys.hand2target**2)
         r2 = np.exp(-(50*self.sys.hand2target)**4)
 
-        self.inf.reward = 0.4*r0*r1 + 0.6*r2
-        self.inf.total_reward_standard += 0.4*r0*r1 + 0.6*r2
+        self.inf.reward = 0.8*r0*r1 + 1.2*r2
+        self.inf.total_reward_standard += 0.8*r0*r1 + 1.2*r2
         self.inf.total_reward_future_state += self.inf.reward
  
     def get_state(self):
